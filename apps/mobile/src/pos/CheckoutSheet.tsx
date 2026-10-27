@@ -14,10 +14,10 @@ import { CustomerPicker } from './CustomerPicker';
 import { showAlert } from './alert';
 
 const METHODS: { key: PaymentMethod; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: 'cash', label: 'Cash', icon: 'cash-outline' },
-  { key: 'card', label: 'Card', icon: 'card-outline' },
-  { key: 'bank', label: 'Transfer', icon: 'swap-horizontal-outline' },
-  { key: 'credit', label: 'Credit', icon: 'time-outline' },
+  { key: 'cash', label: 'Efectivo', icon: 'cash-outline' },
+  { key: 'card', label: 'Tarjeta', icon: 'card-outline' },
+  { key: 'bank', label: 'Transferencia', icon: 'swap-horizontal-outline' },
+  { key: 'credit', label: 'Crédito', icon: 'time-outline' },
 ];
 
 export function CheckoutSheet() {
@@ -69,9 +69,9 @@ export function CheckoutSheet() {
   // Void the whole bill: empty the cart and close. Confirmed so a busy counter
   // doesn't wipe a big order by accident.
   const cancelBill = () => {
-    showAlert('Cancel this bill?', 'This removes all items from the cart.', [
-      { text: 'Keep', style: 'cancel' },
-      { text: 'Cancel bill', style: 'destructive', onPress: () => { cart.clear(); reset(); close(); } },
+    showAlert('¿Cancelar esta venta?', 'Esto quitará todos los artículos del carrito.', [
+      { text: 'Seguir', style: 'cancel' },
+      { text: 'Cancelar venta', style: 'destructive', onPress: () => { cart.clear(); reset(); close(); } },
     ]);
   };
 
@@ -94,7 +94,7 @@ export function CheckoutSheet() {
         <View style={[s.sheet, { backgroundColor: t.panel }]}>
           <View style={[s.grabber, { backgroundColor: t.line }]} />
           <View style={s.head}>
-            <Text style={{ color: t.fg, fontSize: 19, fontWeight: '800' }}>Checkout</Text>
+            <Text style={{ color: t.fg, fontSize: 19, fontWeight: '800' }}>Cobrar</Text>
             <Pressable onPress={onClose} hitSlop={10}><Ionicons name="close" size={24} color={t.muted} /></Pressable>
           </View>
 
@@ -105,8 +105,8 @@ export function CheckoutSheet() {
               <Ionicons name={customer ? 'person' : 'walk-outline'} size={16} color={customer ? t.accentFg : t.muted} />
             </View>
             <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={{ color: t.fg, fontWeight: '700' }}>{customer ? customer.name : 'Walk-in customer'}</Text>
-              {customer && customer.balance > 0 ? <Text style={{ color: t.danger, fontSize: 12 }}>{money(customer.balance as Minor)} due</Text> : null}
+              <Text style={{ color: t.fg, fontWeight: '700' }}>{customer ? customer.name : 'Cliente ocasional'}</Text>
+              {customer && customer.balance > 0 ? <Text style={{ color: t.danger, fontSize: 12 }}>{money(customer.balance as Minor)} pendiente</Text> : null}
             </View>
             <Ionicons name="chevron-down" size={18} color={t.muted} />
           </Pressable>
@@ -135,18 +135,18 @@ export function CheckoutSheet() {
             <Row label="Subtotal" value={money(totals.subtotal)} />
             {discountOn ? (
               <View style={s.infoRow}>
-                <Text style={{ color: t.muted }}>Discount %</Text>
+                <Text style={{ color: t.muted }}>Descuento %</Text>
                 <TextInput value={discountPct} onChangeText={setDiscountPct} keyboardType="decimal-pad" placeholder="0"
                   placeholderTextColor={t.muted} style={{ color: t.accent, fontWeight: '700', textAlign: 'right', minWidth: 60, padding: 0 }} />
               </View>
             ) : (
               <Pressable onPress={() => setDiscountOn(true)} style={s.infoRow}>
-                <Text style={{ color: t.muted }}>Discount</Text>
-                <Text style={{ color: t.accent, fontWeight: '700' }}>Add ›</Text>
+                <Text style={{ color: t.muted }}>Descuento</Text>
+                <Text style={{ color: t.accent, fontWeight: '700' }}>Agregar ›</Text>
               </Pressable>
             )}
-            {totals.discountTotal > 0 && <Row label="You save" value={`− ${money(totals.discountTotal)}`} />}
-            {totals.taxTotal > 0 && <Row label="Tax" value={money(totals.taxTotal)} />}
+            {totals.discountTotal > 0 && <Row label="Ahorras" value={`− ${money(totals.discountTotal)}`} />}
+            {totals.taxTotal > 0 && <Row label="Impuesto" value={money(totals.taxTotal)} />}
             <View style={[s.totalRow, { borderColor: t.line }]}>
               <Text style={{ color: t.fg, fontWeight: '800', fontSize: 21 }}>Total</Text>
               <Text style={{ color: t.accent, fontWeight: '800', fontSize: 21 }}>{money(totals.grandTotal)}</Text>
@@ -154,7 +154,7 @@ export function CheckoutSheet() {
           </View>
 
           {/* payment method */}
-          <Text style={[s.label, { color: t.muted }]}>Payment</Text>
+          <Text style={[s.label, { color: t.muted }]}>Pago</Text>
           <View style={s.methods}>
             {METHODS.map((m) => {
               const on = method === m.key;
@@ -170,7 +170,7 @@ export function CheckoutSheet() {
 
           {isCash && (
             <>
-              <Text style={[s.label, { color: t.muted }]}>Cash received</Text>
+              <Text style={[s.label, { color: t.muted }]}>Efectivo recibido</Text>
               <TextInput value={received} onChangeText={setReceived} keyboardType="decimal-pad" placeholder="0.00"
                 placeholderTextColor={t.muted}
                 style={[s.input, { color: t.fg, borderColor: t.line, backgroundColor: t.bg }]} />
@@ -183,7 +183,7 @@ export function CheckoutSheet() {
                 ))}
               </View>
               <Text style={{ textAlign: 'center', marginTop: 12, color: enough ? t.ok : t.danger, fontWeight: '700' }}>
-                {received ? (enough ? `Change  ${money(change)}` : `Short  ${money((totals.grandTotal - receivedMinor) as Minor)}`) : ' '}
+                {received ? (enough ? `Cambio  ${money(change)}` : `Falta  ${money((totals.grandTotal - receivedMinor) as Minor)}`) : ' '}
               </Text>
             </>
           )}
@@ -193,8 +193,8 @@ export function CheckoutSheet() {
               <Ionicons name="information-circle-outline" size={18} color={t.accent} />
               <Text style={{ color: t.fg, marginLeft: 8, flex: 1 }}>
                 {customer
-                  ? `Charged to ${customer.name}'s account. New balance ${money((customer.balance + totals.grandTotal) as Minor)}.`
-                  : 'Select a customer to record a credit sale.'}
+                  ? `Cargado a la cuenta de ${customer.name}. Nuevo saldo ${money((customer.balance + totals.grandTotal) as Minor)}.`
+                  : 'Selecciona un cliente para registrar una venta a crédito.'}
               </Text>
             </View>
           )}
@@ -205,12 +205,12 @@ export function CheckoutSheet() {
           <Pressable onPress={confirm} disabled={blocked}
             style={[s.primary, { backgroundColor: t.accent, opacity: blocked ? 0.5 : 1 }]}>
             <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>
-              {busy ? 'Recording…' : isCredit ? `Record credit sale · ${money(totals.grandTotal)}` : `Complete sale · ${money(totals.grandTotal)}`}
+              {busy ? 'Registrando…' : isCredit ? `Registrar venta a crédito · ${money(totals.grandTotal)}` : `Completar venta · ${money(totals.grandTotal)}`}
             </Text>
           </Pressable>
           <Pressable onPress={cancelBill} disabled={busy || lines.length === 0} hitSlop={8}
             style={{ alignSelf: 'center', paddingVertical: 12, marginTop: 2 }}>
-            <Text style={{ color: t.danger, fontWeight: '700', fontSize: 15, opacity: busy || lines.length === 0 ? 0.4 : 1 }}>Cancel bill</Text>
+            <Text style={{ color: t.danger, fontWeight: '700', fontSize: 15, opacity: busy || lines.length === 0 ? 0.4 : 1 }}>Cancelar venta</Text>
           </Pressable>
           </View>
         </View>

@@ -26,16 +26,16 @@ function ProductCardBase({ product }: { product: Product }) {
   const out = product.stock <= 0;
   const soldOut = product.stock <= qty;
   const low = !out && isLowStock(product);
-  const unit = product.unit && product.unit !== 'unit' ? product.unit : 'in stock';
+  const unit = product.unit && product.unit !== 'unit' ? product.unit : 'en stock';
 
   return (
     <View style={[s.card, { backgroundColor: t.panel, borderColor: qty > 0 ? t.accent : t.line }]}>
-      <Pressable onPress={() => cart.add(product)} disabled={soldOut} accessibilityLabel={`Add ${product.name}`} style={{ opacity: out ? 0.55 : 1 }}>
+      <Pressable onPress={() => cart.add(product)} disabled={soldOut} accessibilityLabel={`Agregar ${product.name}`} style={{ opacity: out ? 0.55 : 1 }}>
         <View style={[s.imageWrap, { backgroundColor: '#ffffff', borderColor: t.line }]}>
           <Thumb uri={product.image_uri} name={product.name} style={s.image} textSize={26} />
           {(out || low) && (
             <View style={[s.badge, { backgroundColor: out ? t.danger : t.warn }]}>
-              <Text style={s.badgeText}>{out ? 'OUT' : `${product.stock} LEFT`}</Text>
+              <Text style={s.badgeText}>{out ? 'AGOTADO' : 'STOCK BAJO'}</Text>
             </View>
           )}
         </View>
@@ -48,11 +48,11 @@ function ProductCardBase({ product }: { product: Product }) {
 
       {qty > 0 ? (
         <View style={[s.stepper, { borderColor: t.line, backgroundColor: t.surfaceAlt }]}>
-          <Pressable onPress={() => cart.setQty(product.id, qty - 1)} style={s.stepBtn} hitSlop={6} accessibilityLabel="Remove one">
+          <Pressable onPress={() => cart.setQty(product.id, qty - 1)} style={s.stepBtn} hitSlop={6} accessibilityLabel="Quitar uno">
             <Ionicons name="remove" size={20} color={t.fg} />
           </Pressable>
           <Text style={{ color: t.fg, fontWeight: '800', fontSize: 15 }}>{qty}</Text>
-          <Pressable onPress={() => cart.add(product)} disabled={soldOut} style={[s.stepBtn, { opacity: soldOut ? 0.35 : 1 }]} hitSlop={6} accessibilityLabel="Add one">
+          <Pressable onPress={() => cart.add(product)} disabled={soldOut} style={[s.stepBtn, { opacity: soldOut ? 0.35 : 1 }]} hitSlop={6} accessibilityLabel="Agregar uno">
             <Ionicons name="add" size={20} color={t.fg} />
           </Pressable>
         </View>
@@ -60,13 +60,13 @@ function ProductCardBase({ product }: { product: Product }) {
         <Pressable onPress={() => cart.add(product)} disabled={soldOut}
           style={({ pressed }) => [s.addBtn, { backgroundColor: soldOut ? t.surfaceAlt : t.accentSoft, opacity: pressed ? 0.7 : 1 }]}>
           <Ionicons name={soldOut ? 'close' : 'add'} size={16} color={soldOut ? t.muted : t.accent} />
-          <Text style={{ color: soldOut ? t.muted : t.accent, fontWeight: '800', marginLeft: 4, fontSize: 13.5 }}>{soldOut ? 'Out of stock' : 'Add'}</Text>
+          <Text style={{ color: soldOut ? t.muted : t.accent, fontWeight: '800', marginLeft: 4, fontSize: 13.5 }}>{soldOut ? 'Sin stock' : 'Agregar'}</Text>
         </Pressable>
       )}
 
       {canEdit && (
         <Pressable onPress={() => router.push({ pathname: '/add-product', params: { id: product.id } })} hitSlop={12}
-          accessibilityLabel={`Edit ${product.name}`} style={[s.edit, { backgroundColor: t.panel, borderColor: t.line }]}>
+          accessibilityLabel={`Editar ${product.name}`} style={[s.edit, { backgroundColor: t.panel, borderColor: t.line }]}>
           <Ionicons name="create-outline" size={18} color={t.accent} />
         </Pressable>
       )}

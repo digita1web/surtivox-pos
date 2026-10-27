@@ -26,7 +26,7 @@ export function CartBar({ bottom }: { bottom: number }) {
       <Pressable onPress={openCheckout} style={[styles.bar, { backgroundColor: t.accent, boxShadow: t.shadowStrong }]}>
         <View style={styles.count}><Text style={{ color: t.accent, fontWeight: '800', fontSize: 13 }}>{count}</Text></View>
         <Ionicons name="cart-outline" size={20} color={t.accentFg} />
-        <Text style={{ color: t.accentFg, fontWeight: '700', flex: 1, marginLeft: 4 }}>View cart</Text>
+        <Text style={{ color: t.accentFg, fontWeight: '700', flex: 1, marginLeft: 4 }}>Cobrar</Text>
         <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 18 }}>{money(totals.grandTotal)}</Text>
         <Ionicons name="chevron-forward" size={20} color={t.accentFg} />
       </Pressable>

@@ -31,11 +31,11 @@ export function QuickSaleModal() {
     setErr(null);
     try {
       const selling = fromMajorString(price || '0', store.currency_decimals);
-      if (selling <= 0) throw new Error('Enter a price');
+      if (selling <= 0) throw new Error('Ingresa un precio');
       const quantity = Math.max(1, Math.floor(parseFloat(qty || '1')));
       const product: Product = {
         id: `quick-${newId()}`,
-        name: name.trim() || 'Quick item',
+        name: name.trim() || 'Artículo rápido',
         barcode: null,
         image_uri: null,
         selling_price: selling,
@@ -58,22 +58,22 @@ export function QuickSaleModal() {
         <View style={[s.sheet, { backgroundColor: t.panel, paddingBottom: 20 + insets.bottom }]}>
           <View style={[s.grabber, { backgroundColor: t.line }]} />
           <View style={s.head}>
-            <Text style={{ color: t.fg, fontSize: 19, fontWeight: '800' }}>Quick sale</Text>
+            <Text style={{ color: t.fg, fontSize: 19, fontWeight: '800' }}>Venta rápida</Text>
             <Pressable onPress={close} hitSlop={10}><Ionicons name="close" size={24} color={t.muted} /></Pressable>
           </View>
 
-          <Text style={[s.label, { color: t.muted }]}>DESCRIPTION (OPTIONAL)</Text>
-          <TextInput value={name} onChangeText={setName} placeholder="Miscellaneous" placeholderTextColor={t.muted}
+          <Text style={[s.label, { color: t.muted }]}>DESCRIPCIÓN (OPCIONAL)</Text>
+          <TextInput value={name} onChangeText={setName} placeholder="Varios" placeholderTextColor={t.muted}
             style={[s.input, { color: t.fg, borderColor: t.line, backgroundColor: t.bg }]} />
 
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <View style={{ flex: 2 }}>
-              <Text style={[s.label, { color: t.muted }]}>PRICE ({store.currency_code})</Text>
+              <Text style={[s.label, { color: t.muted }]}>PRECIO ({store.currency_code})</Text>
               <TextInput value={price} onChangeText={setPrice} keyboardType="decimal-pad" placeholder="0.00" placeholderTextColor={t.muted}
                 style={[s.input, { color: t.fg, borderColor: t.line, backgroundColor: t.bg }]} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[s.label, { color: t.muted }]}>QTY</Text>
+              <Text style={[s.label, { color: t.muted }]}>CANT.</Text>
               <TextInput value={qty} onChangeText={setQty} keyboardType="number-pad" placeholder="1" placeholderTextColor={t.muted}
                 style={[s.input, { color: t.fg, borderColor: t.line, backgroundColor: t.bg }]} />
             </View>
@@ -82,7 +82,7 @@ export function QuickSaleModal() {
           {err && <Text style={{ color: t.danger, marginTop: 12 }}>{err}</Text>}
 
           <Pressable onPress={add} style={[s.primary, { backgroundColor: t.accent }]}>
-            <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>Add to cart</Text>
+            <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>Agregar al carrito</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
