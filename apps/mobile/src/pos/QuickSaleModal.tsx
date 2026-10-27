@@ -37,6 +37,7 @@ export function QuickSaleModal() {
         id: `quick-${newId()}`,
         name: name.trim() || 'Quick item',
         barcode: null,
+        image_uri: null,
         selling_price: selling,
         cost_price: 0,
         tax_bps: 0,

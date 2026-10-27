@@ -53,7 +53,7 @@ async function connect(): Promise<boolean> {
   }
   const ok = await connecting;
   if (!ok) connecting = null; // let a later call retry
-  return ok;
+  return ok ?? false;
 }
 
 function isUserCancel(err: any, m: any): boolean {

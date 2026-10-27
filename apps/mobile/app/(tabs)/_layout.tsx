@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { View, type ColorValue } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,7 +15,7 @@ export default function TabsLayout() {
   const tabBarHeight = 60 + insets.bottom;
 
   const tab = (name: keyof typeof Ionicons.glyphMap, focusedName: keyof typeof Ionicons.glyphMap) =>
-    ({ focused, color }: { focused: boolean; color: string }) => (
+    ({ focused, color }: { focused: boolean; color: ColorValue }) => (
       <Ionicons name={focused ? focusedName : name} size={23} color={color} />
     );
 

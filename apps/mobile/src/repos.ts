@@ -331,7 +331,7 @@ export async function checkoutSale(
       await db.runAsync(
         `INSERT INTO customer_ledger (id,store_id,customer_id,type,amount,reference_type,reference_id,created_at,device_id)
          VALUES (?,?,?,'sale',?, 'sale', ?, ?, ?)`,
-        [newId(), storeId, opts.customerId, totals.grandTotal, saleId, now, DEVICE_ID],
+        [newId(), storeId, opts.customerId ?? null, totals.grandTotal, saleId, now, DEVICE_ID],
       );
     } else {
       await db.runAsync(

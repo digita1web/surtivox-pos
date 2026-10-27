@@ -39,7 +39,7 @@ export default function Reports() {
   const store = useSession((s) => s.store)!;
   const money = useMoney();
   const [range, setRange] = useState<Range>('today');
-  const [summary, setSummary] = useState<ReportSummary>({ totalSales: 0, transactions: 0, itemsSold: 0, grossProfit: 0, discountTotal: 0 });
+  const [summary, setSummary] = useState<ReportSummary>({ totalSales: 0, transactions: 0, itemsSold: 0, grossProfit: 0, discountTotal: 0, refundTotal: 0 });
   const [payments, setPayments] = useState<PaymentSlice[]>([]);
   const [sellers, setSellers] = useState<BestSeller[]>([]);
   const [lowStock, setLowStock] = useState<LowStockItem[]>([]);

@@ -3,6 +3,8 @@ import type { CurrencyConfig } from '@openpocket/pos-core';
 import { getStore, listStores, setCurrentStore, staffCount, type Store, type Staff } from './repos';
 import type { Role } from './roles';
 
+export type { Store } from './repos';
+
 interface SessionState {
   store: Store | null;
   stores: Store[];         // every shop on this device

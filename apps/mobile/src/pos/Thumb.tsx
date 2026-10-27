@@ -1,4 +1,4 @@
-import { View, Text, type StyleProp, type ViewStyle } from 'react-native';
+import { View, Text, type ImageStyle, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { tileColor, initials } from '../theme';
 
@@ -16,7 +16,7 @@ export function Thumb({ uri, name, style, textSize = 22 }: {
     return (
       <Image
         source={uri}
-        style={[style, { backgroundColor: '#ffffff' }]}
+        style={[style as ImageStyle, { backgroundColor: '#ffffff' }]}
         contentFit="contain"
         transition={150}
         cachePolicy="memory-disk"
