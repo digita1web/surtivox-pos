@@ -23,22 +23,22 @@ export default function More() {
   // Management links gated by the current role. Selling and sales history are
   // available to everyone; the rest need a capability.
   const allItems: { icon: keyof typeof Ionicons.glyphMap; label: string; route: string; show: boolean }[] = [
-    { icon: 'storefront-outline', label: 'Shop profile & receipts', route: '/store-settings', show: can(role, 'shop') },
-    { icon: 'bar-chart-outline', label: 'Reports', route: '/reports', show: can(role, 'reports') },
+    { icon: 'storefront-outline', label: 'Perfil y recibos', route: '/store-settings', show: can(role, 'shop') },
+    { icon: 'bar-chart-outline', label: 'Reportes', route: '/reports', show: can(role, 'reports') },
     { icon: 'sparkles-outline', label: 'Sugerencia de pedido', route: '/reorder', show: can(role, 'reports') },
-    { icon: 'people-outline', label: 'Customers & credit', route: '/customers', show: can(role, 'customers') },
-    { icon: 'business-outline', label: 'Suppliers', route: '/suppliers', show: can(role, 'suppliers') },
-    { icon: 'cart-outline', label: 'Purchases / restock', route: '/purchases', show: can(role, 'purchases') },
-    { icon: 'cube-outline', label: 'All products', route: '/products', show: can(role, 'products') },
-    { icon: 'receipt-outline', label: 'Sales history', route: '/sales', show: true },
-    { icon: 'people-circle-outline', label: 'Staff & roles', route: '/staff', show: can(role, 'staff') },
-    { icon: 'swap-vertical-outline', label: 'Backup & CSV', route: '/data', show: can(role, 'backup') },
+    { icon: 'people-outline', label: 'Clientes y créditos', route: '/customers', show: can(role, 'customers') },
+    { icon: 'business-outline', label: 'Proveedores', route: '/suppliers', show: can(role, 'suppliers') },
+    { icon: 'cart-outline', label: 'Compras / reabastecer', route: '/purchases', show: can(role, 'purchases') },
+    { icon: 'cube-outline', label: 'Todos los productos', route: '/products', show: can(role, 'products') },
+    { icon: 'receipt-outline', label: 'Historial de ventas', route: '/sales', show: true },
+    { icon: 'people-circle-outline', label: 'Personal y roles', route: '/staff', show: can(role, 'staff') },
+    { icon: 'swap-vertical-outline', label: 'Respaldo y CSV', route: '/data', show: can(role, 'backup') },
   ];
   const manage = allItems.filter((m) => m.show);
 
   return (
     <View style={{ flex: 1, backgroundColor: t.bg }}>
-    <TabHeader title="More" />
+    <TabHeader title="Más" />
     <ScrollView {...scrollProps} style={{ flex: 1 }} contentContainerStyle={{ padding: space.lg, paddingBottom: listInset }}>
       <Pressable onPress={() => router.push('/shops')} style={[s.storeCard, { backgroundColor: t.panel, borderColor: t.line }]}>
         {store.logo_uri ? (
@@ -51,7 +51,7 @@ export default function More() {
           {store.tagline ? <Text style={{ color: t.muted, fontSize: 12, marginTop: 1 }} numberOfLines={1}>{store.tagline}</Text> : null}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 }}>
             <Ionicons name="cloud-offline-outline" size={13} color={t.muted} />
-            <Text style={{ color: t.muted, fontSize: 13 }}>{store.currency_code} · {stores.length > 1 ? `${stores.length} shops` : 'works offline'}</Text>
+            <Text style={{ color: t.muted, fontSize: 13 }}>{store.currency_code} · {stores.length > 1 ? `${stores.length} tienda${stores.length === 1 ? '' : 's'}` : 'funciona sin conexión'}</Text>
           </View>
         </View>
         <Ionicons name="swap-horizontal-outline" size={20} color={t.muted} />
@@ -64,18 +64,18 @@ export default function More() {
           </View>
           <View style={{ marginLeft: 12, flex: 1 }}>
             <Text style={{ color: t.fg, fontWeight: '700' }}>{me.name}</Text>
-            <Text style={{ color: t.muted, fontSize: 12 }}>Signed in · {ROLE_LABEL[me.role]}</Text>
+            <Text style={{ color: t.muted, fontSize: 12 }}>Sesión iniciada · {ROLE_LABEL[me.role]}</Text>
           </View>
           <Pressable onPress={signOut} hitSlop={8} style={[s.lockBtn, { borderColor: t.line }]}>
             <Ionicons name="lock-closed-outline" size={15} color={t.fg} />
-            <Text style={{ color: t.fg, fontWeight: '700', fontSize: 13, marginLeft: 5 }}>Lock</Text>
+            <Text style={{ color: t.fg, fontWeight: '700', fontSize: 13, marginLeft: 5 }}>Bloquear</Text>
           </Pressable>
         </View>
       )}
 
       {can(role, 'sync') && (
         <>
-          <Text style={[s.section, { color: t.muted }]}>PLAN</Text>
+          <Text style={[s.section, { color: t.muted }]}>SUSCRIPCIÓN</Text>
           <Pressable
             onPress={() => router.push(cloud.active ? '/cloud-sync' : '/paywall')}
             style={[s.planCard, { backgroundColor: cloud.active ? t.panel : t.accentSoft, borderColor: cloud.active ? t.line : t.accent }]}
@@ -85,20 +85,20 @@ export default function More() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ color: t.fg, fontWeight: '800', fontSize: 15 }}>
-                {cloud.active ? 'Cloud backup · Active' : 'Cloud backup · $2/month'}
+                {cloud.active ? 'Respaldo en la nube · Activo' : 'Respaldo en la nube · Opcional'}
               </Text>
               <Text style={{ color: t.muted, fontSize: 13, marginTop: 1 }}>
-                {cloud.active ? 'Your shop is backed up & syncing' : 'Back up & sync your shop across devices'}
+                {cloud.active ? 'Tu negocio está respaldado y sincronizado' : 'Respalda y sincroniza tu negocio entre dispositivos'}
               </Text>
             </View>
             {cloud.active
               ? <Ionicons name="chevron-forward" size={18} color={t.faint} />
-              : <View style={[s.planCta, { backgroundColor: t.accent }]}><Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 13 }}>Upgrade</Text></View>}
+              : <View style={[s.planCta, { backgroundColor: t.accent }]}><Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 13 }}>Activar</Text></View>}
           </Pressable>
         </>
       )}
 
-      <Text style={[s.section, { color: t.muted }]}>MANAGE</Text>
+      <Text style={[s.section, { color: t.muted }]}>GESTIÓN</Text>
       <Group t={t}>
         {manage.map((m, i) => (
           <Item key={m.route} t={t} icon={m.icon} label={m.label} onPress={() => router.push(m.route as never)} last={i === manage.length - 1} />
@@ -108,11 +108,11 @@ export default function More() {
       <View style={[s.tip, { backgroundColor: t.accentSoft }]}>
         <Ionicons name="print-outline" size={16} color={t.accent} />
         <Text style={{ color: t.fg, marginLeft: 8, flex: 1, fontSize: 12 }}>
-          Print or share a PDF invoice from any receipt or sale. Printing uses your phone's print service — Bluetooth, Wi-Fi and USB printers all work.
+          Imprime o comparte una factura PDF desde cualquier recibo o venta. La impresión usa el servicio de impresión de tu teléfono; funcionan impresoras Bluetooth, Wi-Fi y USB.
         </Text>
       </View>
 
-      <Text style={{ color: t.faint, textAlign: 'center', marginTop: 20, fontSize: 12 }}>OpenPocket POS · v1.0 · offline-first</Text>
+      <Text style={{ color: t.faint, textAlign: 'center', marginTop: 20, fontSize: 12 }}>Surtivox POS · v1.0 · sin conexión</Text>
     </ScrollView>
     </View>
   );
@@ -129,7 +129,7 @@ function Item({ t, icon, label, onPress, muted, last }: { t: Theme; icon: keyof 
         <Ionicons name={icon} size={18} color={muted ? t.muted : t.accent} />
       </View>
       <Text style={{ color: muted ? t.muted : t.fg, fontWeight: '600', flex: 1 }}>{label}</Text>
-      {muted ? <Text style={{ color: t.faint, fontSize: 11, fontWeight: '700' }}>SOON</Text> : <Ionicons name="chevron-forward" size={18} color={t.faint} />}
+      {muted ? <Text style={{ color: t.faint, fontSize: 11, fontWeight: '700' }}>PRONTO</Text> : <Ionicons name="chevron-forward" size={18} color={t.faint} />}
     </Pressable>
   );
 }

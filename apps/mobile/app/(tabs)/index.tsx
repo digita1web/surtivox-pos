@@ -49,27 +49,27 @@ export default function Home() {
     <View style={[s.root, { backgroundColor: t.bg }]}>
       <TabHeader
         title={store.name}
-        subtitle="Welcome back"
+        subtitle="Hola de nuevo"
         right={
           <>
-            <IconButton icon="search-outline" label="Search products" onPress={() => router.push('/products')} />
-            <IconButton icon="scan-outline" label="Scan barcode" onPress={() => router.push('/scan')} />
+            <IconButton icon="search-outline" label="Buscar productos" onPress={() => router.push('/products')} />
+            <IconButton icon="scan-outline" label="Escanear código de barras" onPress={() => router.push('/scan')} />
           </>
         }
       />
       <ScrollView {...scrollProps} style={s.flex} contentContainerStyle={{ padding: space.lg, paddingBottom: listInset }}>
         {/* Today */}
-        <Pressable onPress={() => router.push('/sales')} style={[s.today, { backgroundColor: t.accent }]} accessibilityLabel="Today's sales">
+        <Pressable onPress={() => router.push('/sales')} style={[s.today, { backgroundColor: t.accent }]} accessibilityLabel="Ventas de hoy">
           <View style={s.todayHead}>
-            <Text style={{ color: t.accentFg, fontWeight: '700', fontSize: 14, opacity: 0.9 }}>Today's sales</Text>
+            <Text style={{ color: t.accentFg, fontWeight: '700', fontSize: 14, opacity: 0.9 }}>Ventas de hoy</Text>
             <Ionicons name="chevron-forward" size={18} color={t.accentFg} />
           </View>
           <Text style={{ color: t.accentFg, fontSize: 34, lineHeight: 42, fontWeight: '800', marginTop: 2 }} numberOfLines={1} adjustsFontSizeToFit>
             {money(asMinor(stats.totalSales))}
           </Text>
           <View style={s.todayStats}>
-            <View style={s.todayStat}><Ionicons name="receipt-outline" size={16} color={t.accentFg} /><Text style={s.todayStatTxt}>{stats.orders} {stats.orders === 1 ? 'order' : 'orders'}</Text></View>
-            <View style={s.todayStat}><Ionicons name="cube-outline" size={16} color={t.accentFg} /><Text style={s.todayStatTxt}>{stats.itemsSold} items sold</Text></View>
+            <View style={s.todayStat}><Ionicons name="receipt-outline" size={16} color={t.accentFg} /><Text style={s.todayStatTxt}>{stats.orders} {stats.orders === 1 ? 'pedido' : 'pedidos'}</Text></View>
+            <View style={s.todayStat}><Ionicons name="cube-outline" size={16} color={t.accentFg} /><Text style={s.todayStatTxt}>{stats.itemsSold} artículos vendidos</Text></View>
           </View>
         </Pressable>
 
@@ -80,11 +80,11 @@ export default function Home() {
               <Ionicons name="cloud-upload-outline" size={22} color={t.accentFg} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: t.fg, fontWeight: '800', fontSize: 15 }}>Cloud backup · $2/month</Text>
-              <Text style={{ color: t.muted, fontSize: 13, marginTop: 1 }}>Back up & sync your shop across devices</Text>
+              <Text style={{ color: t.fg, fontWeight: '800', fontSize: 15 }}>Respaldo en la nube · Opcional</Text>
+              <Text style={{ color: t.muted, fontSize: 13, marginTop: 1 }}>Respalda y sincroniza tu negocio entre dispositivos</Text>
             </View>
             <View style={[s.upgradeCta, { backgroundColor: t.accent }]}>
-              <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 13 }}>Upgrade</Text>
+              <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 13 }}>Activar</Text>
             </View>
           </Pressable>
         )}
@@ -96,9 +96,9 @@ export default function Home() {
               <Ionicons name="alert-circle-outline" size={20} color={outCount ? t.danger : t.warn} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: t.fg, fontWeight: '700' }}>Needs attention</Text>
+              <Text style={{ color: t.fg, fontWeight: '700' }}>Requiere atención</Text>
               <Text style={{ color: t.muted, fontSize: 13, marginTop: 1 }}>
-                {[outCount ? `${outCount} out of stock` : null, lowCount ? `${lowCount} running low` : null].filter(Boolean).join(' · ')}
+                {[outCount ? `${outCount} sin stock` : null, lowCount ? `${lowCount} con stock bajo` : null].filter(Boolean).join(' · ')}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={t.faint} />
@@ -106,23 +106,23 @@ export default function Home() {
         )}
 
         {/* Quick actions */}
-        <Text style={[s.section, { color: t.fg }]}>Quick actions</Text>
+        <Text style={[s.section, { color: t.fg }]}>Acciones rápidas</Text>
         <View style={s.actions}>
-          <Action icon="pricetag-outline" label="Quick sale" hint="Sell without a product" onPress={openQuick} t={t} />
+          <Action icon="pricetag-outline" label="Venta rápida" hint="Vende sin producto" onPress={openQuick} t={t} />
           {canProducts
-            ? <Action icon="add-circle-outline" label="Add product" hint="New catalog item" onPress={() => router.push('/add-product')} t={t} />
-            : <Action icon="barcode-outline" label="Scan & sell" hint="Scan a barcode" onPress={() => router.push('/scan')} t={t} />}
+            ? <Action icon="add-circle-outline" label="Agregar producto" hint="Nuevo artículo del catálogo" onPress={() => router.push('/add-product')} t={t} />
+            : <Action icon="barcode-outline" label="Escanear y vender" hint="Escanea un código de barras" onPress={() => router.push('/scan')} t={t} />}
         </View>
 
         {/* Quick products */}
         <View style={s.sectionRow}>
-          <Text style={[s.sectionText, { color: t.fg }]}>Quick products</Text>
-          <Pressable onPress={() => router.push('/products')} hitSlop={8}><Text style={{ color: t.accent, fontWeight: '700' }}>View all</Text></Pressable>
+          <Text style={[s.sectionText, { color: t.fg }]}>Productos frecuentes</Text>
+          <Pressable onPress={() => router.push('/products')} hitSlop={8}><Text style={{ color: t.accent, fontWeight: '700' }}>Ver todo</Text></Pressable>
         </View>
         {strip.length === 0 ? (
           <Pressable onPress={() => router.push('/add-product')} style={[s.empty, { borderColor: t.line }]}>
             <Ionicons name="add-circle-outline" size={22} color={t.muted} />
-            <Text style={{ color: t.muted, marginTop: 6 }}>Add your first product</Text>
+            <Text style={{ color: t.muted, marginTop: 6 }}>Agrega tu primer producto</Text>
           </Pressable>
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.stripScroll} contentContainerStyle={s.strip}>
@@ -133,7 +133,7 @@ export default function Home() {
                 <View key={p.id} style={[s.mini, { backgroundColor: t.panel, borderColor: qty > 0 ? t.accent : t.line }]}>
                   <View style={[s.miniTileWrap, { borderColor: t.line }]}>
                     <Thumb uri={p.image_uri} name={p.name} style={s.miniTile} textSize={18} />
-                    <Pressable onPress={() => cart.add(p)} disabled={soldOut} accessibilityLabel={`Add ${p.name}`}
+                    <Pressable onPress={() => cart.add(p)} disabled={soldOut} accessibilityLabel={`Agregar ${p.name}`}
                       style={[s.plus, { backgroundColor: t.accent, opacity: soldOut ? 0.4 : 1 }]}>
                       {qty > 0 ? <Text style={{ color: t.accentFg, fontWeight: '800' }}>{qty}</Text> : <Ionicons name="add" size={18} color={t.accentFg} />}
                     </Pressable>

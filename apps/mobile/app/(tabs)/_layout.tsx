@@ -37,8 +37,8 @@ export default function TabsLayout() {
           tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 2 },
         }}
       >
-        <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: tab('home-outline', 'home') }} />
-        <Tabs.Screen name="products" options={{ title: 'Products', tabBarIcon: tab('cube-outline', 'cube') }} />
+        <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: tab('home-outline', 'home') }} />
+        <Tabs.Screen name="products" options={{ title: 'Productos', tabBarIcon: tab('cube-outline', 'cube') }} />
         <Tabs.Screen
           name="newsale"
           options={{
@@ -51,8 +51,8 @@ export default function TabsLayout() {
           }}
           listeners={{ tabPress: (e) => { e.preventDefault(); router.push('/scan'); } }}
         />
-        <Tabs.Screen name="sales" options={{ title: 'Sales', tabBarIcon: tab('receipt-outline', 'receipt') }} />
-        <Tabs.Screen name="more" options={{ title: 'More', tabBarIcon: tab('ellipsis-horizontal', 'ellipsis-horizontal') }} />
+        <Tabs.Screen name="sales" options={{ title: 'Ventas', tabBarIcon: tab('receipt-outline', 'receipt') }} />
+        <Tabs.Screen name="more" options={{ title: 'Más', tabBarIcon: tab('ellipsis-horizontal', 'ellipsis-horizontal') }} />
       </Tabs>
 
       <CartBar bottom={tabBarHeight + 10} />
