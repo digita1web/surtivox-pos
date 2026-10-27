@@ -1,12 +1,13 @@
 import { View, Text, Pressable, ScrollView, Image, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession, useRole } from '../../src/session';
 import { can, ROLE_LABEL } from '../../src/roles';
 import { useCloudEntitlement } from '../../src/subscription';
 import { useTheme, initials, space, radius, type Theme } from '../../src/theme';
 import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
+import { getReminderCount } from '../../src/fiadoReminderStorage';
 
 export default function More() {
   const t = useTheme();
@@ -18,7 +19,11 @@ export default function More() {
   const signOut = useSession((s) => s.signOut);
   const role = useRole();
   const cloud = useCloudEntitlement();
-  useFocusEffect(useCallback(() => { cloud.refresh(); }, [cloud.refresh]));
+  const [reminderCount, setReminderCount] = useState(0);
+  useFocusEffect(useCallback(() => {
+    cloud.refresh();
+    getReminderCount().then(setReminderCount);
+  }, [cloud.refresh]));
 
   // Management links gated by the current role. Selling and sales history are
   // available to everyone; the rest need a capability.
@@ -104,6 +109,13 @@ export default function More() {
           <Item key={m.route} t={t} icon={m.icon} label={m.label} onPress={() => router.push(m.route as never)} last={i === manage.length - 1} />
         ))}
       </Group>
+
+      <View style={[s.tip, { backgroundColor: t.accentSoft }]}>
+        <Ionicons name="logo-whatsapp" size={16} color={t.accent} />
+        <Text style={{ color: t.fg, marginLeft: 8, flex: 1, fontSize: 12 }}>
+          Recordatorios enviados: {reminderCount}
+        </Text>
+      </View>
 
       <View style={[s.tip, { backgroundColor: t.accentSoft }]}>
         <Ionicons name="print-outline" size={16} color={t.accent} />

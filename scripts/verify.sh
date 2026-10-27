@@ -12,7 +12,7 @@ if [ "$status" -ne 0 ]; then
   exit "$status"
 fi
 
-node --test src/fiadoReminder.test.ts
+node --test "src/**/*.test.ts"
 status=$?
 
 if [ "$status" -ne 0 ]; then

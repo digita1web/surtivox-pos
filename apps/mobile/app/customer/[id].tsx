@@ -12,6 +12,7 @@ import { Screen, listProps } from '../../src/pos/Screen';
 import { PrimaryButton } from '../../src/pos/kit';
 import { showAlert } from '../../src/pos/alert';
 import { buildFiadoReminderUrl, normalizeWhatsAppPhone } from '../../src/fiadoReminder';
+import { incrementReminderCount } from '../../src/fiadoReminderStorage';
 
 const LEDGER_META: Record<LedgerEntry['type'], { label: string; icon: keyof typeof Ionicons.glyphMap }> = {
   sale: { label: 'Venta fiada', icon: 'cart-outline' },
@@ -51,7 +52,9 @@ export default function CustomerDetail() {
       return;
     }
     const url = buildFiadoReminderUrl(customer.name, money(asMinor(customer.balance)), phone);
-    Linking.openURL(url).catch((e) => showAlert('No se pudo abrir WhatsApp', e instanceof Error ? e.message : String(e)));
+    Linking.openURL(url)
+      .then(() => incrementReminderCount())
+      .catch((e) => showAlert('No se pudo abrir WhatsApp', e instanceof Error ? e.message : String(e)));
   };
 
   return (
