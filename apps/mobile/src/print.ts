@@ -65,7 +65,7 @@ export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: stri
 
   const payLine = r.received != null
     ? totalRow(`Paid · ${r.paymentLabel}`, m(r.received), 'pay') + (r.change != null ? totalRow('Change', m(r.change), 'pay') : '')
-    : totalRow(`On account · ${r.paymentLabel}`, m(r.grandTotal), 'pay');
+    : totalRow(`A cuenta · ${r.paymentLabel}`, m(r.grandTotal), 'pay');
 
   const totals = `
     ${totalRow('Subtotal', m(r.subtotal))}

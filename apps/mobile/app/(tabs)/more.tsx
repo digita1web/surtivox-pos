@@ -26,7 +26,7 @@ export default function More() {
     { icon: 'storefront-outline', label: 'Perfil y recibos', route: '/store-settings', show: can(role, 'shop') },
     { icon: 'bar-chart-outline', label: 'Reportes', route: '/reports', show: can(role, 'reports') },
     { icon: 'sparkles-outline', label: 'Sugerencia de pedido', route: '/reorder', show: can(role, 'reports') },
-    { icon: 'people-outline', label: 'Clientes y créditos', route: '/customers', show: can(role, 'customers') },
+    { icon: 'people-outline', label: 'Clientes y fiados', route: '/customers', show: can(role, 'customers') },
     { icon: 'business-outline', label: 'Proveedores', route: '/suppliers', show: can(role, 'suppliers') },
     { icon: 'cart-outline', label: 'Compras / reabastecer', route: '/purchases', show: can(role, 'purchases') },
     { icon: 'cube-outline', label: 'Todos los productos', route: '/products', show: can(role, 'products') },

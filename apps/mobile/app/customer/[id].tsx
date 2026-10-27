@@ -12,10 +12,10 @@ import { Screen, listProps } from '../../src/pos/Screen';
 import { PrimaryButton } from '../../src/pos/kit';
 
 const LEDGER_META: Record<LedgerEntry['type'], { label: string; icon: keyof typeof Ionicons.glyphMap }> = {
-  sale: { label: 'Credit sale', icon: 'cart-outline' },
-  payment: { label: 'Payment received', icon: 'cash-outline' },
-  refund: { label: 'Refund', icon: 'arrow-undo-outline' },
-  adjustment: { label: 'Adjustment', icon: 'create-outline' },
+  sale: { label: 'Venta fiada', icon: 'cart-outline' },
+  payment: { label: 'Pago recibido', icon: 'cash-outline' },
+  refund: { label: 'Devolución', icon: 'arrow-undo-outline' },
+  adjustment: { label: 'Ajuste', icon: 'create-outline' },
 };
 
 export default function CustomerDetail() {
@@ -35,10 +35,10 @@ export default function CustomerDetail() {
   }, [id]);
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
 
-  if (!customer) return <Screen title="Customer" scroll={false}><View /></Screen>;
+  if (!customer) return <Screen title="Cliente" scroll={false}><View /></Screen>;
 
   const payFooter = customer.balance > 0 ? (
-    <PrimaryButton label="Record payment" icon="cash-outline" onPress={() => setPayOpen(true)} />
+    <PrimaryButton label="Registrar pago" icon="cash-outline" onPress={() => setPayOpen(true)} />
   ) : undefined;
 
   return (
@@ -55,7 +55,7 @@ export default function CustomerDetail() {
                 <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 18 }}>{initials(customer.name)}</Text>
               </View>
               <Text style={{ color: customer.balance > 0 ? t.accentFg : t.muted, marginTop: 12, fontSize: 13 }}>
-                {customer.balance > 0 ? 'Outstanding balance' : 'Balance'}
+                {customer.balance > 0 ? 'Saldo pendiente' : 'Saldo'}
               </Text>
               <Text style={{ color: customer.balance > 0 ? t.accentFg : t.fg, fontSize: 30, fontWeight: '800', marginTop: 2 }}>
                 {money(asMinor(customer.balance))}
@@ -68,10 +68,10 @@ export default function CustomerDetail() {
               ) : null}
             </View>
 
-            <Text style={[ty.h2, s.section, { color: t.fg }]}>Ledger</Text>
+            <Text style={[ty.h2, s.section, { color: t.fg }]}>Historial</Text>
           </>
         }
-        ListEmptyComponent={<Text style={[ty.body, { color: t.muted, textAlign: 'center', marginTop: space.xl }]}>No transactions yet.</Text>}
+        ListEmptyComponent={<Text style={[ty.body, { color: t.muted, textAlign: 'center', marginTop: space.xl }]}>Aún no hay movimientos.</Text>}
         ItemSeparatorComponent={() => <View style={{ height: space.sm }} />}
         renderItem={({ item }) => {
           const meta = LEDGER_META[item.type];
@@ -122,19 +122,19 @@ function PaymentModal({ visible, onClose, onSubmit, t, max, decimals }: {
         <View style={[s.sheet, { backgroundColor: t.panel, paddingBottom: insets.bottom + space.xl }]}>
           <View style={[s.grabber, { backgroundColor: t.line }]} />
           <View style={s.headRow}>
-            <Text style={{ color: t.fg, fontSize: 19, fontWeight: '800' }}>Record payment</Text>
+            <Text style={{ color: t.fg, fontSize: 19, fontWeight: '800' }}>Registrar pago</Text>
             <Pressable onPress={onClose} hitSlop={10}><Ionicons name="close" size={24} color={t.muted} /></Pressable>
           </View>
-          <Text style={{ color: t.muted, marginTop: 4 }}>Balance due {money(asMinor(max))}</Text>
+          <Text style={{ color: t.muted, marginTop: 4 }}>Saldo pendiente {money(asMinor(max))}</Text>
           <TextInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" placeholderTextColor={t.muted}
             style={[s.input, { color: t.fg, borderColor: t.line, backgroundColor: t.bg }]} />
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <Pressable onPress={() => setAmount((max / 10 ** decimals).toFixed(decimals))} style={[s.pill, { borderColor: t.line, backgroundColor: t.surfaceAlt }]}>
-              <Text style={{ color: t.fg, fontWeight: '600' }}>Pay full · {money(asMinor(max))}</Text>
+              <Text style={{ color: t.fg, fontWeight: '600' }}>Pagar todo · {money(asMinor(max))}</Text>
             </Pressable>
           </View>
           <Pressable onPress={submit} disabled={!valid || busy} style={[s.primary, { backgroundColor: t.accent, opacity: !valid || busy ? 0.5 : 1 }]}>
-            <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>{busy ? 'Saving…' : 'Confirm payment'}</Text>
+            <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>{busy ? 'Guardando…' : 'Confirmar pago'}</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>

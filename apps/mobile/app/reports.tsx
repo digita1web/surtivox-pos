@@ -14,7 +14,7 @@ import { useSession } from '../src/session';
 import { useMoney } from '../src/pos/ui';
 import { useTheme, space, radius, type Theme } from '../src/theme';
 
-const PAYMENT_LABEL_ES: Record<string, string> = { cash: 'Efectivo', card: 'Tarjeta', bank: 'Transferencia', credit: 'Crédito' };
+const PAYMENT_LABEL_ES: Record<string, string> = { cash: 'Efectivo', card: 'Tarjeta', wallet: 'Nequi / Daviplata', bank: 'Transferencia', credit: 'Fiado' };
 
 type Range = 'today' | 'week' | 'month';
 const RANGES: { key: Range; label: string }[] = [
@@ -30,6 +30,7 @@ function since(range: Range): number {
 const PM: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string }> = {
   cash: { icon: 'cash-outline', color: '#12b76a' },
   card: { icon: 'card-outline', color: '#3b82f6' },
+  wallet: { icon: 'wallet-outline', color: '#7c3aed' },
   bank: { icon: 'swap-horizontal-outline', color: '#8b5cf6' },
   credit: { icon: 'time-outline', color: '#f79009' },
 };
@@ -132,7 +133,7 @@ export default function Reports() {
           <Pressable onPress={() => router.push('/customers')} style={[s.creditCard, { backgroundColor: t.panel, borderColor: t.line }]}>
             <View style={[s.rank, { backgroundColor: t.warn + '22' }]}><Ionicons name="time-outline" size={18} color={t.warn} /></View>
             <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={{ color: t.fg, fontWeight: '700' }}>Crédito pendiente</Text>
+              <Text style={{ color: t.fg, fontWeight: '700' }}>Fiado pendiente</Text>
               <Text style={{ color: t.muted, fontSize: 12 }}>{credit.customersWithBalance} cliente{credit.customersWithBalance === 1 ? '' : 's'}</Text>
             </View>
             <Text style={{ color: t.warn, fontWeight: '800' }}>{money(asMinor(credit.totalOwed))}</Text>

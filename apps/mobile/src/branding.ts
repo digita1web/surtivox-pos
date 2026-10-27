@@ -50,22 +50,24 @@ export function normalizeUrl(v: string): string {
   return v.trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '');
 }
 
-/** Currencies offered at setup. Locales are English variants so digits stay Latin everywhere. */
-export const CURRENCIES: { code: string; locale: string; name: string }[] = [
-  { code: 'USD', locale: 'en-US', name: 'US dollar' },
-  { code: 'EUR', locale: 'en-IE', name: 'Euro' },
-  { code: 'GBP', locale: 'en-GB', name: 'British pound' },
-  { code: 'CAD', locale: 'en-CA', name: 'Canadian dollar' },
-  { code: 'AUD', locale: 'en-AU', name: 'Australian dollar' },
-  { code: 'INR', locale: 'en-IN', name: 'Indian rupee' },
-  { code: 'AED', locale: 'en-AE', name: 'UAE dirham' },
-  { code: 'SAR', locale: 'en-SA', name: 'Saudi riyal' },
-  { code: 'ZAR', locale: 'en-ZA', name: 'South African rand' },
-  { code: 'PKR', locale: 'en-PK', name: 'Pakistani rupee' },
+type CurrencyOption = { code: string; locale: string; name: string; decimals: number; symbol: string };
+
+export const CURRENCIES: CurrencyOption[] = [
+  { code: 'COP', locale: 'es-CO', name: 'Peso colombiano', decimals: 0, symbol: '$' },
+  { code: 'USD', locale: 'en-US', name: 'US dollar', decimals: 2, symbol: '$' },
+  { code: 'EUR', locale: 'en-IE', name: 'Euro', decimals: 2, symbol: '€' },
+  { code: 'GBP', locale: 'en-GB', name: 'British pound', decimals: 2, symbol: '£' },
+  { code: 'CAD', locale: 'en-CA', name: 'Canadian dollar', decimals: 2, symbol: 'CA$' },
+  { code: 'AUD', locale: 'en-AU', name: 'Australian dollar', decimals: 2, symbol: 'A$' },
+  { code: 'INR', locale: 'en-IN', name: 'Indian rupee', decimals: 2, symbol: '₹' },
+  { code: 'AED', locale: 'en-AE', name: 'UAE dirham', decimals: 2, symbol: 'AED' },
+  { code: 'SAR', locale: 'en-SA', name: 'Saudi riyal', decimals: 2, symbol: 'SAR' },
+  { code: 'ZAR', locale: 'en-ZA', name: 'South African rand', decimals: 2, symbol: 'R' },
+  { code: 'PKR', locale: 'en-PK', name: 'Pakistani rupee', decimals: 2, symbol: 'PKR' },
 ];
 
 const EURO_REGIONS = new Set(['DE', 'FR', 'ES', 'IT', 'NL', 'BE', 'AT', 'IE', 'PT', 'FI', 'GR', 'LU', 'SK', 'SI', 'EE', 'LV', 'LT', 'MT', 'CY', 'HR']);
-const REGION_CURRENCY: Record<string, string> = { US: 'USD', CA: 'CAD', GB: 'GBP', AU: 'AUD', IN: 'INR', AE: 'AED', SA: 'SAR', ZA: 'ZAR', PK: 'PKR' };
+const REGION_CURRENCY: Record<string, string> = { CO: 'COP', US: 'USD', CA: 'CAD', GB: 'GBP', AU: 'AUD', IN: 'INR', AE: 'AED', SA: 'SAR', ZA: 'ZAR', PK: 'PKR' };
 
 /** Best-guess setup currency from a device locale tag such as "en-GB". Falls back to USD. */
 export function defaultCurrencyFor(localeTag: string | null | undefined): string {
@@ -75,6 +77,11 @@ export function defaultCurrencyFor(localeTag: string | null | undefined): string
   return REGION_CURRENCY[region] ?? 'USD';
 }
 
+export function currencyConfigFor(code: string): { code: string; locale: string; decimals: number } {
+  const c = CURRENCIES.find((x) => x.code === code);
+  return { code: c?.code ?? 'USD', locale: c?.locale ?? 'en-US', decimals: c?.decimals ?? 2 };
+}
+
 export function localeForCurrency(code: string): string {
-  return CURRENCIES.find((c) => c.code === code)?.locale ?? 'en-US';
+  return currencyConfigFor(code).locale;
 }

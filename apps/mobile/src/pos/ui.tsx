@@ -9,7 +9,7 @@ export function useMoney(): (m: Minor) => string {
   return (m: Minor) => (store ? format(m, currencyOf(store)) : '');
 }
 
-export const PAYMENT_LABEL: Record<string, string> = { cash: 'Cash', card: 'Card', bank: 'Transfer', credit: 'Credit' };
+export const PAYMENT_LABEL: Record<string, string> = { cash: 'Efectivo', card: 'Tarjeta', wallet: 'Nequi / Daviplata', bank: 'Transferencia', credit: 'Fiado' };
 
 /** Label/value row used in the checkout sheet and receipt. */
 export function Row({ label, value }: { label: string; value: string }) {

@@ -10,7 +10,7 @@ import { TabHeader, listProps, useTabListInset } from '../../src/pos/Screen';
 import { SearchField, Chip, ChipRow, ChipDivider, EmptyState } from '../../src/pos/kit';
 import { useTheme, space, radius } from '../../src/theme';
 
-const PAYMENT_LABEL_ES: Record<string, string> = { cash: 'Efectivo', card: 'Tarjeta', bank: 'Transferencia', credit: 'Crédito' };
+const PAYMENT_LABEL_ES: Record<string, string> = { cash: 'Efectivo', card: 'Tarjeta', wallet: 'Nequi / Daviplata', bank: 'Transferencia', credit: 'Fiado' };
 
 function when(ts: number): string {
   const d = new Date(ts);
@@ -31,7 +31,8 @@ const METHODS: { key: string; label: string }[] = [
   { key: 'cash', label: 'Efectivo' },
   { key: 'card', label: 'Tarjeta' },
   { key: 'bank', label: 'Transferencia' },
-  { key: 'credit', label: 'Crédito' },
+  { key: 'wallet', label: 'Nequi / Daviplata' },
+  { key: 'credit', label: 'Fiado' },
 ];
 
 function sinceFor(range: Range): number | undefined {

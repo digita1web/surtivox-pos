@@ -35,24 +35,24 @@ export default function Customers() {
 
   return (
     <Screen
-      title="Customers"
+      title="Clientes"
       scroll={false}
-      right={<IconButton icon="person-add-outline" label="Add customer" filled onPress={() => router.push('/add-customer')} />}
+      right={<IconButton icon="person-add-outline" label="Agregar cliente" filled onPress={() => router.push('/add-customer')} />}
     >
       <View style={s.pinned}>
         {outstanding.totalOwed > 0 && (
           <View style={[s.summary, { backgroundColor: t.accent }]}>
             <View>
-              <Text style={{ color: t.accentFg, opacity: 0.9, fontSize: 12 }}>Outstanding credit</Text>
+              <Text style={{ color: t.accentFg, opacity: 0.9, fontSize: 12 }}>Fiado pendiente</Text>
               <Text style={{ color: t.accentFg, fontSize: 24, fontWeight: '800', marginTop: 2 }}>{money(asMinor(outstanding.totalOwed))}</Text>
             </View>
-            <Text style={{ color: t.accentFg, opacity: 0.9 }}>{outstanding.customersWithBalance} customer{outstanding.customersWithBalance === 1 ? '' : 's'}</Text>
+            <Text style={{ color: t.accentFg, opacity: 0.9 }}>{outstanding.customersWithBalance} cliente{outstanding.customersWithBalance === 1 ? '' : 's'}</Text>
           </View>
         )}
-        <SearchField value={q} onChangeText={setQ} placeholder="Search name or phone" />
+        <SearchField value={q} onChangeText={setQ} placeholder="Buscar nombre o teléfono" />
         <ChipRow>
-          <Chip label="All" on={!onlyDebt} onPress={() => setOnlyDebt(false)} />
-          <Chip label="Owes credit" on={onlyDebt} onPress={() => setOnlyDebt(true)} />
+          <Chip label="Todos" on={!onlyDebt} onPress={() => setOnlyDebt(false)} />
+          <Chip label="Debe fiado" on={onlyDebt} onPress={() => setOnlyDebt(true)} />
         </ChipRow>
       </View>
 
@@ -62,7 +62,7 @@ export default function Customers() {
         keyExtractor={(c) => c.id}
         contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: insets.bottom + space.xxl, flexGrow: 1 }}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-        ListEmptyComponent={<EmptyState icon="people-outline" title="No customers yet" hint="Add regulars to track credit." />}
+        ListEmptyComponent={<EmptyState icon="people-outline" title="Aún no hay clientes" hint="Agrega clientes frecuentes para llevar el fiado." />}
         renderItem={({ item }) => (
           <Pressable onPress={() => router.push(`/customer/${item.id}`)} style={[s.row, { backgroundColor: t.panel, borderColor: t.line }]}>
             <View style={[s.avatar, { backgroundColor: t.accent }]}><Text style={{ color: t.accentFg, fontWeight: '800' }}>{initials(item.name)}</Text></View>
@@ -72,7 +72,7 @@ export default function Customers() {
             </View>
             {item.balance > 0
               ? <Text style={{ color: t.danger, fontWeight: '800' }}>{money(item.balance as Minor)}</Text>
-              : <Text style={{ color: t.muted, fontSize: 12 }}>Settled</Text>}
+              : <Text style={{ color: t.muted, fontSize: 12 }}>Al día</Text>}
           </Pressable>
         )}
       />

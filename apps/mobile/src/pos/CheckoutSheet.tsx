@@ -13,12 +13,18 @@ import { Row, useMoney } from './ui';
 import { CustomerPicker } from './CustomerPicker';
 import { showAlert } from './alert';
 
-const METHODS: { key: PaymentMethod; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: 'cash', label: 'Efectivo', icon: 'cash-outline' },
-  { key: 'card', label: 'Tarjeta', icon: 'card-outline' },
-  { key: 'bank', label: 'Transferencia', icon: 'swap-horizontal-outline' },
-  { key: 'credit', label: 'Crédito', icon: 'time-outline' },
+type MethodKey = 'cash' | 'card' | 'bank' | 'nequi' | 'daviplata' | 'credit';
+
+const METHODS: { key: MethodKey; paymentMethod: PaymentMethod; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: 'cash', paymentMethod: 'cash', label: 'Efectivo', icon: 'cash-outline' },
+  { key: 'card', paymentMethod: 'card', label: 'Tarjeta', icon: 'card-outline' },
+  { key: 'bank', paymentMethod: 'bank', label: 'Transferencia', icon: 'swap-horizontal-outline' },
+  { key: 'nequi', paymentMethod: 'wallet', label: 'Nequi', icon: 'wallet-outline' },
+  { key: 'daviplata', paymentMethod: 'wallet', label: 'Daviplata', icon: 'phone-portrait-outline' },
+  { key: 'credit', paymentMethod: 'credit', label: 'Fiado', icon: 'time-outline' },
 ];
+
+const COP_CASH_STEPS: readonly Minor[] = [1000, 2000, 5000, 10000, 20000, 50000, 100000].map((n) => asMinor(n));
 
 export function CheckoutSheet() {
   const t = useTheme();
@@ -31,7 +37,7 @@ export function CheckoutSheet() {
   const close = useCheckoutUI((s) => s.closeCheckout);
   const showReceipt = useCheckoutUI((s) => s.showReceipt);
 
-  const [method, setMethod] = useState<PaymentMethod>('cash');
+  const [method, setMethod] = useState<MethodKey>('cash');
   const [received, setReceived] = useState('');
   const [discountOn, setDiscountOn] = useState(false);
   const [discountPct, setDiscountPct] = useState('');
@@ -50,15 +56,17 @@ export function CheckoutSheet() {
     discountBps > 0 ? { kind: 'percent', bps: asBps(discountBps) } : { kind: 'none' },
   );
 
-  const isCash = method === 'cash';
-  const isCredit = method === 'credit';
+  const paymentMethod = METHODS.find((m) => m.key === method)?.paymentMethod ?? 'cash';
+  const isCash = paymentMethod === 'cash';
+  const isCredit = paymentMethod === 'credit';
   const receivedMinor = (() => {
     if (!isCash) return totals.grandTotal;
     try { return received ? fromMajorString(received, currency.decimals) : asMinor(0); } catch { return asMinor(0); }
   })();
   const enough = receivedMinor >= totals.grandTotal;
   const change = enough ? ((receivedMinor - totals.grandTotal) as Minor) : asMinor(0);
-  const suggestions = suggestCashAmounts(totals.grandTotal, cashSuggestionSteps(totals.grandTotal, currency.decimals)).slice(0, 5);
+  const cashSteps = currency.code === 'COP' ? COP_CASH_STEPS : cashSuggestionSteps(totals.grandTotal, currency.decimals);
+  const suggestions = suggestCashAmounts(totals.grandTotal, cashSteps).slice(0, 5);
   const blocked = lines.length === 0 || (isCash && !enough) || (isCredit && !customer) || busy;
 
   const reset = () => { setReceived(''); setDiscountOn(false); setDiscountPct(''); setMethod('cash'); setCustomer(null); };
@@ -80,7 +88,7 @@ export function CheckoutSheet() {
     setBusy(true);
     try {
       const receipt = await checkoutSale(store.id, lines, {
-        paymentMethod: method, received: receivedMinor, discountBps, customerId: customer?.id ?? null, staffId: staff?.id ?? null,
+        paymentMethod, received: receivedMinor, discountBps, customerId: customer?.id ?? null, staffId: staff?.id ?? null,
       });
       cart.clear();
       reset();
@@ -194,7 +202,7 @@ export function CheckoutSheet() {
               <Text style={{ color: t.fg, marginLeft: 8, flex: 1 }}>
                 {customer
                   ? `Cargado a la cuenta de ${customer.name}. Nuevo saldo ${money((customer.balance + totals.grandTotal) as Minor)}.`
-                  : 'Selecciona un cliente para registrar una venta a crédito.'}
+                  : 'Selecciona un cliente para registrar una venta fiada.'}
               </Text>
             </View>
           )}
@@ -205,7 +213,7 @@ export function CheckoutSheet() {
           <Pressable onPress={confirm} disabled={blocked}
             style={[s.primary, { backgroundColor: t.accent, opacity: blocked ? 0.5 : 1 }]}>
             <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>
-              {busy ? 'Registrando…' : isCredit ? `Registrar venta a crédito · ${money(totals.grandTotal)}` : `Completar venta · ${money(totals.grandTotal)}`}
+              {busy ? 'Registrando…' : isCredit ? `Registrar venta fiada · ${money(totals.grandTotal)}` : `Completar venta · ${money(totals.grandTotal)}`}
             </Text>
           </Pressable>
           <Pressable onPress={cancelBill} disabled={busy || lines.length === 0} hitSlop={8}
@@ -239,8 +247,8 @@ const s = StyleSheet.create({
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, marginTop: 8, paddingTop: 10 },
   label: { fontSize: 13, fontWeight: '600', marginTop: 16, marginBottom: 8 },
-  methods: { flexDirection: 'row', gap: 10 },
-  method: { flex: 1, borderWidth: 1, borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
+  methods: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  method: { flexBasis: '30%', flexGrow: 1, borderWidth: 1, borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
   input: { borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 24, fontWeight: '700' },
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
   pill: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10 },

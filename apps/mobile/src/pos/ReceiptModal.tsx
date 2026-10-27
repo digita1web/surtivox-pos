@@ -24,8 +24,8 @@ export function ReceiptModal() {
     received: isCredit ? undefined : receipt.received, change: isCredit ? undefined : receipt.change,
     staffName: staff?.name,
   });
-  const share = () => shareInvoicePdf(store, printable()).catch((e) => showAlert('Share failed', e instanceof Error ? e.message : String(e)));
-  const print = () => printInvoice(store, printable()).catch((e) => showAlert('Print failed', e instanceof Error ? e.message : String(e)));
+  const share = () => shareInvoicePdf(store, printable()).catch((e) => showAlert('No se pudo compartir', e instanceof Error ? e.message : String(e)));
+  const print = () => printInvoice(store, printable()).catch((e) => showAlert('No se pudo imprimir', e instanceof Error ? e.message : String(e)));
 
   return (
     <Modal visible animationType="fade" transparent onRequestClose={clear}>
@@ -39,7 +39,7 @@ export function ReceiptModal() {
           ) : (
             <View style={[s.check, { backgroundColor: t.accent }]}><Ionicons name="checkmark" size={30} color={t.accentFg} /></View>
           )}
-          <Text style={{ color: t.fg, fontSize: 19, fontWeight: '800', textAlign: 'center' }}>Sale complete</Text>
+          <Text style={{ color: t.fg, fontSize: 19, fontWeight: '800', textAlign: 'center' }}>Venta completada</Text>
           <Text style={{ color: t.muted, fontSize: 12, marginBottom: 16, textAlign: 'center' }}>{store.name} · {receipt.invoiceNo}</Text>
 
           {receipt.lines.map((l, i) => (
@@ -47,34 +47,34 @@ export function ReceiptModal() {
           ))}
           <View style={[s.dashed, { borderColor: t.line }]} />
           <Row label="Subtotal" value={money(receipt.subtotal)} />
-          {receipt.discountTotal > 0 && <Row label="Discount" value={`− ${money(receipt.discountTotal)}`} />}
-          {receipt.taxTotal > 0 && <Row label="Tax" value={money(receipt.taxTotal)} />}
+          {receipt.discountTotal > 0 && <Row label="Descuento" value={`− ${money(receipt.discountTotal)}`} />}
+          {receipt.taxTotal > 0 && <Row label="Impuesto" value={money(receipt.taxTotal)} />}
           <View style={s.totalRow}>
             <Text style={{ color: t.fg, fontWeight: '800', fontSize: 18 }}>Total</Text>
             <Text style={{ color: t.fg, fontWeight: '800', fontSize: 18 }}>{money(receipt.grandTotal)}</Text>
           </View>
           <View style={[s.dashed, { borderColor: t.line }]} />
           {receipt.paymentMethod === 'credit' ? (
-            <Row label="On account · Credit" value={money(receipt.grandTotal)} />
+            <Row label="A cuenta · Fiado" value={money(receipt.grandTotal)} />
           ) : (
             <>
-              <Row label={`Paid · ${PAYMENT_LABEL[receipt.paymentMethod]}`} value={money(receipt.received)} />
-              <Row label="Change" value={money(receipt.change)} />
+              <Row label={`Pagado · ${PAYMENT_LABEL[receipt.paymentMethod]}`} value={money(receipt.received)} />
+              <Row label="Cambio" value={money(receipt.change)} />
             </>
           )}
 
           <View style={s.actions}>
             <Pressable onPress={print} style={[s.ghost, { borderColor: t.line }]}>
               <Ionicons name="print-outline" size={18} color={t.fg} />
-              <Text style={{ color: t.fg, fontWeight: '700', marginLeft: 6 }}>Print</Text>
+              <Text style={{ color: t.fg, fontWeight: '700', marginLeft: 6 }}>Imprimir</Text>
             </Pressable>
             <Pressable onPress={share} style={[s.ghost, { borderColor: t.line }]}>
               <Ionicons name="share-outline" size={18} color={t.fg} />
-              <Text style={{ color: t.fg, fontWeight: '700', marginLeft: 6 }}>Share</Text>
+              <Text style={{ color: t.fg, fontWeight: '700', marginLeft: 6 }}>Compartir</Text>
             </Pressable>
           </View>
           <Pressable onPress={clear} style={[s.primary, { backgroundColor: t.accent }]}>
-            <Text style={{ color: t.accentFg, fontWeight: '800' }}>New sale</Text>
+            <Text style={{ color: t.accentFg, fontWeight: '800' }}>Nueva venta</Text>
           </Pressable>
         </View>
       </View>

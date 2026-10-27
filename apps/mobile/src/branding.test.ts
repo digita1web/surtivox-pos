@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { safeAccent, onAccent, contactLines, shopInitials, normalizeUrl, DEFAULT_ACCENT, defaultCurrencyFor, localeForCurrency, CURRENCIES } from './branding.ts';
+import { safeAccent, onAccent, contactLines, shopInitials, normalizeUrl, DEFAULT_ACCENT, defaultCurrencyFor, localeForCurrency, currencyConfigFor, CURRENCIES } from './branding.ts';
 
 test('safeAccent only accepts #rrggbb and falls back otherwise', () => {
   assert.equal(safeAccent('#2563EB'), '#2563eb');
@@ -34,13 +34,17 @@ test('defaultCurrencyFor maps device regions to a currency, defaulting to USD', 
   assert.equal(defaultCurrencyFor('fr_FR'), 'EUR');
   assert.equal(defaultCurrencyFor('en-CA'), 'CAD');
   assert.equal(defaultCurrencyFor('ur-PK'), 'PKR');
+  assert.equal(defaultCurrencyFor('es-CO'), 'COP');
   assert.equal(defaultCurrencyFor('ja-JP'), 'USD'); // unmapped region
   assert.equal(defaultCurrencyFor('en'), 'USD');    // no region
   assert.equal(defaultCurrencyFor(null), 'USD');
 });
 
-test('every offered currency has a Latin-digit English locale', () => {
-  for (const c of CURRENCIES) assert.match(c.locale, /^en-/, c.code);
+test('every offered currency has a Latin-digit locale', () => {
+  for (const c of CURRENCIES) assert.match(c.locale, /^(en|es)-/, c.code);
   assert.equal(localeForCurrency('GBP'), 'en-GB');
+  assert.equal(localeForCurrency('COP'), 'es-CO');
   assert.equal(localeForCurrency('XXX'), 'en-US');
+  assert.deepEqual(currencyConfigFor('COP'), { code: 'COP', locale: 'es-CO', decimals: 0 });
+  assert.equal(CURRENCIES.find((c) => c.code === 'COP')?.symbol, '$');
 });

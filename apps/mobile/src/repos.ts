@@ -85,7 +85,7 @@ export interface Product {
   isQuick?: boolean; // true for ad-hoc "quick sale" lines with no catalog product
 }
 
-export type PaymentMethod = 'cash' | 'card' | 'bank' | 'credit';
+export type PaymentMethod = 'cash' | 'card' | 'wallet' | 'bank' | 'credit';
 
 const PRODUCT_SELECT = `
   SELECT p.id, p.name, p.barcode, p.image_uri, p.selling_price, p.cost_price, p.tax_bps,
@@ -296,7 +296,7 @@ export async function checkoutSale(
 ): Promise<Receipt> {
   const db = getDb();
   const isCredit = opts.paymentMethod === 'credit';
-  if (isCredit && !opts.customerId) throw new Error('Select a customer for a credit sale');
+  if (isCredit && !opts.customerId) throw new Error('Selecciona un cliente para una venta fiada');
 
   const cartInputs: CartLineInput[] = lines.map((l) => ({
     unitPrice: asMinor(l.product.selling_price),

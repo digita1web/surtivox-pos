@@ -9,13 +9,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { createStore, type StoreProfile } from '../repos';
 import { loadDemoShop, hasHostedSync } from '../sync';
 import { useTheme, type Theme } from '../theme';
-import { DEFAULT_ACCENT, CURRENCIES, defaultCurrencyFor, localeForCurrency } from '../branding';
+import { DEFAULT_ACCENT, CURRENCIES, defaultCurrencyFor, currencyConfigFor } from '../branding';
 import { ShopDetailsFields, ReceiptFields, ReceiptPreview } from './StoreProfileForm';
 
 
 const SLIDES: { icon: keyof typeof Ionicons.glyphMap; title: string; sub: string }[] = [
   { icon: 'storefront-outline', title: 'Run your store,\nyour way', sub: 'A fast, offline point of sale for your shop — no account and no internet needed.' },
-  { icon: 'barcode-outline', title: 'Scan. Sell. Done.', sub: 'Ring up sales in seconds. Track stock, customer credit, returns and reports.' },
+  { icon: 'barcode-outline', title: 'Scan. Sell. Done.', sub: 'Cobra ventas en segundos. Controla inventario, fiados, devoluciones y reportes.' },
 ];
 
 export function Onboarding({ onCreated }: { onCreated: () => void }) {
@@ -112,7 +112,7 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
   const [busy, setBusy] = useState(false);
   const scroll = useRef<ScrollView>(null);
   const patch = (p: Partial<StoreProfile>) => setProfile((prev) => ({ ...prev, ...p }));
-  const currency = { code, locale: localeForCurrency(code), decimals: 2 };
+  const currency = currencyConfigFor(code);
   const canNext = profile.name.trim().length > 0;
 
   const go = (s: 0 | 1) => { setStep(s); scroll.current?.scrollTo({ y: 0, animated: false }); };
@@ -162,7 +162,7 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
 
             <ShopDetailsFields value={profile} onChange={patch} />
 
-            <Text style={[o.label, { color: t.muted }]}>Currency</Text>
+            <Text style={[o.label, { color: t.muted }]}>Moneda</Text>
             <View style={o.row}>
               {CURRENCIES.map(({ code: c }) => {
                 const on = code === c;

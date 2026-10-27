@@ -4,7 +4,7 @@ import { showAlert } from '../src/pos/alert';
 import { useRouter } from 'expo-router';
 import { createStore, DEFAULT_RECEIPT_ACCENT, type StoreProfile } from '../src/repos';
 import { useSession } from '../src/session';
-import { CURRENCIES, localeForCurrency } from '../src/branding';
+import { CURRENCIES, defaultCurrencyFor, currencyConfigFor } from '../src/branding';
 import { ShopDetailsFields } from '../src/pos/StoreProfileForm';
 import { useTheme, space, radius } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
@@ -21,7 +21,7 @@ export default function NewShop() {
   const router = useRouter();
   const reload = useSession((s) => s.load);
   const [profile, setProfile] = useState<StoreProfile>(EMPTY_PROFILE);
-  const [code, setCode] = useState('USD');
+  const [code, setCode] = useState(() => defaultCurrencyFor(Intl.DateTimeFormat().resolvedOptions().locale));
   const [busy, setBusy] = useState(false);
   const patch = (p: Partial<StoreProfile>) => setProfile((prev) => ({ ...prev, ...p }));
 
@@ -29,7 +29,7 @@ export default function NewShop() {
     if (!profile.name.trim() || busy) return;
     setBusy(true);
     try {
-      await createStore(profile.name.trim(), { code, locale: localeForCurrency(code), decimals: 2 }, { ...profile, name: profile.name.trim() });
+      await createStore(profile.name.trim(), currencyConfigFor(code), { ...profile, name: profile.name.trim() });
       await reload();          // new shop is now the active one (created as current)
       router.replace('/');     // fresh shop has no staff yet → straight to Home
     } catch (e) {
@@ -47,7 +47,7 @@ export default function NewShop() {
 
       <ShopDetailsFields value={profile} onChange={patch} />
 
-      <Text style={[st.label, { color: t.muted }]}>CURRENCY</Text>
+      <Text style={[st.label, { color: t.muted }]}>MONEDA</Text>
       <View style={st.pills}>
         {CURRENCIES.map((c) => {
           const on = code === c.code;
