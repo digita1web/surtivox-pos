@@ -1,0 +1,20 @@
+[
+  {
+    "id": "rebrand-ui",
+    "nombre": "Rebrand UI",
+    "estado": "pending",
+    "criterio_aceptacion": "grep -ri \"openpocket\" apps/mobile/app apps/mobile/src | grep -v test → 0 resultados en strings visibles."
+  },
+  {
+    "id": "prediccion-pedidos",
+    "nombre": "Predicción de pedidos",
+    "estado": "pending",
+    "criterio_aceptacion": "El test unitario packages/pos-core/test/suggestReorder.test.ts pasa."
+  },
+  {
+    "id": "premium-gate",
+    "nombre": "Premium gate",
+    "estado": "pending",
+    "criterio_aceptacion": "La UI oculta la sugerencia si el flag=false."
+  }
+]
