@@ -1,4 +1,4 @@
 - Fase 0 (rebranding + saneamiento tipos): done (commits b01cd03 + fix tipos)
 - Fase 1 (rebrand-ui): pending
-- Fase 2 (prediccion-pedidos): pending
+- Fase 2 (prediccion-pedidos): done
 - Fase 3 (premium-gate): pending

@@ -8,7 +8,7 @@
   {
     "id": "prediccion-pedidos",
     "nombre": "Predicción de pedidos",
-    "estado": "pending",
+    "estado": "done",
     "criterio_aceptacion": "El test unitario packages/pos-core/test/suggestReorder.test.ts pasa."
   },
   {
