@@ -12,4 +12,12 @@ if [ "$status" -ne 0 ]; then
   exit "$status"
 fi
 
+node --test src/fiadoReminder.test.ts
+status=$?
+
+if [ "$status" -ne 0 ]; then
+  echo "GATE FAIL"
+  exit "$status"
+fi
+
 echo "GATE OK"

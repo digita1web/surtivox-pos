@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, Text, TextInput, Pressable, Modal, FlatList, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Pressable, Modal, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,8 @@ import { useMoney } from '../../src/pos/ui';
 import { useTheme, initials, space, radius, type as ty, type Theme } from '../../src/theme';
 import { Screen, listProps } from '../../src/pos/Screen';
 import { PrimaryButton } from '../../src/pos/kit';
+import { showAlert } from '../../src/pos/alert';
+import { buildFiadoReminderUrl, normalizeWhatsAppPhone } from '../../src/fiadoReminder';
 
 const LEDGER_META: Record<LedgerEntry['type'], { label: string; icon: keyof typeof Ionicons.glyphMap }> = {
   sale: { label: 'Venta fiada', icon: 'cart-outline' },
@@ -41,6 +43,17 @@ export default function CustomerDetail() {
     <PrimaryButton label="Registrar pago" icon="cash-outline" onPress={() => setPayOpen(true)} />
   ) : undefined;
 
+  const remind = () => {
+    if (!customer.phone) return;
+    const phone = normalizeWhatsAppPhone(customer.phone);
+    if (!phone) {
+      showAlert('Teléfono inválido', 'El teléfono no es un celular colombiano válido.');
+      return;
+    }
+    const url = buildFiadoReminderUrl(customer.name, money(asMinor(customer.balance)), phone);
+    Linking.openURL(url).catch((e) => showAlert('No se pudo abrir WhatsApp', e instanceof Error ? e.message : String(e)));
+  };
+
   return (
     <Screen title={customer.name} subtitle={customer.phone || undefined} scroll={false} footer={payFooter}>
       <FlatList
@@ -65,6 +78,12 @@ export default function CustomerDetail() {
                   <Ionicons name="call-outline" size={14} color={customer.balance > 0 ? t.accentFg : t.muted} />
                   <Text style={{ color: customer.balance > 0 ? t.accentFg : t.muted, fontSize: 13 }}>{customer.phone}</Text>
                 </View>
+              ) : null}
+              {customer.balance > 0 && customer.phone ? (
+                <Pressable onPress={remind} style={s.reminder}>
+                  <Ionicons name="logo-whatsapp" size={16} color={t.accentFg} />
+                  <Text style={{ color: t.accentFg, fontWeight: '700', marginLeft: 6 }}>Recordar por WhatsApp</Text>
+                </Pressable>
               ) : null}
             </View>
 
@@ -144,6 +163,7 @@ function PaymentModal({ visible, onClose, onSubmit, t, max, decimals }: {
 
 const s = StyleSheet.create({
   balCard: { borderWidth: 1, borderRadius: radius.lg, padding: space.xl, alignItems: 'center' },
+  reminder: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.55)', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, marginTop: 12 },
   avatar: { width: 54, height: 54, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   section: { marginTop: space.xl, marginBottom: space.sm },
   entry: { flexDirection: 'row', alignItems: 'center', padding: 14, borderWidth: 1, borderRadius: radius.lg },
