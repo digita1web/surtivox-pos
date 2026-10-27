@@ -243,6 +243,17 @@ export async function createProduct(input: {
   });
 }
 
+export async function updateProductPrices(
+  storeId: string,
+  productId: string,
+  updates: { selling_price: number; cost_price: number },
+): Promise<void> {
+  await getDb().runAsync(
+    'UPDATE products SET selling_price=?, cost_price=?, updated_at=?, version=version+1 WHERE id=? AND store_id=?',
+    [updates.selling_price, updates.cost_price, Date.now(), productId, storeId],
+  );
+}
+
 export interface CheckoutLine {
   product: Product;
   quantity: number;

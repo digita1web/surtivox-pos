@@ -5,8 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { fromMajorString, toMajorNumber, asMinor } from '@openpocket/pos-core';
 import {
-  getStore, createProduct, getProduct, updateProductFields, deleteProduct, listCategories, ensureCategory,
-  findProductByBarcode, DEFAULT_LOW_STOCK, type Store, type Category,
+  getStore, createProduct, getProduct, updateProductFields, updateProductPrices, deleteProduct, listCategories, ensureCategory,
+  findProductByBarcode, DEFAULT_LOW_STOCK, type Store, type Category, type Product,
 } from '../src/repos';
 import { pickFromGallery, takePhoto } from '../src/pos/images';
 import { lookupBarcode, downloadProductImage } from '../src/pos/lookup';
@@ -38,6 +38,7 @@ export default function AddProduct() {
   const [newCategory, setNewCategory] = useState('');
   const [addingCategory, setAddingCategory] = useState(false);
   const [currentStock, setCurrentStock] = useState<number | null>(null);
+  const [original, setOriginal] = useState<Product | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [viewing, setViewing] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -56,6 +57,7 @@ export default function AddProduct() {
     if (!editId || !store) return;
     getProduct(editId).then((p) => {
       if (!p) return;
+      setOriginal(p);
       const d = store.currency_decimals;
       setName(p.name); setBarcode(p.barcode ?? ''); setImageUri(p.image_uri);
       setPrice(String(toMajorNumber(asMinor(p.selling_price), d)));
@@ -152,8 +154,24 @@ export default function AddProduct() {
       let catId = categoryId;
       if (addingCategory && newCategory.trim()) catId = await ensureCategory(store.id, newCategory);
       const common = { name: name.trim(), barcode: barcode.trim() || null, imageUri, sellingPrice, costPrice, taxBps, sku: sku.trim() || null, unit, categoryId: catId, lowStockThreshold };
-      if (editId) await updateProductFields({ id: editId, ...common });
-      else await createProduct({ storeId: store.id, ...common, openingStock });
+      if (editId) {
+        const onlyPricesChanged = original !== null
+          && original.name === common.name
+          && original.barcode === common.barcode
+          && original.image_uri === common.imageUri
+          && original.tax_bps === common.taxBps
+          && (original.sku ?? null) === common.sku
+          && (original.unit ?? 'unit') === common.unit
+          && (original.category_id ?? null) === common.categoryId
+          && (original.low_stock_threshold ?? null) === common.lowStockThreshold;
+        if (onlyPricesChanged) {
+          await updateProductPrices(store.id, editId, { selling_price: sellingPrice, cost_price: costPrice });
+        } else {
+          await updateProductFields({ id: editId, ...common });
+        }
+      } else {
+        await createProduct({ storeId: store.id, ...common, openingStock });
+      }
       router.back();
     } catch (e) {
       // Surface the reason clearly — the old inline note sat below the fold,
