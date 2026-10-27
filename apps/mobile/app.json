@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Surtivox POS",
+    "slug": "surtivox-pos",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "surtivoxpos",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "newArchEnabled": true,
+    "android": {
+      "package": "io.surtivox.pos",
+      "versionCode": 2,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#0fa678"
+      }
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "io.surtivox.pos"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Surtivox POS uses the camera to scan product barcodes."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Surtivox POS uses your photos to set product images.",
+          "cameraPermission": "Surtivox POS uses the camera to take product photos."
+        }
+      ],
+      "expo-image",
+      "expo-sharing",
+      "expo-iap"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

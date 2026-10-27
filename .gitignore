@@ -1,0 +1,36 @@
+node_modules/
+dist/
+build/
+.turbo/
+coverage/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Expo / RN (for apps/mobile, added in the next slice)
+.expo/
+*.tsbuildinfo
+android/
+ios/
+
+# local test server db
+.data/
+
+# session debug artifacts (root-level screenshots + scratch CSVs)
+/*.png
+/*.csv
+
+# Shareable release APK (built locally, not tracked)
+OpenPocket-POS.apk
+
+apps/mobile/android/app/upload-keystore.jks
+apps/mobile/android/keystore.properties
+
+# Editor / AI tool configs
+.claude/
+
+# Built app bundles (not tracked)
+*.aab
+OpenPocket-POS.aab
