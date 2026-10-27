@@ -25,6 +25,7 @@ export default function More() {
   const allItems: { icon: keyof typeof Ionicons.glyphMap; label: string; route: string; show: boolean }[] = [
     { icon: 'storefront-outline', label: 'Shop profile & receipts', route: '/store-settings', show: can(role, 'shop') },
     { icon: 'bar-chart-outline', label: 'Reports', route: '/reports', show: can(role, 'reports') },
+    { icon: 'sparkles-outline', label: 'Sugerencia de pedido', route: '/reorder', show: can(role, 'reports') },
     { icon: 'people-outline', label: 'Customers & credit', route: '/customers', show: can(role, 'customers') },
     { icon: 'business-outline', label: 'Suppliers', route: '/suppliers', show: can(role, 'suppliers') },
     { icon: 'cart-outline', label: 'Purchases / restock', route: '/purchases', show: can(role, 'purchases') },

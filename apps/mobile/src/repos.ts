@@ -8,8 +8,10 @@ import {
   roundHalfAwayFromZero,
   asMinor,
   asBps,
+  suggestReorder,
   type CartLineInput,
   type Minor,
+  type SalesPoint,
 } from '@openpocket/pos-core';
 import { getDb } from './db';
 import { newId, DEVICE_ID } from './id';
@@ -600,6 +602,101 @@ export async function lowStockProducts(storeId: string, limit = 20): Promise<Low
            <= COALESCE(p.low_stock_threshold, 5)
      ORDER BY stock ASC LIMIT ?`, [storeId, limit],
   );
+}
+
+interface ReorderProductStockRow {
+  product_id: string;
+  product_name: string;
+  current_stock: number;
+}
+
+interface ReorderDailySalesRow {
+  product_id: string;
+  sale_date: string;
+  quantity: number;
+}
+
+export interface ReorderRow {
+  product_id: string;
+  product_name: string;
+  current_stock: number;
+  units_per_day: number;
+  days_of_stock_left: number | null;
+  suggested_quantity: number;
+  urgency: 'critical' | 'low' | 'ok';
+}
+
+export async function getReorderSuggestions(storeId: string): Promise<ReorderRow[]> {
+  const db = getDb();
+  const since = Date.now() - 28 * 86_400_000;
+
+  const products = await db.getAllAsync<ReorderProductStockRow>(
+    `SELECT p.id AS product_id, p.name AS product_name,
+            COALESCE(SUM(sm.quantity_delta), 0) AS current_stock
+     FROM products p
+     LEFT JOIN stock_movements sm ON sm.product_id = p.id
+     WHERE p.store_id=? AND p.active=1 AND p.deleted_at IS NULL AND p.track_inventory=1
+     GROUP BY p.id, p.name`,
+    [storeId],
+  );
+
+  const dailySales = await db.getAllAsync<ReorderDailySalesRow>(
+    `SELECT product_id, sale_date, SUM(quantity) AS quantity
+     FROM (
+       SELECT si.product_id AS product_id,
+              date(s.sold_at / 1000, 'unixepoch', 'localtime') AS sale_date,
+              si.quantity AS quantity
+       FROM sale_items si
+       JOIN sales s ON s.id = si.sale_id
+       JOIN products p ON p.id = si.product_id
+       WHERE s.store_id=? AND s.status='completed' AND s.sold_at >= ?
+         AND p.store_id=? AND p.active=1 AND p.deleted_at IS NULL AND p.track_inventory=1
+       UNION ALL
+       SELECT ri.product_id AS product_id,
+              date(r.created_at / 1000, 'unixepoch', 'localtime') AS sale_date,
+              -ri.quantity AS quantity
+       FROM return_items ri
+       JOIN returns r ON r.id = ri.return_id
+       JOIN products p ON p.id = ri.product_id
+       WHERE r.store_id=? AND r.created_at >= ?
+         AND p.store_id=? AND p.active=1 AND p.deleted_at IS NULL AND p.track_inventory=1
+     )
+     GROUP BY product_id, sale_date`,
+    [storeId, since, storeId, storeId, since, storeId],
+  );
+
+  const pointsByProduct = new Map<string, SalesPoint[]>();
+  for (const row of dailySales) {
+    const points = pointsByProduct.get(row.product_id) ?? [];
+    points.push({ date: row.sale_date, quantity: row.quantity });
+    pointsByProduct.set(row.product_id, points);
+  }
+
+  const urgencyRank: Record<ReorderRow['urgency'], number> = { critical: 0, low: 1, ok: 2 };
+
+  return products
+    .map((product) => {
+      const suggestion = suggestReorder(pointsByProduct.get(product.product_id) ?? [], product.current_stock, {
+        lookbackDays: 14,
+        fallbackLookbackDays: 28,
+        coverDays: 7,
+      });
+      return {
+        product_id: product.product_id,
+        product_name: product.product_name,
+        current_stock: product.current_stock,
+        units_per_day: suggestion.unitsPerDay,
+        days_of_stock_left: suggestion.daysOfStockLeft,
+        suggested_quantity: suggestion.suggestedQuantity,
+        urgency: suggestion.urgency,
+      };
+    })
+    .filter((row) => !(row.suggested_quantity === 0 && row.urgency === 'ok'))
+    .sort((a, b) =>
+      urgencyRank[a.urgency] - urgencyRank[b.urgency]
+      || (a.days_of_stock_left ?? Number.POSITIVE_INFINITY) - (b.days_of_stock_left ?? Number.POSITIVE_INFINITY)
+      || b.suggested_quantity - a.suggested_quantity,
+    );
 }
 
 /* ------------------------------- returns -------------------------------- */
