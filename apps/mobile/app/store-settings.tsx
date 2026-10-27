@@ -24,12 +24,12 @@ export default function StoreSettings() {
 
   if (!can(role, 'shop')) {
     return (
-      <Screen title="Shop profile" scroll={false}>
+      <Screen title="Perfil de la tienda" scroll={false}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xxl }}>
           <Ionicons name="lock-closed-outline" size={32} color={t.muted} />
-          <Text style={{ color: t.fg, fontWeight: '700', marginTop: space.md }}>Owner access only</Text>
-          <Text style={{ color: t.muted, marginTop: space.xs, textAlign: 'center' }}>Ask the shop owner to change the shop profile or receipt design.</Text>
-          <Pressable onPress={() => router.back()} style={{ marginTop: space.xl }}><Text style={{ color: t.accent, fontWeight: '700' }}>Go back</Text></Pressable>
+          <Text style={{ color: t.fg, fontWeight: '700', marginTop: space.md }}>Solo el dueño</Text>
+          <Text style={{ color: t.muted, marginTop: space.xs, textAlign: 'center' }}>Pide al dueño de la tienda que cambie el perfil o el diseño del recibo.</Text>
+          <Pressable onPress={() => router.back()} style={{ marginTop: space.xl }}><Text style={{ color: t.accent, fontWeight: '700' }}>Volver</Text></Pressable>
         </View>
       </Screen>
     );
@@ -37,24 +37,24 @@ export default function StoreSettings() {
 
   const save = async () => {
     if (busy) return;
-    if (!profile.name.trim()) { showAlert('Shop name is required'); return; }
+    if (!profile.name.trim()) { showAlert('El nombre de la tienda es obligatorio'); return; }
     setBusy(true);
     try {
       await updateStoreProfile(store.id, profile);
       await reload();
       router.back();
     } catch (e) {
-      showAlert('Could not save', e instanceof Error ? e.message : String(e));
+      showAlert('No se pudo guardar', e instanceof Error ? e.message : String(e));
       setBusy(false);
     }
   };
 
   return (
-    <Screen title="Shop profile" footer={<PrimaryButton label="Save changes" onPress={save} busy={busy} />}>
-      <Text style={[ty.h2, { color: t.fg, marginBottom: space.xs }]}>Your shop</Text>
+    <Screen title="Perfil de la tienda" footer={<PrimaryButton label="Guardar cambios" onPress={save} busy={busy} />}>
+      <Text style={[ty.h2, { color: t.fg, marginBottom: space.xs }]}>Tu tienda</Text>
       <ShopDetailsFields value={profile} onChange={patch} />
 
-      <Text style={[ty.h2, { color: t.fg, marginTop: space.xxl, marginBottom: space.xs }]}>Receipt design</Text>
+      <Text style={[ty.h2, { color: t.fg, marginTop: space.xxl, marginBottom: space.xs }]}>Diseño del recibo</Text>
       <View style={{ marginTop: space.md }}><ReceiptPreview value={profile} currency={currencyOf(store)} /></View>
       <ReceiptFields value={profile} onChange={patch} />
     </Screen>

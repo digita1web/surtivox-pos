@@ -69,14 +69,14 @@ export default function Scan() {
       draft.ensureCost(product.id, (product.cost_price / 10 ** store.currency_decimals).toFixed(store.currency_decimals));
       draft.bump(product.id);
       Vibration.vibrate(40);
-      flash(`Added ${product.name}`, true);
+      flash(`Agregado ${product.name}`, true);
     } else if (product.stock <= (cart.items[product.id]?.quantity ?? 0)) {
       Vibration.vibrate(120);
-      flash(`${product.name} — out of stock`, false);
+      flash(`${product.name} — sin stock`, false);
     } else {
       cart.add(product);
       Vibration.vibrate(40);
-      flash(`Added ${product.name}`, true);
+      flash(`Agregado ${product.name}`, true);
     }
   }, [store, isStock]);
 
@@ -105,19 +105,19 @@ export default function Scan() {
     router.back();
   };
 
-  const title = isStock ? 'Restock' : 'Scan';
+  const title = isStock ? 'Reabastecer' : 'Escanear';
   if (!permission) return <Screen title={title} scroll={false}><View /></Screen>;
   if (!permission.granted) {
     return (
       <Screen title={title} scroll={false}>
         <View style={st.center}>
           <View style={[st.permIcon, { backgroundColor: t.accentSoft }]}><Ionicons name="camera-outline" size={30} color={t.accent} /></View>
-          <Text style={[ty.h2, { color: t.fg, marginTop: space.lg }]}>Camera access needed</Text>
-          <Text style={[ty.body, { color: t.muted, textAlign: 'center', marginTop: space.sm, marginBottom: space.xl }]}>Allow the camera to scan product barcodes.</Text>
+          <Text style={[ty.h2, { color: t.fg, marginTop: space.lg }]}>Se necesita acceso a la cámara</Text>
+          <Text style={[ty.body, { color: t.muted, textAlign: 'center', marginTop: space.sm, marginBottom: space.xl }]}>Permite el acceso a la cámara para escanear códigos de barras.</Text>
           <Pressable onPress={requestPermission} style={[st.grant, { backgroundColor: t.accent }]}>
-            <Text style={{ color: t.accentFg, fontWeight: '800' }}>Grant camera access</Text>
+            <Text style={{ color: t.accentFg, fontWeight: '800' }}>Permitir acceso a la cámara</Text>
           </Pressable>
-          <Pressable onPress={() => router.back()} style={{ marginTop: space.lg }}><Text style={{ color: t.muted }}>Cancel</Text></Pressable>
+          <Pressable onPress={() => router.back()} style={{ marginTop: space.lg }}><Text style={{ color: t.muted }}>Cancelar</Text></Pressable>
         </View>
       </Screen>
     );
@@ -128,11 +128,11 @@ export default function Scan() {
       style={[st.checkout, { backgroundColor: t.accent, opacity: !isStock && count === 0 ? 0.5 : 1 }]}>
       <View style={[st.cartBadge, { backgroundColor: 'rgba(255,255,255,0.25)' }]}><Ionicons name={isStock ? 'cube' : 'cart'} size={18} color={t.accentFg} /></View>
       <View style={{ flex: 1, marginLeft: space.md }}>
-        <Text style={{ color: t.accentFg, opacity: 0.9, fontSize: 12 }}>{count} item{count === 1 ? '' : 's'}</Text>
+        <Text style={{ color: t.accentFg, opacity: 0.9, fontSize: 12 }}>{count} artículo{count === 1 ? '' : 's'}</Text>
         <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 18 }}>{money(totals.grandTotal)}</Text>
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 16 }}>{isStock ? 'Review' : 'Checkout'}</Text>
+        <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 16 }}>{isStock ? 'Revisar' : 'Cobrar'}</Text>
         <Ionicons name="arrow-forward" size={18} color={t.accentFg} style={{ marginLeft: 6 }} />
       </View>
     </Pressable>
@@ -143,7 +143,7 @@ export default function Scan() {
       title={title}
       scroll={false}
       footer={checkoutBar}
-      right={<IconButton icon={torch ? 'flash' : 'flash-off'} label={torch ? 'Turn torch off' : 'Turn torch on'} filled={torch} onPress={() => setTorch((v) => !v)} />}
+      right={<IconButton icon={torch ? 'flash' : 'flash-off'} label={torch ? 'Apagar linterna' : 'Encender linterna'} filled={torch} onPress={() => setTorch((v) => !v)} />}
     >
       {/* camera card */}
       <View style={[st.camCard, { borderColor: t.line }]}>
@@ -156,8 +156,8 @@ export default function Scan() {
         />
         <View style={st.camScrim} pointerEvents="none" />
         <View style={st.camLabel} pointerEvents="none">
-          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Scan a product</Text>
-          <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 12, marginTop: 2 }}>Point your camera at a barcode or QR code</Text>
+          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Escanea un producto</Text>
+          <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 12, marginTop: 2 }}>Apunta la cámara a un código de barras o QR</Text>
         </View>
         <View style={st.reticle} pointerEvents="none">
           {(['tl', 'tr', 'bl', 'br'] as const).map((c) => <View key={c} style={[st.corner, cornerStyle(c, t.accent)]} />)}
@@ -170,17 +170,17 @@ export default function Scan() {
         )}
         <Pressable onPress={() => setManualOpen(true)} style={st.manualBtn}>
           <Ionicons name="keypad-outline" size={16} color="#fff" />
-          <Text style={{ color: '#fff', fontWeight: '700', marginLeft: 8 }}>Enter code manually</Text>
+          <Text style={{ color: '#fff', fontWeight: '700', marginLeft: 8 }}>Ingresar código manualmente</Text>
         </Pressable>
       </View>
 
       {/* recently added */}
       <View style={st.listHead}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
-          <Text style={[ty.h2, { color: t.fg }]}>Recently added</Text>
+          <Text style={[ty.h2, { color: t.fg }]}>Agregados recientemente</Text>
           {count > 0 && <View style={[st.countPill, { backgroundColor: t.accentSoft }]}><Text style={{ color: t.accent, fontWeight: '800', fontSize: 12 }}>{count}</Text></View>}
         </View>
-        <Pressable onPress={() => setManualOpen(true)} hitSlop={8}><Text style={{ color: t.accent, fontWeight: '700' }}>Add item</Text></Pressable>
+        <Pressable onPress={() => setManualOpen(true)} hitSlop={8}><Text style={{ color: t.accent, fontWeight: '700' }}>Agregar artículo</Text></Pressable>
       </View>
 
       <FlatList
@@ -190,7 +190,7 @@ export default function Scan() {
         style={st.list}
         contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: space.lg }}
         ItemSeparatorComponent={() => <View style={{ height: space.sm }} />}
-        ListEmptyComponent={<Text style={[ty.body, { color: t.muted, textAlign: 'center', marginTop: space.xxl }]}>Scan an item to get started.</Text>}
+        ListEmptyComponent={<Text style={[ty.body, { color: t.muted, textAlign: 'center', marginTop: space.xxl }]}>Escanea un artículo para empezar.</Text>}
         renderItem={({ item }) => {
           const line = (item.product.selling_price * item.quantity) as number;
           return (
@@ -198,7 +198,7 @@ export default function Scan() {
               <Thumb uri={item.product.image_uri} name={item.product.name} style={st.thumb} textSize={15} />
               <View style={{ flex: 1, marginLeft: space.md }}>
                 <Text style={[ty.body, { color: t.fg, fontWeight: '700' }]} numberOfLines={1}>{item.product.name}</Text>
-                <Text style={[ty.small, { color: t.muted, marginTop: 2 }]}>{money(asMinor(item.product.selling_price))} each</Text>
+                <Text style={[ty.small, { color: t.muted, marginTop: 2 }]}>{money(asMinor(item.product.selling_price))} c/u</Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={{ color: t.fg, fontWeight: '800', marginBottom: 6 }}>{money(asMinor(line))}</Text>
@@ -217,16 +217,16 @@ export default function Scan() {
       <Modal visible={manualOpen} transparent animationType="fade" onRequestClose={() => setManualOpen(false)}>
         <Pressable style={st.modalBackdrop} onPress={() => setManualOpen(false)}>
           <Pressable style={[st.modalCard, { backgroundColor: t.panel }]} onPress={() => {}}>
-            <Text style={{ color: t.fg, fontWeight: '800', fontSize: 17, marginBottom: 12 }}>Enter barcode</Text>
+            <Text style={{ color: t.fg, fontWeight: '800', fontSize: 17, marginBottom: 12 }}>Ingresa el código de barras</Text>
             <TextInput value={manualCode} onChangeText={setManualCode} autoFocus keyboardType="number-pad"
-              placeholder="type the barcode number" placeholderTextColor={t.muted}
+              placeholder="escribe el código de barras" placeholderTextColor={t.muted}
               style={[st.modalInput, { color: t.fg, borderColor: t.line, backgroundColor: t.surfaceAlt }]} />
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
               <Pressable onPress={() => { setManualOpen(false); setManualCode(''); }} style={[st.modalBtn, { backgroundColor: t.surfaceAlt }]}>
-                <Text style={{ color: t.fg, fontWeight: '700' }}>Cancel</Text>
+                <Text style={{ color: t.fg, fontWeight: '700' }}>Cancelar</Text>
               </Pressable>
               <Pressable onPress={submitManual} style={[st.modalBtn, { backgroundColor: t.accent }]}>
-                <Text style={{ color: t.accentFg, fontWeight: '800' }}>Add</Text>
+                <Text style={{ color: t.accentFg, fontWeight: '800' }}>Agregar</Text>
               </Pressable>
             </View>
           </Pressable>

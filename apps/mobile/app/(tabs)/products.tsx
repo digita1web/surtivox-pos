@@ -67,19 +67,19 @@ export default function Products() {
   return (
     <View style={[s.root, { backgroundColor: t.bg }]}>
       <TabHeader
-        title="Products"
-        subtitle={products.length ? `${products.length} items` : undefined}
-        right={canEdit ? <IconButton icon="add" label="Add product" filled onPress={() => router.push('/add-product')} /> : undefined}
+        title="Productos"
+        subtitle={products.length ? `${products.length} artículo${products.length === 1 ? '' : 's'}` : undefined}
+        right={canEdit ? <IconButton icon="add" label="Agregar producto" filled onPress={() => router.push('/add-product')} /> : undefined}
       >
         <View style={s.controls}>
           <SearchField
-            value={query} onChangeText={setQuery} placeholder="Search name, barcode or SKU"
-            right={<Pressable onPress={() => setScanning(true)} hitSlop={10} accessibilityLabel="Find a product by barcode"><Ionicons name="barcode-outline" size={20} color={t.accent} /></Pressable>}
+            value={query} onChangeText={setQuery} placeholder="Buscar por nombre, código de barras o SKU"
+            right={<Pressable onPress={() => setScanning(true)} hitSlop={10} accessibilityLabel="Buscar producto por código de barras"><Ionicons name="barcode-outline" size={20} color={t.accent} /></Pressable>}
           />
           <ChipRow>
-            <Chip label="All" on={allOn} onPress={reset} />
-            <Chip label="Low stock" count={counts.low || undefined} on={stockFilter === 'low'} onPress={() => setStockFilter(stockFilter === 'low' ? null : 'low')} />
-            <Chip label="Out of stock" count={counts.out || undefined} on={stockFilter === 'out'} onPress={() => setStockFilter(stockFilter === 'out' ? null : 'out')} />
+            <Chip label="Todos" on={allOn} onPress={reset} />
+            <Chip label="Stock bajo" count={counts.low || undefined} on={stockFilter === 'low'} onPress={() => setStockFilter(stockFilter === 'low' ? null : 'low')} />
+            <Chip label="Sin stock" count={counts.out || undefined} on={stockFilter === 'out'} onPress={() => setStockFilter(stockFilter === 'out' ? null : 'out')} />
             {categories.length > 0 && <ChipDivider />}
             {categories.map((c) => (
               <Chip key={c.id} label={c.name} on={category === c.id} onPress={() => setCategory(category === c.id ? null : c.id)} />
@@ -89,8 +89,8 @@ export default function Products() {
       </TabHeader>
 
       {products.length === 0 ? (
-        <EmptyState icon="cube-outline" title="No products yet" hint="Add one, or scan a barcode to start."
-          action={canEdit ? { label: 'Add product', onPress: () => router.push('/add-product') } : undefined} />
+        <EmptyState icon="cube-outline" title="Aún no hay productos" hint="Agrega uno o escanea un código de barras para empezar."
+          action={canEdit ? { label: 'Agregar producto', onPress: () => router.push('/add-product') } : undefined} />
       ) : (
         <FlatList
           {...listProps}
@@ -100,7 +100,7 @@ export default function Products() {
           contentContainerStyle={{ padding: space.lg, paddingBottom: listInset }}
           columnWrapperStyle={{ gap: space.md }}
           ItemSeparatorComponent={Gap}
-          ListEmptyComponent={<Text style={{ color: t.muted, textAlign: 'center', marginTop: 48 }}>No products match.</Text>}
+          ListEmptyComponent={<Text style={{ color: t.muted, textAlign: 'center', marginTop: 48 }}>No hay productos que coincidan.</Text>}
           renderItem={({ item }) => <ProductCard product={item} />}
         />
       )}

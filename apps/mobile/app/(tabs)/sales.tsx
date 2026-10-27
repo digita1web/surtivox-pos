@@ -5,31 +5,33 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { asMinor } from '@openpocket/pos-core';
 import { listSales, type SaleSummary } from '../../src/repos';
 import { useSession } from '../../src/session';
-import { useMoney, PAYMENT_LABEL } from '../../src/pos/ui';
+import { useMoney } from '../../src/pos/ui';
 import { TabHeader, listProps, useTabListInset } from '../../src/pos/Screen';
 import { SearchField, Chip, ChipRow, ChipDivider, EmptyState } from '../../src/pos/kit';
 import { useTheme, space, radius } from '../../src/theme';
+
+const PAYMENT_LABEL_ES: Record<string, string> = { cash: 'Efectivo', card: 'Tarjeta', bank: 'Transferencia', credit: 'Crédito' };
 
 function when(ts: number): string {
   const d = new Date(ts);
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  return d.getTime() >= today.getTime() ? `Today ${time}` : `${d.toLocaleDateString()} ${time}`;
+  return d.getTime() >= today.getTime() ? `Hoy ${time}` : `${d.toLocaleDateString()} ${time}`;
 }
 
 type Range = 'today' | '7d' | '30d' | 'all';
 const RANGES: { key: Range; label: string; days: number | null }[] = [
-  { key: 'today', label: 'Today', days: 0 },
-  { key: '7d', label: '7 days', days: 7 },
-  { key: '30d', label: '30 days', days: 30 },
-  { key: 'all', label: 'All time', days: null },
+  { key: 'today', label: 'Hoy', days: 0 },
+  { key: '7d', label: '7 días', days: 7 },
+  { key: '30d', label: '30 días', days: 30 },
+  { key: 'all', label: 'Todo el tiempo', days: null },
 ];
 const METHODS: { key: string; label: string }[] = [
-  { key: 'all', label: 'Any payment' },
-  { key: 'cash', label: 'Cash' },
-  { key: 'card', label: 'Card' },
-  { key: 'bank', label: 'Transfer' },
-  { key: 'credit', label: 'Credit' },
+  { key: 'all', label: 'Cualquier pago' },
+  { key: 'cash', label: 'Efectivo' },
+  { key: 'card', label: 'Tarjeta' },
+  { key: 'bank', label: 'Transferencia' },
+  { key: 'credit', label: 'Crédito' },
 ];
 
 function sinceFor(range: Range): number | undefined {
@@ -67,9 +69,9 @@ export default function Sales() {
 
   return (
     <View style={[s.root, { backgroundColor: t.bg }]}>
-      <TabHeader title="Sales" subtitle={`${rangeLabel} · ${filtered.length} ${filtered.length === 1 ? 'order' : 'orders'}`}>
+      <TabHeader title="Ventas" subtitle={`${rangeLabel} · ${filtered.length} ${filtered.length === 1 ? 'pedido' : 'pedidos'}`}>
         <View style={s.controls}>
-          <SearchField value={q} onChangeText={setQ} placeholder="Search invoice or cashier" />
+          <SearchField value={q} onChangeText={setQ} placeholder="Buscar factura o cajero" />
           <ChipRow>
             {RANGES.map((r) => <Chip key={r.key} label={r.label} on={range === r.key} onPress={() => setRange(r.key)} />)}
             <ChipDivider />
@@ -87,7 +89,7 @@ export default function Sales() {
         ListHeaderComponent={
           <View style={[s.summary, { backgroundColor: t.accent }]}>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: t.accentFg, opacity: 0.85, fontSize: 12.5 }}>{rangeLabel} total</Text>
+              <Text style={{ color: t.accentFg, opacity: 0.85, fontSize: 12.5 }}>Total de {rangeLabel}</Text>
               <Text style={{ color: t.accentFg, fontSize: 26, lineHeight: 32, fontWeight: '800', marginTop: 2 }} numberOfLines={1} adjustsFontSizeToFit>
                 {money(asMinor(total))}
               </Text>
@@ -96,7 +98,7 @@ export default function Sales() {
           </View>
         }
         ListHeaderComponentStyle={{ marginBottom: space.md }}
-        ListEmptyComponent={<EmptyState icon="receipt-outline" title="No sales found" hint="Try a different period or payment filter." />}
+        ListEmptyComponent={<EmptyState icon="receipt-outline" title="No se encontraron ventas" hint="Prueba otro período o filtro de pago." />}
         renderItem={({ item }) => (
           <Pressable onPress={() => router.push(`/sale/${item.id}`)}
             style={({ pressed }) => [s.row, { backgroundColor: t.panel, borderColor: t.line, opacity: pressed ? 0.85 : 1 }]}>
@@ -104,7 +106,7 @@ export default function Sales() {
             <View style={{ flex: 1, marginLeft: space.md }}>
               <Text style={{ color: t.fg, fontWeight: '700' }}>{item.invoice_no}</Text>
               <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 2 }} numberOfLines={1}>
-                {when(item.sold_at)} · {item.item_count} item{item.item_count === 1 ? '' : 's'} · {PAYMENT_LABEL[item.payment_method] ?? item.payment_method}
+                {when(item.sold_at)} · {item.item_count} artículo{item.item_count === 1 ? '' : 's'} · {PAYMENT_LABEL_ES[item.payment_method] ?? item.payment_method}
               </Text>
             </View>
             <Text style={{ color: t.fg, fontWeight: '800', fontSize: 16 }}>{money(asMinor(item.grand_total))}</Text>

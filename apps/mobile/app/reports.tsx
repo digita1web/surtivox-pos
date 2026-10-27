@@ -11,14 +11,16 @@ import {
   type ReportSummary, type PaymentSlice, type BestSeller, type LowStockItem, type OutstandingTotal,
 } from '../src/repos';
 import { useSession } from '../src/session';
-import { useMoney, PAYMENT_LABEL } from '../src/pos/ui';
+import { useMoney } from '../src/pos/ui';
 import { useTheme, space, radius, type Theme } from '../src/theme';
+
+const PAYMENT_LABEL_ES: Record<string, string> = { cash: 'Efectivo', card: 'Tarjeta', bank: 'Transferencia', credit: 'Crédito' };
 
 type Range = 'today' | 'week' | 'month';
 const RANGES: { key: Range; label: string }[] = [
-  { key: 'today', label: 'Today' },
-  { key: 'week', label: '7 days' },
-  { key: 'month', label: '30 days' },
+  { key: 'today', label: 'Hoy' },
+  { key: 'week', label: '7 días' },
+  { key: 'month', label: '30 días' },
 ];
 function since(range: Range): number {
   if (range === 'today') { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
@@ -60,7 +62,7 @@ export default function Reports() {
   const maxPay = Math.max(1, ...payments.map((p) => p.amount));
 
   return (
-    <Screen title="Reports" scroll={false}>
+    <Screen title="Reportes" scroll={false}>
       <View style={s.pinned}>
         <ChipRow>
           {RANGES.map((r) => (
@@ -72,33 +74,33 @@ export default function Reports() {
       <ScrollView {...scrollProps} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: insets.bottom + space.xxl }}>
         {/* revenue hero */}
         <View style={[s.hero, { backgroundColor: t.accent }]}>
-          <Text style={{ color: t.accentFg, opacity: 0.9, fontWeight: '700' }}>Total sales</Text>
+          <Text style={{ color: t.accentFg, opacity: 0.9, fontWeight: '700' }}>Ventas totales</Text>
           <Text style={{ color: t.accentFg, fontSize: 34, fontWeight: '800', marginTop: 4 }}>{money(asMinor(summary.totalSales))}</Text>
           <View style={{ flexDirection: 'row', gap: 18, marginTop: 12 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Ionicons name="receipt-outline" size={15} color={t.accentFg} /><Text style={{ color: t.accentFg, opacity: 0.95 }}>{summary.transactions} sales</Text></View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Ionicons name="cube-outline" size={15} color={t.accentFg} /><Text style={{ color: t.accentFg, opacity: 0.95 }}>{summary.itemsSold} items</Text></View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Ionicons name="receipt-outline" size={15} color={t.accentFg} /><Text style={{ color: t.accentFg, opacity: 0.95 }}>{summary.transactions} venta{summary.transactions === 1 ? '' : 's'}</Text></View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Ionicons name="cube-outline" size={15} color={t.accentFg} /><Text style={{ color: t.accentFg, opacity: 0.95 }}>{summary.itemsSold} artículo{summary.itemsSold === 1 ? '' : 's'}</Text></View>
           </View>
         </View>
 
         {/* stat grid */}
         <View style={s.grid}>
-          <Stat t={t} icon="trending-up-outline" label="Gross profit" value={money(asMinor(summary.grossProfit))} tint={t.ok} />
-          <Stat t={t} icon="arrow-undo-outline" label="Refunds" value={money(asMinor(summary.refundTotal))} tint={t.danger} />
-          <Stat t={t} icon="pricetag-outline" label="Discounts" value={money(asMinor(summary.discountTotal))} tint={t.warn} />
-          <Stat t={t} icon="wallet-outline" label="Net sales" value={money(asMinor(summary.totalSales - summary.refundTotal))} tint={t.accent} />
+          <Stat t={t} icon="trending-up-outline" label="Ganancia bruta" value={money(asMinor(summary.grossProfit))} tint={t.ok} />
+          <Stat t={t} icon="arrow-undo-outline" label="Devoluciones" value={money(asMinor(summary.refundTotal))} tint={t.danger} />
+          <Stat t={t} icon="pricetag-outline" label="Descuentos" value={money(asMinor(summary.discountTotal))} tint={t.warn} />
+          <Stat t={t} icon="wallet-outline" label="Ventas netas" value={money(asMinor(summary.totalSales - summary.refundTotal))} tint={t.accent} />
         </View>
 
         {/* payment methods */}
-        <Text style={[s.section, { color: t.fg }]}>Payment methods</Text>
+        <Text style={[s.section, { color: t.fg }]}>Métodos de pago</Text>
         <View style={[s.card, { backgroundColor: t.panel, borderColor: t.line }]}>
           {payments.length === 0 ? (
-            <Text style={{ color: t.muted, textAlign: 'center', paddingVertical: 8 }}>No sales in this period.</Text>
+            <Text style={{ color: t.muted, textAlign: 'center', paddingVertical: 8 }}>No hay ventas en este período.</Text>
           ) : payments.map((p) => {
             const meta = PM[p.type] ?? { icon: 'ellipse-outline' as const, color: t.muted };
             return (
               <View key={p.type} style={s.payRow}>
                 <Ionicons name={meta.icon} size={18} color={meta.color} />
-                <Text style={{ color: t.fg, fontWeight: '600', width: 78, marginLeft: 8 }}>{PAYMENT_LABEL[p.type] ?? p.type}</Text>
+                <Text style={{ color: t.fg, fontWeight: '600', width: 78, marginLeft: 8 }}>{PAYMENT_LABEL_ES[p.type] ?? p.type}</Text>
                 <View style={s.barTrack}>
                   <View style={[s.barFill, { backgroundColor: meta.color, width: `${Math.round((p.amount / maxPay) * 100)}%` }]} />
                 </View>
@@ -109,16 +111,16 @@ export default function Reports() {
         </View>
 
         {/* best sellers */}
-        <Text style={[s.section, { color: t.fg }]}>Best sellers</Text>
+        <Text style={[s.section, { color: t.fg }]}>Más vendidos</Text>
         <View style={[s.card, { backgroundColor: t.panel, borderColor: t.line }]}>
           {sellers.length === 0 ? (
-            <Text style={{ color: t.muted, textAlign: 'center', paddingVertical: 8 }}>No sales in this period.</Text>
+            <Text style={{ color: t.muted, textAlign: 'center', paddingVertical: 8 }}>No hay ventas en este período.</Text>
           ) : sellers.map((b, i) => (
             <View key={b.name + i} style={[s.listRow, i < sellers.length - 1 && { borderBottomWidth: 1, borderColor: t.line }]}>
               <View style={[s.rank, { backgroundColor: t.accentSoft }]}><Text style={{ color: t.accent, fontWeight: '800' }}>{i + 1}</Text></View>
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={{ color: t.fg, fontWeight: '600' }} numberOfLines={1}>{b.name}</Text>
-                <Text style={{ color: t.muted, fontSize: 12 }}>{b.qty} sold</Text>
+                <Text style={{ color: t.muted, fontSize: 12 }}>{b.qty} vendido{b.qty === 1 ? '' : 's'}</Text>
               </View>
               <Text style={{ color: t.fg, fontWeight: '700' }}>{money(asMinor(b.revenue))}</Text>
             </View>
@@ -130,8 +132,8 @@ export default function Reports() {
           <Pressable onPress={() => router.push('/customers')} style={[s.creditCard, { backgroundColor: t.panel, borderColor: t.line }]}>
             <View style={[s.rank, { backgroundColor: t.warn + '22' }]}><Ionicons name="time-outline" size={18} color={t.warn} /></View>
             <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={{ color: t.fg, fontWeight: '700' }}>Outstanding credit</Text>
-              <Text style={{ color: t.muted, fontSize: 12 }}>{credit.customersWithBalance} customer{credit.customersWithBalance === 1 ? '' : 's'}</Text>
+              <Text style={{ color: t.fg, fontWeight: '700' }}>Crédito pendiente</Text>
+              <Text style={{ color: t.muted, fontSize: 12 }}>{credit.customersWithBalance} cliente{credit.customersWithBalance === 1 ? '' : 's'}</Text>
             </View>
             <Text style={{ color: t.warn, fontWeight: '800' }}>{money(asMinor(credit.totalOwed))}</Text>
             <Ionicons name="chevron-forward" size={18} color={t.muted} />
@@ -139,15 +141,15 @@ export default function Reports() {
         )}
 
         {/* low stock */}
-        <Text style={[s.section, { color: t.fg }]}>Low stock</Text>
+        <Text style={[s.section, { color: t.fg }]}>Stock bajo</Text>
         <View style={[s.card, { backgroundColor: t.panel, borderColor: t.line }]}>
           {lowStock.length === 0 ? (
-            <Text style={{ color: t.muted, textAlign: 'center', paddingVertical: 8 }}>Everything is well stocked. 👍</Text>
+            <Text style={{ color: t.muted, textAlign: 'center', paddingVertical: 8 }}>Todo tiene buen stock. 👍</Text>
           ) : lowStock.map((p, i) => (
             <View key={p.id} style={[s.listRow, i < lowStock.length - 1 && { borderBottomWidth: 1, borderColor: t.line }]}>
               <Ionicons name="alert-circle-outline" size={20} color={p.stock <= 0 ? t.danger : t.warn} />
               <Text style={{ color: t.fg, fontWeight: '600', flex: 1, marginLeft: 10 }} numberOfLines={1}>{p.name}</Text>
-              <Text style={{ color: p.stock <= 0 ? t.danger : t.warn, fontWeight: '700' }}>{p.stock <= 0 ? 'Out of stock' : `${p.stock} left`}</Text>
+              <Text style={{ color: p.stock <= 0 ? t.danger : t.warn, fontWeight: '700' }}>{p.stock <= 0 ? 'Sin stock' : `Quedan ${p.stock}`}</Text>
             </View>
           ))}
         </View>
