@@ -41,16 +41,16 @@ test('seed inserts the full catalog once and skips duplicates', async () => {
   const ids = { newId: () => `id-${++sequence}`, deviceId: 'd1' };
 
   const first = await seedColombianCatalog(seedDb, 's1', ids);
-  assert.equal(SEED_PRODUCTS.length, 62);
-  assert.equal(first.inserted, 62);
+  assert.equal(SEED_PRODUCTS.length, 100);
+  assert.equal(first.inserted, 100);
   assert.equal(first.skipped, 0);
 
   const second = await seedColombianCatalog(seedDb, 's1', ids);
   assert.equal(second.inserted, 0);
-  assert.equal(second.skipped, 62);
+  assert.equal(second.skipped, 100);
 
   const products = db.prepare('SELECT COUNT(*) AS c FROM products WHERE store_id=?').get('s1') as { c: number };
-  assert.equal(products.c, 62);
+  assert.equal(products.c, 100);
 
   const categories = db.prepare('SELECT COUNT(*) AS c FROM categories WHERE store_id=?').get('s1') as { c: number };
   assert.equal(categories.c, new Set(SEED_PRODUCTS.map((p) => p.category)).size);
@@ -67,4 +67,9 @@ test('seed inserts the full catalog once and skips duplicates', async () => {
   assert.equal(price('Cigarrillos Marlboro Rojo'), 12000);
   assert.equal(price('Chocolatina Jet'), 2000);
   assert.equal(price('Agua Cristal 600 ml'), 1500);
+  assert.equal(price('Papas Margarita Natural 105 g'), 3500);
+  assert.equal(price('Gaseosa Sprite 400 ml'), 3000);
+  assert.equal(price('Galletas Oreo 6 unidades'), 4000);
+  assert.equal(price('Pañales 30 unidades'), 18000);
+  assert.equal(price('Fórmula infantil 400 g'), 25000);
 });
