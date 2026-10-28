@@ -5,7 +5,8 @@ import { format, type Minor } from '@openpocket/pos-core';
 import { type Store } from './session';
 import { profileOf } from './repos';
 import { applyBusinessProfile, getBusinessProfile } from './businessProfile';
-import { currencyForStore, safeAccent, onAccent, contactLines, shopInitials, localizedReceiptFooter, localizedReceiptTerms, THERMAL_WIDTH_PT } from './branding';
+import { appCurrencyConfig } from './appCurrency';
+import { safeAccent, onAccent, contactLines, shopInitials, localizedReceiptFooter, localizedReceiptTerms, THERMAL_WIDTH_PT } from './branding';
 
 export interface PrintableReceipt {
   invoiceNo: string;
@@ -49,7 +50,7 @@ export async function loadLogoDataUri(store: Store): Promise<string | null> {
  */
 export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: string | null = null): string {
   const p = profileOf(store);
-  const m = (value: Minor) => format(value, currencyForStore(store));
+  const m = (value: Minor) => format(value, appCurrencyConfig());
   const accent = safeAccent(p.receiptAccent);
   const accentFg = onAccent(accent);
   const date = new Date(r.soldAt);

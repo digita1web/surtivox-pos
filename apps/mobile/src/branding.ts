@@ -112,9 +112,13 @@ export function currencyDecimalsFor(code: string): number {
   return currencyConfigFor(code).decimals;
 }
 
+export function currencyConfigForDisplay(code: string): { code: string; locale: string; decimals: number } {
+  const valid = CURRENCIES.some((c) => c.code === code) ? code : 'COP';
+  return { ...currencyConfigFor(valid), decimals: 0 };
+}
+
 export function currencyForStore(store: { currency_code: string }): { code: string; locale: string; decimals: number } {
-  const code = CURRENCIES.some((c) => c.code === store.currency_code) ? store.currency_code : 'COP';
-  return { ...currencyConfigFor(code), decimals: 0 };
+  return currencyConfigForDisplay(store.currency_code);
 }
 
 export function parseCurrencyInput(input: string, code: string): Minor {

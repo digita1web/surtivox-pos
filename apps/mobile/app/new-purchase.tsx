@@ -119,7 +119,7 @@ export default function NewPurchase() {
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <View style={[s.costWrap, { borderColor: t.line, backgroundColor: t.bg }]}>
-                    <Text style={{ color: t.muted, fontSize: 12 }}>{store.currency_code} </Text>
+                    <Text style={{ color: t.muted, fontSize: 12 }}>{currencyOf(store).code} </Text>
                     <TextInput value={draft.cost[item.id] ?? ''} onChangeText={(v) => draft.setCost(item.id, v)}
                       keyboardType="decimal-pad" placeholder="costo" placeholderTextColor={t.muted}
                       style={{ color: t.fg, fontWeight: '700', minWidth: 56, padding: 0, textAlign: 'right' }} />

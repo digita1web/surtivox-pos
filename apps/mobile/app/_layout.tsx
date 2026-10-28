@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initDatabase } from '../src/db';
 import { useSession, useLocked } from '../src/session';
+import { loadAppCurrency } from '../src/appCurrency';
 import { Onboarding } from '../src/pos/Onboarding';
 import { StaffLock } from '../src/pos/StaffLock';
 import { AlertHost } from '../src/pos/alert';
@@ -24,6 +25,9 @@ export default function RootLayout() {
   useEffect(() => {
     initDatabase()
       .then(() => loadSession())
+      .then(async () => {
+        await loadAppCurrency(useSession.getState().store?.currency_code ?? 'COP');
+      })
       .then(() => setReady(true))
       .catch((e) => setError(e instanceof Error ? e.message : String(e)));
   }, []);

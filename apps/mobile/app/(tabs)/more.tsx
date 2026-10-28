@@ -8,8 +8,9 @@ import { useCloudEntitlement } from '../../src/subscription';
 import { useTheme, initials, space, radius, type Theme } from '../../src/theme';
 import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { showAlert } from '../../src/pos/alert';
-import { resetAllData, seedColombianCatalog, updateStoreCurrency } from '../../src/repos';
+import { resetAllData, seedColombianCatalog, updateAllStoreCurrencies } from '../../src/repos';
 import { CURRENCY_CYCLE } from '../../src/branding';
+import { resetAppCurrency, setAppCurrency, useAppCurrency } from '../../src/appCurrency';
 import { SEED_PRODUCTS } from '../../src/seedCatalog';
 import { resetFirstRunGuide } from '../../src/localFlags';
 import { getReminderCount, resetReminderCount } from '../../src/fiadoReminderStorage';
@@ -29,6 +30,7 @@ export default function More() {
   const [resetting, setResetting] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [currencyBusy, setCurrencyBusy] = useState(false);
+  const appCode = useAppCurrency((s) => s.code);
   useFocusEffect(useCallback(() => {
     cloud.refresh();
     getReminderCount().then(setReminderCount);
@@ -41,6 +43,7 @@ export default function More() {
       await resetAllData();
       await resetFirstRunGuide();
       await resetReminderCount();
+      await resetAppCurrency();
       signOut();
       await reload();
     } catch (e) {
@@ -85,14 +88,15 @@ export default function More() {
     ]);
   };
 
-  const currencyIndex = CURRENCY_CYCLE.findIndex((code) => code === store.currency_code);
+  const currencyIndex = CURRENCY_CYCLE.findIndex((code) => code === appCode);
   const nextCurrency = CURRENCY_CYCLE[(currencyIndex + 1) % CURRENCY_CYCLE.length] ?? 'COP';
 
   const switchCurrency = async () => {
     if (currencyBusy) return;
     setCurrencyBusy(true);
     try {
-      await updateStoreCurrency(store.id, nextCurrency);
+      await setAppCurrency(nextCurrency);
+      await updateAllStoreCurrencies(nextCurrency);
       await reload();
     } catch (e) {
       showAlert('No se pudo cambiar la moneda', e instanceof Error ? e.message : String(e));
@@ -133,7 +137,7 @@ export default function More() {
           {store.tagline ? <Text style={{ color: t.muted, fontSize: 12, marginTop: 1 }} numberOfLines={1}>{store.tagline}</Text> : null}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 }}>
             <Ionicons name="cloud-offline-outline" size={13} color={t.muted} />
-            <Text style={{ color: t.muted, fontSize: 13 }}>{store.currency_code} · {stores.length > 1 ? `${stores.length} tienda${stores.length === 1 ? '' : 's'}` : 'funciona sin conexión'}</Text>
+            <Text style={{ color: t.muted, fontSize: 13 }}>{appCode} · {stores.length > 1 ? `${stores.length} tienda${stores.length === 1 ? '' : 's'}` : 'funciona sin conexión'}</Text>
           </View>
         </View>
         <Ionicons name="swap-horizontal-outline" size={20} color={t.muted} />
@@ -147,7 +151,7 @@ export default function More() {
           </View>
           <View style={{ flex: 1, marginLeft: 10 }}>
             <Text style={{ color: t.fg, fontWeight: '800' }}>
-              {currencyBusy ? 'Cambiando moneda…' : `Moneda: ${store.currency_code}`}
+              {currencyBusy ? 'Cambiando moneda…' : `Moneda: ${appCode}`}
             </Text>
             <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 2 }}>
               Toca para cambiar a {nextCurrency}. No convierte precios.

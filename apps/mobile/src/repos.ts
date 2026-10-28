@@ -167,11 +167,11 @@ export async function updateStoreProfile(storeId: string, p: StoreProfile): Prom
   return (await getStore())!;
 }
 
-export async function updateStoreCurrency(storeId: string, code: string): Promise<void> {
+export async function updateAllStoreCurrencies(code: string): Promise<void> {
   const config = currencyConfigFor(code);
   await getDb().runAsync(
-    'UPDATE stores SET currency_code=?, currency_locale=?, currency_decimals=?, updated_at=?, version=version+1 WHERE id=?',
-    [config.code, config.locale, 0, Date.now(), storeId],
+    'UPDATE stores SET currency_code=?, currency_locale=?, currency_decimals=?, updated_at=?, version=version+1',
+    [config.code, config.locale, 0, Date.now()],
   );
 }
 

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Text, View, Pressable, StyleSheet } from 'react-native';
 import { showAlert } from '../src/pos/alert';
 import { useRouter } from 'expo-router';
-import { createStore, DEFAULT_RECEIPT_ACCENT, type StoreProfile } from '../src/repos';
+import { createStore, updateAllStoreCurrencies, DEFAULT_RECEIPT_ACCENT, type StoreProfile } from '../src/repos';
 import { useSession } from '../src/session';
+import { setAppCurrency } from '../src/appCurrency';
 import { CURRENCIES, defaultCurrencyFor, currencyConfigFor } from '../src/branding';
 import { ShopDetailsFields } from '../src/pos/StoreProfileForm';
 import { useTheme, space, radius } from '../src/theme';
@@ -30,6 +31,8 @@ export default function NewShop() {
     setBusy(true);
     try {
       await createStore(profile.name.trim(), currencyConfigFor(code), { ...profile, name: profile.name.trim() });
+      await setAppCurrency(code);
+      await updateAllStoreCurrencies(code);
       await reload();          // new shop is now the active one (created as current)
       router.replace('/');     // fresh shop has no staff yet → straight to Home
     } catch (e) {

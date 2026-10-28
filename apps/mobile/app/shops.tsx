@@ -3,6 +3,7 @@ import { showAlert } from '../src/pos/alert';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../src/session';
+import { useAppCurrency } from '../src/appCurrency';
 import { useTheme, initials, space, radius } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
 
@@ -11,6 +12,7 @@ export default function Shops() {
   const router = useRouter();
   const stores = useSession((s) => s.stores);
   const current = useSession((s) => s.store);
+  const appCode = useAppCurrency((s) => s.code);
   const me = useSession((s) => s.staff);
   const switchStore = useSession((s) => s.switchStore);
   const signOut = useSession((s) => s.signOut);
@@ -41,7 +43,7 @@ export default function Shops() {
               : <View style={[s.logo, { backgroundColor: t.accent, alignItems: 'center', justifyContent: 'center' }]}><Text style={{ color: t.accentFg, fontWeight: '800' }}>{initials(shop.name)}</Text></View>}
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={{ color: t.fg, fontWeight: '700' }} numberOfLines={1}>{shop.name}</Text>
-              <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>{shop.currency_code}{shop.tagline ? ` · ${shop.tagline}` : ''}</Text>
+              <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>{appCode}{shop.tagline ? ` · ${shop.tagline}` : ''}</Text>
             </View>
             {on
               ? <View style={[s.badge, { backgroundColor: t.accentSoft }]}><Text style={{ color: t.accent, fontWeight: '800', fontSize: 12 }}>Actual</Text></View>

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { asMinor } from '@openpocket/pos-core';
-import { safeAccent, onAccent, contactLines, shopInitials, normalizeUrl, DEFAULT_ACCENT, defaultCurrencyFor, localeForCurrency, currencyConfigFor, CURRENCIES, currencyDecimalsFor, parseCurrencyInput, currencyForStore, APP_CURRENCY, DEFAULT_FOOTER, DEFAULT_RECEIPT_TERMS, localizedReceiptFooter, localizedReceiptTerms } from './branding.ts';
+import { safeAccent, onAccent, contactLines, shopInitials, normalizeUrl, DEFAULT_ACCENT, defaultCurrencyFor, localeForCurrency, currencyConfigFor, CURRENCIES, currencyDecimalsFor, parseCurrencyInput, currencyForStore, currencyConfigForDisplay, APP_CURRENCY, DEFAULT_FOOTER, DEFAULT_RECEIPT_TERMS, localizedReceiptFooter, localizedReceiptTerms } from './branding.ts';
 
 test('safeAccent only accepts #rrggbb and falls back otherwise', () => {
   assert.equal(safeAccent('#2563EB'), '#2563eb');
@@ -63,6 +63,7 @@ test('app displays the selected store currency with whole units', () => {
   assert.deepEqual(currencyForStore({ currency_code: 'COP' }), { code: 'COP', locale: 'es-CO', decimals: 0 });
   assert.deepEqual(currencyForStore({ currency_code: 'USD' }), { code: 'USD', locale: 'en-US', decimals: 0 });
   assert.deepEqual(currencyForStore({ currency_code: 'EUR' }), { code: 'EUR', locale: 'en-IE', decimals: 0 });
+  assert.deepEqual(currencyConfigForDisplay('USD'), { code: 'USD', locale: 'en-US', decimals: 0 });
 });
 
 test('receipt footer and terms translate English defaults', () => {

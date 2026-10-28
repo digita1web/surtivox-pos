@@ -7,6 +7,7 @@ import { showAlert } from './alert';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { createStore, type StoreProfile } from '../repos';
+import { setAppCurrency } from '../appCurrency';
 import { loadDemoShop, hasHostedSync } from '../sync';
 import { useTheme, type Theme } from '../theme';
 import { DEFAULT_ACCENT, CURRENCIES, defaultCurrencyFor, currencyConfigFor } from '../branding';
@@ -136,6 +137,7 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
     setBusy(true);
     try {
       await createStore(profile.name.trim(), currency, { ...profile, name: profile.name.trim() });
+      await setAppCurrency(currency.code);
       onCreated();
     } catch (e) {
       showAlert('No se pudo crear la tienda', e instanceof Error ? e.message : String(e));

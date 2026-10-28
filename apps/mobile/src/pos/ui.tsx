@@ -1,12 +1,13 @@
 import { View, Text } from 'react-native';
 import { format, type Minor } from '@openpocket/pos-core';
-import { useSession, currencyOf } from '../session';
+import { useAppCurrency } from '../appCurrency';
+import { currencyConfigForDisplay } from '../branding';
 import { useTheme } from '../theme';
 
-/** Hook returning a money formatter bound to the current store's currency. */
 export function useMoney(): (m: Minor) => string {
-  const store = useSession((s) => s.store);
-  return (m: Minor) => (store ? format(m, currencyOf(store)) : '');
+  const code = useAppCurrency((s) => s.code);
+  const currency = currencyConfigForDisplay(code);
+  return (m: Minor) => format(m, currency);
 }
 
 export const PAYMENT_LABEL: Record<string, string> = { cash: 'Efectivo', card: 'Tarjeta', wallet: 'Nequi / Daviplata', bank: 'Transferencia', credit: 'Fiado' };
