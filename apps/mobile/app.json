@@ -49,7 +49,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#0B0E12"
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": false
