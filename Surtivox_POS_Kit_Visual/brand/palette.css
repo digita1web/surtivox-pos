@@ -1,0 +1,11 @@
+:root {
+  --svx-background: #0B0E12;
+  --svx-surface: #151C24;
+  --svx-border: #27313B;
+  --svx-primary: #19B88E;
+  --svx-primary-dark: #10332C;
+  --svx-text: #F1F3F6;
+  --svx-text-secondary: #929BA9;
+  --svx-danger: #E66B75;
+  --svx-danger-background: #FCEBED;
+}

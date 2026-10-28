@@ -14,6 +14,7 @@ coverage/
 *.tsbuildinfo
 android/
 ios/
+apps/mobile/android/
 
 # local test server db
 .data/
