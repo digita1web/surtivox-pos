@@ -160,7 +160,7 @@ export function CheckoutSheet() {
           <View>
             {lines.map(({ product, quantity }, i) => (
               <View key={product.id} style={[s.line, { borderColor: t.line }]}>
-                <Thumb uri={product.image_uri} name={product.name} style={s.tile} textSize={12} />
+                <Thumb uri={product.image_uri} name={product.name} category={product.category_name} style={s.tile} textSize={12} />
                 <Text style={{ color: t.fg, flex: 1, marginLeft: 10 }} numberOfLines={1}>{product.name}</Text>
                 <View style={s.qtyBox}>
                   <Pressable onPress={() => cart.setQty(product.id, quantity - 1)} style={[s.qBtn, { borderColor: t.line, backgroundColor: t.surfaceAlt }]}>

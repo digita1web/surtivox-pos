@@ -17,6 +17,7 @@
 - No renombrar `package.json` ni `pnpm-lock.yaml`.
 - No instalar dependencias sin aprobación.
 - Dependencia autorizada: `expo-splash-screen` (aprobada para el splash nativo).
+- Dependencia autorizada: `expo-image-manipulator` (aprobada para comprimir fotos de productos).
 - No hacer push.
 
 ## Verificación

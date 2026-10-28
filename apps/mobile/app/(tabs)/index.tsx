@@ -138,7 +138,7 @@ export default function Home() {
               return (
                 <View key={p.id} style={[s.mini, { backgroundColor: t.panel, borderColor: qty > 0 ? t.accent : t.line }]}>
                   <View style={[s.miniTileWrap, { borderColor: t.line }]}>
-                    <Thumb uri={p.image_uri} name={p.name} style={s.miniTile} textSize={18} />
+                    <Thumb uri={p.image_uri} name={p.name} category={p.category_name} style={s.miniTile} textSize={18} />
                     <Pressable onPress={() => cart.add(p)} accessibilityLabel={`Agregar ${p.name}`}
                       style={[s.plus, { backgroundColor: t.accent }]}>
                       {qty > 0 ? <Text style={{ color: t.accentFg, fontWeight: '800' }}>{qty}</Text> : <Ionicons name="add" size={18} color={t.accentFg} />}

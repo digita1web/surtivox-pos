@@ -45,7 +45,7 @@ function ProductCardBase({ product }: { product: Product }) {
     <View style={[s.card, { backgroundColor: t.panel, borderColor: qty > 0 ? t.accent : t.line }]}>
       <Pressable onPress={() => cart.add(product)} accessibilityLabel={`Agregar ${product.name}`}>
         <View style={[s.imageWrap, { backgroundColor: '#ffffff', borderColor: t.line }]}>
-          <Thumb uri={product.image_uri} name={product.name} style={s.image} textSize={26} />
+          <Thumb uri={product.image_uri} name={product.name} category={product.category_name} style={s.image} textSize={26} />
           {(out || low) && (
             <View style={[s.badge, { backgroundColor: out ? t.danger : t.warn }]}>
               <Text style={s.badgeText}>{out ? 'AGOTADO' : 'STOCK BAJO'}</Text>

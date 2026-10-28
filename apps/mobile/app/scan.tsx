@@ -195,7 +195,7 @@ export default function Scan() {
           const line = (item.product.selling_price * item.quantity) as number;
           return (
             <View style={[st.row, { backgroundColor: t.panel, borderColor: t.line }]}>
-              <Thumb uri={item.product.image_uri} name={item.product.name} style={st.thumb} textSize={15} />
+              <Thumb uri={item.product.image_uri} name={item.product.name} category={item.product.category_name} style={st.thumb} textSize={15} />
               <View style={{ flex: 1, marginLeft: space.md }}>
                 <Text style={[ty.body, { color: t.fg, fontWeight: '700' }]} numberOfLines={1}>{item.product.name}</Text>
                 <Text style={[ty.small, { color: t.muted, marginTop: 2 }]}>{money(asMinor(item.product.selling_price))} c/u</Text>

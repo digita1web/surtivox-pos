@@ -1,9 +1,11 @@
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { newId } from '../id';
 
 const DIR = FileSystem.documentDirectory + 'products/';
 const BRAND_DIR = FileSystem.documentDirectory + 'branding/';
+const MAX_PRODUCT_IMAGE = 512;
 
 const EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -15,9 +17,6 @@ const EXT: Record<string, string> = {
   'image/gif': 'gif',
 };
 
-// Picker results live in a cache the OS can purge — copy into the app's
-// document directory so the product image survives restarts. The extension is
-// derived from the asset's mimeType (URIs are often extension-less content://).
 async function persist(asset: ImagePicker.ImagePickerAsset, dir: string = DIR): Promise<string> {
   await FileSystem.makeDirectoryAsync(dir, { intermediates: true }).catch(() => {});
   const ext = (asset.mimeType && EXT[asset.mimeType]) ?? 'jpg';
@@ -26,25 +25,43 @@ async function persist(asset: ImagePicker.ImagePickerAsset, dir: string = DIR): 
   return dest;
 }
 
-// Product photos keep the whole image the user picked (no forced square crop) —
-// the UI shows them with resizeMode="contain" so nothing is cut off.
+async function persistProduct(asset: ImagePicker.ImagePickerAsset): Promise<string> {
+  await FileSystem.makeDirectoryAsync(DIR, { intermediates: true }).catch(() => {});
+  const width = asset.width > 0 ? asset.width : MAX_PRODUCT_IMAGE;
+  const height = asset.height > 0 ? asset.height : MAX_PRODUCT_IMAGE;
+  const scale = Math.min(1, MAX_PRODUCT_IMAGE / Math.max(width, height));
+  try {
+    const context = ImageManipulator.manipulate(asset.uri);
+    context.resize({
+      width: Math.max(1, Math.round(width * scale)),
+      height: Math.max(1, Math.round(height * scale)),
+    });
+    const rendered = await context.renderAsync();
+    const saved = await rendered.saveAsync({ compress: 0.7, format: SaveFormat.WEBP });
+    const dest = `${DIR}${newId()}.webp`;
+    await FileSystem.copyAsync({ from: saved.uri, to: dest });
+    return dest;
+  } catch {
+    return persist(asset, DIR);
+  }
+}
+
 export async function pickFromGallery(): Promise<string | null> {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) return null;
-  const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 });
+  const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1 });
   if (res.canceled || !res.assets?.[0]) return null;
-  return persist(res.assets[0]);
+  return persistProduct(res.assets[0]);
 }
 
 export async function takePhoto(): Promise<string | null> {
   const perm = await ImagePicker.requestCameraPermissionsAsync();
   if (!perm.granted) return null;
-  const res = await ImagePicker.launchCameraAsync({ quality: 0.7 });
+  const res = await ImagePicker.launchCameraAsync({ quality: 1 });
   if (res.canceled || !res.assets?.[0]) return null;
-  return persist(res.assets[0]);
+  return persistProduct(res.assets[0]);
 }
 
-/** Pick a shop logo from the gallery (square crop, kept in the app's branding folder). */
 export async function pickLogo(): Promise<string | null> {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) return null;
