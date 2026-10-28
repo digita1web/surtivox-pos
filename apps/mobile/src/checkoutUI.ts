@@ -13,6 +13,7 @@ interface CheckoutUI {
   closeQuick: () => void;
   showReceipt: (r: Receipt) => void;
   clearReceipt: () => void;
+  bumpSales: () => void;
 }
 
 export const useCheckoutUI = create<CheckoutUI>((set) => ({
@@ -26,4 +27,5 @@ export const useCheckoutUI = create<CheckoutUI>((set) => ({
   closeQuick: () => set({ quickOpen: false }),
   showReceipt: (r) => set((st) => ({ receipt: r, checkoutOpen: false, salesVersion: st.salesVersion + 1 })),
   clearReceipt: () => set({ receipt: null }),
+  bumpSales: () => set((st) => ({ salesVersion: st.salesVersion + 1 })),
 }));

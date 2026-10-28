@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { View, Text, TextInput, Pressable, Modal, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { fromMajorString } from '@openpocket/pos-core';
 import { useCart } from '../cart';
 import { useSession } from '../session';
 import { useCheckoutUI } from '../checkoutUI';
 import { newId } from '../id';
 import { useTheme } from '../theme';
 import { useMoney } from './ui';
+import { APP_CURRENCY, parseCurrencyInput } from '../branding';
 import type { Product } from '../repos';
 
 /** Sell an ad-hoc item that isn't in the catalog (records product_id = NULL). */
@@ -31,13 +31,13 @@ export function QuickSaleModal() {
 
   const pricePreview = (() => {
     if (!price.trim()) return null;
-    try { return money(fromMajorString(price, store.currency_decimals)); } catch { return null; }
+    try { return money(parseCurrencyInput(price, APP_CURRENCY.code)); } catch { return null; }
   })();
 
   const add = () => {
     setErr(null);
     try {
-      const selling = fromMajorString(price || '0', store.currency_decimals);
+      const selling = parseCurrencyInput(price || '0', APP_CURRENCY.code);
       if (selling <= 0) throw new Error('Ingresa un precio');
       const quantity = Math.max(1, Math.floor(parseFloat(qty || '1')));
       const product: Product = {

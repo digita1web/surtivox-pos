@@ -6,6 +6,7 @@ import {
   listProducts, salesExportRows, findProductByBarcode, createProduct, updateProductFields,
 } from './repos';
 import type { Store } from './repos';
+import { APP_CURRENCY } from './branding';
 import { getDb } from './db';
 
 const major = (minor: number, dec: number) => (minor / 10 ** dec).toFixed(dec);
@@ -20,7 +21,7 @@ async function writeAndShare(filename: string, csv: string): Promise<void> {
 }
 
 export async function exportProducts(store: Store): Promise<number> {
-  const dec = store.currency_decimals;
+  const dec = APP_CURRENCY.decimals;
   const products = await listProducts(store.id);
   const rows = products.map((p) => [
     p.name, p.barcode ?? '', major(p.selling_price, dec), major(p.cost_price, dec), String(p.tax_bps / 100), String(p.stock),
@@ -31,7 +32,7 @@ export async function exportProducts(store: Store): Promise<number> {
 }
 
 export async function exportSales(store: Store): Promise<number> {
-  const dec = store.currency_decimals;
+  const dec = APP_CURRENCY.decimals;
   const rows = await salesExportRows(store.id);
   const body = rows.map((r) => [
     r.invoice_no, new Date(r.sold_at).toISOString(), r.product, String(r.quantity),
@@ -142,7 +143,7 @@ export async function importProducts(store: Store): Promise<ImportResult | null>
   const iStock = columnIndex(headers, 'stock');
   if (iName < 0 || iSell < 0) throw new Error('El CSV debe incluir al menos las columnas "name" y "selling_price"');
 
-  const dec = store.currency_decimals;
+  const dec = APP_CURRENCY.decimals;
   let created = 0, updated = 0, skipped = 0;
 
   for (let r = 1; r < rows.length; r++) {

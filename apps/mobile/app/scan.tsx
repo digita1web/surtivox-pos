@@ -5,6 +5,7 @@ import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'ex
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { computeCart, asMinor, asBps } from '@openpocket/pos-core';
 import { getStore, findProductByBarcode, type Store, type Product } from '../src/repos';
+import { currencyOf } from '../src/session';
 import { useCart } from '../src/cart';
 import { usePurchaseDraft } from '../src/purchaseDraft';
 import { useCheckoutUI } from '../src/checkoutUI';
@@ -66,7 +67,8 @@ export default function Scan() {
     }
     setSeen((m) => ({ ...m, [product.id]: product }));
     if (isStock) {
-      draft.ensureCost(product.id, (product.cost_price / 10 ** store.currency_decimals).toFixed(store.currency_decimals));
+      const dec = currencyOf(store).decimals;
+      draft.ensureCost(product.id, (product.cost_price / 10 ** dec).toFixed(dec));
       draft.bump(product.id);
       Vibration.vibrate(40);
       flash(`Agregado ${product.name}`, true);

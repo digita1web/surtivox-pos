@@ -5,7 +5,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { fromMajorString, asMinor } from '@openpocket/pos-core';
 import { listProducts, listSuppliers, createPurchase, type Product, type Supplier, type PurchaseLine } from '../src/repos';
-import { useSession } from '../src/session';
+import { useSession, currencyOf } from '../src/session';
 import { usePurchaseDraft } from '../src/purchaseDraft';
 import { useMoney } from '../src/pos/ui';
 import { useTheme, space, radius } from '../src/theme';
@@ -17,7 +17,7 @@ export default function NewPurchase() {
   const router = useRouter();
   const store = useSession((s) => s.store)!;
   const money = useMoney();
-  const dec = store.currency_decimals;
+  const dec = currencyOf(store).decimals;
   const draft = usePurchaseDraft();
 
   const [products, setProducts] = useState<Product[]>([]);

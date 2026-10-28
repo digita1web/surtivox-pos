@@ -1,13 +1,12 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
-import { format, type CurrencyConfig, type Minor } from '@openpocket/pos-core';
+import { type Minor } from '@openpocket/pos-core';
 import { type Store } from './session';
 import { profileOf } from './repos';
 import { applyBusinessProfile, getBusinessProfile } from './businessProfile';
-import { safeAccent, onAccent, contactLines, shopInitials, DEFAULT_FOOTER, DEFAULT_RECEIPT_TERMS, THERMAL_WIDTH_PT } from './branding';
-
-export const RECEIPT_CURRENCY: CurrencyConfig = { code: 'COP', locale: 'es-CO', decimals: 0 };
+import { formatCopAmount } from './receiptMoney';
+import { safeAccent, onAccent, contactLines, shopInitials, localizedReceiptFooter, localizedReceiptTerms, THERMAL_WIDTH_PT } from './branding';
 
 export interface PrintableReceipt {
   invoiceNo: string;
@@ -51,7 +50,7 @@ export async function loadLogoDataUri(store: Store): Promise<string | null> {
  */
 export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: string | null = null): string {
   const p = profileOf(store);
-  const m = (v: Minor) => format(v, RECEIPT_CURRENCY).replace(/\u00A0/g, ' ');
+  const m = formatCopAmount;
   const accent = safeAccent(p.receiptAccent);
   const accentFg = onAccent(accent);
   const date = new Date(r.soldAt);
@@ -63,7 +62,7 @@ export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: stri
   const logo = p.showLogo
     ? (logoDataUri ? `<img class="logo" src="${logoDataUri}"/>` : `<div class="logo mono">${esc(shopInitials(p.name))}</div>`)
     : '';
-  const footer = p.receiptFooter.trim() || DEFAULT_FOOTER;
+  const footer = localizedReceiptFooter(p.receiptFooter);
 
   const totalRow = (label: string, value: string, cls = '') =>
     `<tr class="${cls}"><td class="tl">${esc(label)}</td><td class="tr">${esc(value)}</td></tr>`;
@@ -86,7 +85,7 @@ export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: stri
     ['Pago', r.paymentLabel],
   ].filter(Boolean) as string[][];
 
-  const termsText = p.receiptTerms.trim() || DEFAULT_RECEIPT_TERMS;
+  const termsText = localizedReceiptTerms(p.receiptTerms);
   const terms = `<div class="terms">${multiline(termsText)}</div>`;
   const taxId = p.taxId.trim() ? `<div class="taxid">NIT: ${esc(p.taxId.trim())}</div>` : '';
 

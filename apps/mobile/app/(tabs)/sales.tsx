@@ -3,8 +3,11 @@ import { View, Text, Pressable, FlatList, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { asMinor } from '@openpocket/pos-core';
-import { listSales, type SaleSummary } from '../../src/repos';
-import { useSession } from '../../src/session';
+import { listSales, voidSale, type SaleSummary } from '../../src/repos';
+import { useSession, useRole } from '../../src/session';
+import { can } from '../../src/roles';
+import { useCheckoutUI } from '../../src/checkoutUI';
+import { showAlert } from '../../src/pos/alert';
 import { useMoney } from '../../src/pos/ui';
 import { TabHeader, listProps, useTabListInset } from '../../src/pos/Screen';
 import { SearchField, Chip, ChipRow, ChipDivider, EmptyState } from '../../src/pos/kit';
@@ -49,14 +52,38 @@ export default function Sales() {
   const listInset = useTabListInset();
   const store = useSession((s) => s.store)!; // scope sales to the current shop
   const money = useMoney();
+  const canVoid = can(useRole(), 'returns');
+  const bumpSales = useCheckoutUI((s) => s.bumpSales);
   const [sales, setSales] = useState<SaleSummary[]>([]);
   const [range, setRange] = useState<Range>('today');
   const [method, setMethod] = useState('all');
   const [q, setQ] = useState('');
 
-  useFocusEffect(useCallback(() => {
+  const refresh = useCallback(() => {
     listSales({ storeId: store.id, since: sinceFor(range) }).then(setSales);
-  }, [range, store.id]));
+  }, [range, store.id]);
+
+  useFocusEffect(useCallback(() => {
+    refresh();
+  }, [refresh]));
+
+  const voidOne = async (sale: SaleSummary) => {
+    try {
+      await voidSale(store.id, sale.id);
+      refresh();
+      bumpSales();
+      showAlert('Venta anulada', `${sale.invoice_no} se anuló y el stock volvió al inventario.`);
+    } catch (e) {
+      showAlert('No se pudo anular la venta', e instanceof Error ? e.message : String(e));
+    }
+  };
+
+  const confirmVoid = (sale: SaleSummary) => {
+    showAlert('Anular venta', '¿Anular esta venta? El dinero se restará del total del día y los productos volverán al inventario.', [
+      { text: 'Cancelar', style: 'cancel' as const },
+      { text: 'Anular venta', style: 'destructive' as const, onPress: () => { void voidOne(sale); } },
+    ]);
+  };
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -101,18 +128,26 @@ export default function Sales() {
         ListHeaderComponentStyle={{ marginBottom: space.md }}
         ListEmptyComponent={<EmptyState icon="receipt-outline" title="No se encontraron ventas" hint="Prueba otro período o filtro de pago." />}
         renderItem={({ item }) => (
-          <Pressable onPress={() => router.push(`/sale/${item.id}`)}
-            style={({ pressed }) => [s.row, { backgroundColor: t.panel, borderColor: t.line, opacity: pressed ? 0.85 : 1 }]}>
-            <View style={[s.badge, { backgroundColor: t.accentSoft }]}><Ionicons name="receipt-outline" size={20} color={t.accent} /></View>
-            <View style={{ flex: 1, marginLeft: space.md }}>
-              <Text style={{ color: t.fg, fontWeight: '700' }}>{item.invoice_no}</Text>
-              <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 2 }} numberOfLines={1}>
-                {when(item.sold_at)} · {item.item_count} artículo{item.item_count === 1 ? '' : 's'} · {PAYMENT_LABEL_ES[item.payment_method] ?? item.payment_method}
-              </Text>
-            </View>
-            <Text style={{ color: t.fg, fontWeight: '800', fontSize: 16 }}>{money(asMinor(item.grand_total))}</Text>
-            <Ionicons name="chevron-forward" size={18} color={t.faint} style={{ marginLeft: space.sm }} />
-          </Pressable>
+          <View style={[s.row, { backgroundColor: t.panel, borderColor: t.line }]}>
+            <Pressable onPress={() => router.push(`/sale/${item.id}`)}
+              style={({ pressed }) => [s.rowMain, { opacity: pressed ? 0.85 : 1 }]}>
+              <View style={[s.badge, { backgroundColor: t.accentSoft }]}><Ionicons name="receipt-outline" size={20} color={t.accent} /></View>
+              <View style={{ flex: 1, marginLeft: space.md }}>
+                <Text style={{ color: t.fg, fontWeight: '700' }}>{item.invoice_no}</Text>
+                <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 2 }} numberOfLines={1}>
+                  {when(item.sold_at)} · {item.item_count} artículo{item.item_count === 1 ? '' : 's'} · {PAYMENT_LABEL_ES[item.payment_method] ?? item.payment_method}
+                </Text>
+              </View>
+              <Text style={{ color: t.fg, fontWeight: '800', fontSize: 16 }}>{money(asMinor(item.grand_total))}</Text>
+              <Ionicons name="chevron-forward" size={18} color={t.faint} style={{ marginLeft: space.sm }} />
+            </Pressable>
+            {canVoid && (
+              <Pressable onPress={() => confirmVoid(item)} hitSlop={8} accessibilityLabel={`Anular venta ${item.invoice_no}`}
+                style={[s.voidBtn, { backgroundColor: t.danger + '18' }]}>
+                <Ionicons name="trash-outline" size={18} color={t.danger} />
+              </Pressable>
+            )}
+          </View>
         )}
       />
     </View>
@@ -126,5 +161,7 @@ const s = StyleSheet.create({
   controls: { gap: space.md, marginTop: space.xs },
   summary: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.xl, padding: space.xl },
   row: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: radius.lg, padding: space.md },
+  rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  voidBtn: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginLeft: space.sm },
   badge: { width: 42, height: 42, borderRadius: radius.md - 2, alignItems: 'center', justifyContent: 'center' },
 });

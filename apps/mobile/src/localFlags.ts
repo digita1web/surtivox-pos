@@ -16,3 +16,9 @@ export async function markFirstRunGuideSeen(): Promise<void> {
     await FileSystem.writeAsStringAsync(FILE_URI, JSON.stringify({ seen: true }), { encoding: FileSystem.EncodingType.UTF8 });
   } catch {}
 }
+
+export async function resetFirstRunGuide(): Promise<void> {
+  try {
+    await FileSystem.deleteAsync(FILE_URI, { idempotent: true });
+  } catch {}
+}

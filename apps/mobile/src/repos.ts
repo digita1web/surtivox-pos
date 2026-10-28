@@ -14,6 +14,7 @@ import {
   type SalesPoint,
 } from '@openpocket/pos-core';
 import { getDb } from './db';
+import { APP_CURRENCY } from './branding';
 import { newId, DEVICE_ID } from './id';
 import { type Role, hashPin, verifyPin, randomSalt } from './roles';
 
@@ -53,7 +54,7 @@ export interface StoreProfile {
 }
 
 export const DEFAULT_RECEIPT_ACCENT = '#0ca678';
-export const DEFAULT_RECEIPT_FOOTER = '¡Gracias por su compra!';
+export const DEFAULT_RECEIPT_FOOTER = '¡Gracias por su compra!\n¡Vuelva pronto!';
 
 export function profileOf(s: Store): StoreProfile {
   return {
@@ -98,18 +99,28 @@ export const DEFAULT_LOW_STOCK = 5;
 export const isLowStock = (p: Pick<Product, 'stock' | 'low_stock_threshold'>) =>
   p.stock > 0 && p.stock <= (p.low_stock_threshold ?? DEFAULT_LOW_STOCK);
 
+async function normalizedStore(store: Store): Promise<Store> {
+  const canonical = APP_CURRENCY;
+  if (store.currency_code === canonical.code && store.currency_decimals === canonical.decimals && store.currency_locale === canonical.locale) return store;
+  await getDb().runAsync(
+    'UPDATE stores SET currency_code=?, currency_locale=?, currency_decimals=?, updated_at=?, version=version+1 WHERE id=?',
+    [canonical.code, canonical.locale, canonical.decimals, Date.now(), store.id],
+  );
+  return { ...store, currency_code: canonical.code, currency_locale: canonical.locale, currency_decimals: canonical.decimals };
+}
+
 /** The shop currently in use on this device (multi-shop aware). */
 export async function getStore(): Promise<Store | null> {
   const db = getDb();
   const ptr = await db.getFirstAsync<{ current_store_id: string | null }>('SELECT current_store_id FROM app_state WHERE id=1');
   if (ptr?.current_store_id) {
     const s = await db.getFirstAsync<Store>('SELECT * FROM stores WHERE id=?', [ptr.current_store_id]);
-    if (s) return s;
+    if (s) return normalizedStore(s);
   }
   // No/stale pointer: fall back to the oldest shop and adopt it as current.
   const first = await db.getFirstAsync<Store>('SELECT * FROM stores ORDER BY created_at LIMIT 1');
   if (first) await db.runAsync('UPDATE app_state SET current_store_id=? WHERE id=1', [first.id]);
-  return first ?? null;
+  return first ? normalizedStore(first) : null;
 }
 
 /** All shops on this device, oldest first. */
@@ -416,6 +427,51 @@ export async function listSales(opts: { storeId: string; since?: number; limit?:
   );
 }
 
+export async function voidSale(storeId: string, saleId: string): Promise<void> {
+  const db = getDb();
+  const sale = await db.getFirstAsync<{ customer_id: string | null; status: string; grand_total: number }>(
+    'SELECT customer_id, status, grand_total FROM sales WHERE id=? AND store_id=?',
+    [saleId, storeId],
+  );
+  if (!sale) throw new Error('No se encontró la venta');
+  if (sale.status !== 'completed') throw new Error('La venta ya está anulada');
+  const returns = await db.getFirstAsync<{ total: number }>(
+    'SELECT COALESCE(SUM(grand_total),0) AS total FROM returns WHERE sale_id=?',
+    [saleId],
+  );
+  if ((returns?.total ?? 0) > 0) throw new Error('Esta venta tiene devoluciones; no se puede anular');
+  const items = await db.getAllAsync<{ product_id: string | null; quantity: number }>(
+    'SELECT product_id, quantity FROM sale_items WHERE sale_id=?',
+    [saleId],
+  );
+  const ledger = await db.getFirstAsync<{ c: number }>(
+    "SELECT COUNT(*) AS c FROM customer_ledger WHERE reference_type='sale' AND reference_id=?",
+    [saleId],
+  );
+  const now = Date.now();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync(
+      "UPDATE sales SET status='void', updated_at=?, version=version+1 WHERE id=? AND store_id=?",
+      [now, saleId, storeId],
+    );
+    for (const item of items) {
+      if (!item.product_id) continue;
+      await db.runAsync(
+        `INSERT INTO stock_movements (id,store_id,product_id,type,quantity_delta,reference_type,reference_id,note,created_at,device_id)
+         VALUES (?,?,?,'sale_return',?,'sale_void',?,?,?,?)`,
+        [newId(), storeId, item.product_id, item.quantity, saleId, 'Anulación de venta', now, DEVICE_ID],
+      );
+    }
+    if (sale.customer_id && (ledger?.c ?? 0) > 0) {
+      await db.runAsync(
+        `INSERT INTO customer_ledger (id,store_id,customer_id,type,amount,reference_type,reference_id,note,created_at,device_id)
+         VALUES (?,?,?,'adjustment',?,'sale_void',?,?,?,?)`,
+        [newId(), storeId, sale.customer_id, -sale.grand_total, saleId, 'Anulación de venta', now, DEVICE_ID],
+      );
+    }
+  });
+}
+
 /** Distinct products from recent sales, most-recently-sold first. */
 export async function recentlySold(storeId: string, limit = 6): Promise<Product[]> {
   return getDb().getAllAsync<Product>(
@@ -423,7 +479,7 @@ export async function recentlySold(storeId: string, limit = 6): Promise<Product[
      JOIN (
        SELECT si.product_id, MAX(s.sold_at) AS last_sold
        FROM sale_items si JOIN sales s ON s.id = si.sale_id
-       WHERE si.product_id IS NOT NULL
+       WHERE si.product_id IS NOT NULL AND s.status='completed'
        GROUP BY si.product_id
        ORDER BY last_sold DESC LIMIT ?
      ) r ON r.product_id = p.id
@@ -956,6 +1012,21 @@ export async function deleteProduct(id: string): Promise<void> {
     `UPDATE products SET active=0, deleted_at=?, updated_at=?, version=version+1 WHERE id=?`,
     [now, now, id],
   );
+}
+
+const RESET_TABLES = [
+  'return_items', 'returns', 'payments', 'sale_items', 'sales',
+  'customer_ledger', 'customers', 'purchase_items', 'purchases',
+  'suppliers', 'stock_movements', 'products', 'categories', 'staff', 'stores',
+];
+
+export async function resetAllData(): Promise<void> {
+  const db = getDb();
+  await db.withTransactionAsync(async () => {
+    for (const table of RESET_TABLES) await db.runAsync(`DELETE FROM ${table}`);
+    await db.runAsync('UPDATE app_state SET current_store_id=NULL WHERE id=1');
+    await db.runAsync('UPDATE sync_state SET server_url=NULL, token=NULL, last_pushed_at=0, last_pulled_at=0, last_synced_at=NULL WHERE id=1');
+  });
 }
 
 export interface SalesExportRow {

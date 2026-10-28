@@ -115,7 +115,7 @@ export default function CustomerDetail() {
 
       <PaymentModal
         visible={payOpen} onClose={() => setPayOpen(false)} t={t}
-        max={customer.balance} decimals={store.currency_decimals}
+        max={customer.balance} decimals={currencyOf(store).decimals}
         onSubmit={async (amt) => { await recordCustomerPayment(store.id, customer.id, amt); setPayOpen(false); refresh(); }}
       />
     </Screen>

@@ -21,3 +21,9 @@ export async function incrementReminderCount(): Promise<number> {
     return current;
   }
 }
+
+export async function resetReminderCount(): Promise<void> {
+  try {
+    await FileSystem.deleteAsync(FILE_URI, { idempotent: true });
+  } catch {}
+}

@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, Modal, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { computeCart, settlePayments, suggestCashAmounts, cashSuggestionSteps, fromMajorString, asMinor, asBps, type Minor } from '@openpocket/pos-core';
+import { computeCart, suggestCashAmounts, cashSuggestionSteps, asMinor, asBps, type Minor } from '@openpocket/pos-core';
 import { useCart } from '../cart';
 import { useSession, currencyOf } from '../session';
 import { useCheckoutUI } from '../checkoutUI';
+import { settleCash } from '../checkoutMath';
 import { checkoutSale, type PaymentMethod, type Customer } from '../repos';
 import { useTheme, initials } from '../theme';
 import { Thumb } from './Thumb';
@@ -59,12 +60,10 @@ export function CheckoutSheet() {
   const paymentMethod = METHODS.find((m) => m.key === method)?.paymentMethod ?? 'cash';
   const isCash = paymentMethod === 'cash';
   const isCredit = paymentMethod === 'credit';
-  const receivedMinor = (() => {
-    if (!isCash) return totals.grandTotal;
-    try { return received ? fromMajorString(received, currency.decimals) : asMinor(0); } catch { return asMinor(0); }
-  })();
-  const enough = receivedMinor >= totals.grandTotal;
-  const change = enough ? ((receivedMinor - totals.grandTotal) as Minor) : asMinor(0);
+  const cash = settleCash(totals.grandTotal, received, currency);
+  const receivedMinor = isCash ? cash.received : totals.grandTotal;
+  const enough = isCash ? cash.enough : true;
+  const change = isCash ? cash.change : asMinor(0);
   const cashSteps = currency.code === 'COP' ? COP_CASH_STEPS : cashSuggestionSteps(totals.grandTotal, currency.decimals);
   const suggestions = suggestCashAmounts(totals.grandTotal, cashSteps).slice(0, 5);
   const blocked = lines.length === 0 || (isCredit && !customer) || busy;
@@ -218,7 +217,7 @@ export function CheckoutSheet() {
           {isCash && (
             <>
               <Text style={[s.label, { color: t.muted }]}>Efectivo recibido</Text>
-              <TextInput value={received} onChangeText={setReceived} keyboardType="decimal-pad" placeholder="0.00"
+              <TextInput value={received} onChangeText={setReceived} keyboardType="decimal-pad" placeholder={currency.decimals === 0 ? '0' : '0.00'}
                 placeholderTextColor={t.muted}
                 style={[s.input, { color: t.fg, borderColor: t.line, backgroundColor: t.bg }]} />
               <View style={s.wrapRow}>

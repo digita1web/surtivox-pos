@@ -3,11 +3,31 @@
  * the printed/PDF receipt derive exactly the same content from a Store, and so
  * it can be unit-tested under node.
  */
+import { fromMajorString, type Minor } from '@openpocket/pos-core';
 import type { ReceiptPaper } from './repos';
 
 export const DEFAULT_ACCENT = '#0ca678';
-export const DEFAULT_FOOTER = '¡Gracias por su compra!';
-export const DEFAULT_RECEIPT_TERMS = 'Los artículos pueden devolverse dentro de los 14 días con este recibo.';
+export const DEFAULT_FOOTER = '¡Gracias por su compra!\n¡Vuelva pronto!';
+export const APP_CURRENCY = { code: 'COP', locale: 'es-CO', decimals: 0 };
+export const DEFAULT_RECEIPT_TERMS = 'Los artículos pueden devolverse dentro de los 14 días con este recibo. Los productos perecederos no tienen cambio.';
+
+export function localizedReceiptFooter(input: string | null | undefined): string {
+  const text = (input ?? '').trim();
+  if (!text) return DEFAULT_FOOTER;
+  return text
+    .replace(/Thank you for shopping with us!/gi, '¡Gracias por su compra!')
+    .replace(/See you again soon\./gi, '¡Vuelva pronto!')
+    .replace(/Thank you for your business!/gi, '¡Gracias por su compra!');
+}
+
+export function localizedReceiptTerms(input: string | null | undefined): string {
+  const text = (input ?? '').trim();
+  if (!text) return DEFAULT_RECEIPT_TERMS;
+  return text.replace(
+    /Items can be returned within 14 days with this receipt\.\s*Perishable goods are non-returnable\./gi,
+    DEFAULT_RECEIPT_TERMS,
+  );
+}
 
 export const ACCENT_PRESETS = ['#0ca678', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#dc2626', '#0891b2', '#111827'];
 
@@ -85,4 +105,16 @@ export function currencyConfigFor(code: string): { code: string; locale: string;
 
 export function localeForCurrency(code: string): string {
   return currencyConfigFor(code).locale;
+}
+
+export function currencyDecimalsFor(code: string): number {
+  return currencyConfigFor(code).decimals;
+}
+
+export function currencyForStore(_store: { currency_code: string }): { code: string; locale: string; decimals: number } {
+  return APP_CURRENCY;
+}
+
+export function parseCurrencyInput(input: string, code: string): Minor {
+  return fromMajorString(input, currencyDecimalsFor(code));
 }

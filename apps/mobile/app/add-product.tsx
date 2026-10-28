@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Modal, Keyb
 import { showAlert } from '../src/pos/alert';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { fromMajorString, toMajorNumber, asMinor } from '@openpocket/pos-core';
+import { toMajorNumber, asMinor } from '@openpocket/pos-core';
 import {
   getStore, createProduct, getProduct, updateProductFields, updateProductPrices, deleteProduct, listCategories, ensureCategory,
   findProductByBarcode, DEFAULT_LOW_STOCK, type Store, type Category, type Product,
@@ -15,6 +15,7 @@ import { useTheme, space, radius } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
 import { Chip, PrimaryButton } from '../src/pos/kit';
 import { useMoney } from '../src/pos/ui';
+import { APP_CURRENCY, parseCurrencyInput } from '../src/branding';
 
 const UNITS = ['unit', 'pcs', 'pack', 'box', 'dozen', 'kg', 'g', 'L', 'ml'];
 const UNIT_LABEL: Record<string, string> = {
@@ -71,7 +72,7 @@ export default function AddProduct() {
     getProduct(editId).then((p) => {
       if (!p) return;
       setOriginal(p);
-      const d = store.currency_decimals;
+      const d = APP_CURRENCY.decimals;
       setName(p.name); setBarcode(p.barcode ?? ''); setImageUri(p.image_uri);
       setPrice(String(toMajorNumber(asMinor(p.selling_price), d)));
       setCost(p.cost_price ? String(toMajorNumber(asMinor(p.cost_price), d)) : '');
@@ -144,11 +145,31 @@ export default function AddProduct() {
     catch (e) { showAlert('No se pudo agregar la foto', e instanceof Error ? e.message : String(e)); }
   };
 
+  const confirmDelete = async () => {
+    if (!editId) return;
+    try {
+      await deleteProduct(editId);
+      router.back();
+    } catch (e) {
+      showAlert('No se pudo eliminar', e instanceof Error ? e.message : String(e));
+    }
+  };
+
   const remove = () => {
     if (!editId) return;
-    showAlert('¿Eliminar este producto?', `"${name.trim() || 'Este producto'}" se quitará del catálogo. Las ventas anteriores conservan su registro.`, [
-      { text: 'Conservar', style: 'cancel' as const },
-      { text: 'Eliminar', style: 'destructive' as const, onPress: async () => { await deleteProduct(editId); router.back(); } },
+    const label = name.trim() || 'este producto';
+    showAlert(`¿Eliminar ${label}?`, 'El producto se quitará del catálogo. Las ventas anteriores se conservan.', [
+      { text: 'Cancelar', style: 'cancel' as const },
+      {
+        text: 'Eliminar',
+        style: 'destructive' as const,
+        onPress: () => {
+          showAlert('Esta acción no se puede deshacer. ¿Estás totalmente seguro?', undefined, [
+            { text: 'Cancelar', style: 'cancel' as const },
+            { text: 'Sí, eliminar', style: 'destructive' as const, onPress: () => { void confirmDelete(); } },
+          ]);
+        },
+      },
     ]);
   };
 
@@ -165,12 +186,11 @@ export default function AddProduct() {
 
   const save = async () => {
     if (!store || busy) return;
-    const decimals = store.currency_decimals;
     try {
       if (!name.trim()) throw new Error('El nombre es obligatorio');
-      const sellingPrice = fromMajorString(price || '0', decimals);
+      const sellingPrice = parseCurrencyInput(price || '0', APP_CURRENCY.code);
       if (sellingPrice <= 0) throw new Error('El precio de venta debe ser mayor que 0');
-      const costPrice = cost ? fromMajorString(cost, decimals) : asMinor(0);
+      const costPrice = cost ? parseCurrencyInput(cost, APP_CURRENCY.code) : asMinor(0);
       const taxBps = Math.round(parseFloat(taxPct || '0') * 100);
       if (!(taxBps >= 0)) throw new Error('El impuesto debe ser 0 o mayor');
       const openingStock = Math.max(0, Math.floor(parseFloat(stock || '0')));
@@ -224,11 +244,11 @@ export default function AddProduct() {
   const margin = sp > 0 && cp > 0 && Number.isFinite(sp) && Number.isFinite(cp) ? Math.round(((sp - cp) / sp) * 100) : null;
   const sellingPreview = (() => {
     if (!store || !price.trim()) return null;
-    try { return money(fromMajorString(price, store.currency_decimals)); } catch { return null; }
+    try { return money(parseCurrencyInput(price, APP_CURRENCY.code)); } catch { return null; }
   })();
   const costPreview = (() => {
     if (!store || !cost.trim()) return null;
-    try { return money(fromMajorString(cost, store.currency_decimals)); } catch { return null; }
+    try { return money(parseCurrencyInput(cost, APP_CURRENCY.code)); } catch { return null; }
   })();
 
   return (

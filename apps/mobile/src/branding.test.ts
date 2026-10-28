@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { safeAccent, onAccent, contactLines, shopInitials, normalizeUrl, DEFAULT_ACCENT, defaultCurrencyFor, localeForCurrency, currencyConfigFor, CURRENCIES } from './branding.ts';
+import { asMinor } from '@openpocket/pos-core';
+import { safeAccent, onAccent, contactLines, shopInitials, normalizeUrl, DEFAULT_ACCENT, defaultCurrencyFor, localeForCurrency, currencyConfigFor, CURRENCIES, currencyDecimalsFor, parseCurrencyInput, currencyForStore, APP_CURRENCY, DEFAULT_FOOTER, DEFAULT_RECEIPT_TERMS, localizedReceiptFooter, localizedReceiptTerms } from './branding.ts';
 
 test('safeAccent only accepts #rrggbb and falls back otherwise', () => {
   assert.equal(safeAccent('#2563EB'), '#2563eb');
@@ -47,4 +48,30 @@ test('every offered currency has a Latin-digit locale', () => {
   assert.equal(localeForCurrency('XXX'), 'en-US');
   assert.deepEqual(currencyConfigFor('COP'), { code: 'COP', locale: 'es-CO', decimals: 0 });
   assert.equal(CURRENCIES.find((c) => c.code === 'COP')?.symbol, '$');
+});
+
+test('COP price input keeps exact units', () => {
+  assert.equal(currencyDecimalsFor('COP'), 0);
+  assert.equal(asMinor(20000), 20000);
+  assert.equal(parseCurrencyInput('20000', 'COP'), 20000);
+  assert.notEqual(parseCurrencyInput('20000', 'COP'), 2000000);
+  assert.equal(parseCurrencyInput('1500', 'COP'), 1500);
+});
+
+test('app resolves every store currency to COP', () => {
+  assert.deepEqual(APP_CURRENCY, { code: 'COP', locale: 'es-CO', decimals: 0 });
+  assert.deepEqual(currencyForStore({ currency_code: 'USD' }), APP_CURRENCY);
+  assert.deepEqual(currencyForStore({ currency_code: 'COP' }), APP_CURRENCY);
+});
+
+test('receipt footer and terms translate English defaults', () => {
+  assert.match(DEFAULT_FOOTER, /Gracias por su compra/);
+  assert.match(DEFAULT_FOOTER, /Vuelva pronto/);
+  assert.match(DEFAULT_RECEIPT_TERMS, /productos perecederos/);
+  assert.equal(localizedReceiptFooter('Thank you for shopping with us!\nSee you again soon.'), '¡Gracias por su compra!\n¡Vuelva pronto!');
+  assert.equal(localizedReceiptFooter('Thank you for your business!'), '¡Gracias por su compra!');
+  assert.equal(
+    localizedReceiptTerms('Items can be returned within 14 days with this receipt. Perishable goods are non-returnable.'),
+    DEFAULT_RECEIPT_TERMS,
+  );
 });

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { CurrencyConfig } from '@openpocket/pos-core';
 import { getStore, listStores, setCurrentStore, staffCount, type Store, type Staff } from './repos';
+import { currencyForStore } from './branding';
 import type { Role } from './roles';
 
 export type { Store } from './repos';
@@ -56,5 +57,5 @@ export function useLocked(): boolean {
 }
 
 export function currencyOf(store: Store): CurrencyConfig {
-  return { code: store.currency_code, locale: store.currency_locale, decimals: store.currency_decimals };
+  return currencyForStore(store);
 }

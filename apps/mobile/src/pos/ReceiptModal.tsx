@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Image } from 'react-native';
-import { format, type Minor } from '@openpocket/pos-core';
 import { showAlert } from './alert';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../session';
@@ -8,7 +7,8 @@ import { useCheckoutUI } from '../checkoutUI';
 import { useTheme } from '../theme';
 import { Row, PAYMENT_LABEL } from './ui';
 import { DEFAULT_BUSINESS_PROFILE, getBusinessProfile, type BusinessProfile } from '../businessProfile';
-import { RECEIPT_CURRENCY, printInvoice, shareInvoicePdf, type PrintableReceipt } from '../print';
+import { formatCopAmount } from '../receiptMoney';
+import { printInvoice, shareInvoicePdf, type PrintableReceipt } from '../print';
 
 export function ReceiptModal() {
   const t = useTheme();
@@ -24,7 +24,7 @@ export function ReceiptModal() {
 
   if (!store || !receipt) return null;
 
-  const money = (v: Minor) => format(v, RECEIPT_CURRENCY).replace(/\u00A0/g, ' ');
+  const money = formatCopAmount;
   const contact = [
     business.address,
     business.phone,

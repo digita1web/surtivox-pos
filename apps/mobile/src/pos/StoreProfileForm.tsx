@@ -14,6 +14,7 @@ import { pickLogo } from './images';
 import { useTheme, type Theme } from '../theme';
 import {
   ACCENT_PRESETS, PAPER_OPTIONS, safeAccent, onAccent, contactLines, shopInitials,
+  DEFAULT_FOOTER, DEFAULT_RECEIPT_TERMS, localizedReceiptFooter, localizedReceiptTerms,
 } from '../branding';
 
 type Props = { value: StoreProfile; onChange: (patch: Partial<StoreProfile>) => void };
@@ -23,8 +24,6 @@ const PAPER_LABEL_ES: Record<ReceiptPaper, { label: string; hint: string }> = {
   thermal80: { label: '80 mm', hint: 'Rollo térmico' },
   thermal58: { label: '58 mm', hint: 'Rollo térmico pequeño' },
 };
-
-const DEFAULT_FOOTER_ES = '¡Gracias por su compra!';
 
 function Label({ t, children }: { t: Theme; children: string }) {
   return <Text style={[s.label, { color: t.muted }]}>{children}</Text>;
@@ -140,9 +139,9 @@ export function ReceiptFields({ value, onChange }: Props) {
       </View>
 
       <Field t={t} label="Mensaje de agradecimiento" value={value.receiptFooter} onChangeText={(receiptFooter) => onChange({ receiptFooter })}
-        placeholder={DEFAULT_FOOTER_ES} multiline />
+        placeholder={DEFAULT_FOOTER} multiline />
       <Field t={t} label="Términos / política de devoluciones (opcional)" value={value.receiptTerms} onChangeText={(receiptTerms) => onChange({ receiptTerms })}
-        placeholder="Los artículos pueden devolverse dentro de los 14 días con este recibo." multiline />
+        placeholder={DEFAULT_RECEIPT_TERMS} multiline />
 
       <Label t={t}>Mostrar en el recibo</Label>
       <View style={[s.card, { borderColor: t.line, backgroundColor: t.panel }]}>
@@ -167,7 +166,8 @@ export function ReceiptPreview({ value, currency }: { value: StoreProfile; curre
   const contact = value.showContact ? contactLines(value) : [];
   const mono = thermal ? { fontFamily: 'monospace' as const } : null;
   const name = value.name.trim() || 'Nombre de tu tienda';
-  const footer = value.receiptFooter.trim() || DEFAULT_FOOTER_ES;
+  const footer = localizedReceiptFooter(value.receiptFooter);
+  const termsText = localizedReceiptTerms(value.receiptTerms);
 
   const logo = value.showLogo ? (
     value.logoUri
@@ -216,7 +216,7 @@ export function ReceiptPreview({ value, currency }: { value: StoreProfile; curre
       </View>
       <View style={[p.rule, { borderColor: '#d1d5db', borderStyle: 'dashed' }]} />
       <Text style={[p.foot, mono]}>{footer}</Text>
-      {value.receiptTerms.trim() ? <Text style={[p.terms, mono]}>{value.receiptTerms.trim()}</Text> : null}
+      <Text style={[p.terms, mono]}>{termsText}</Text>
     </View>
   );
 }
