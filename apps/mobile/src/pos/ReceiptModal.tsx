@@ -1,11 +1,14 @@
+import { useEffect, useState } from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Image } from 'react-native';
+import { format, type Minor } from '@openpocket/pos-core';
 import { showAlert } from './alert';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../session';
 import { useCheckoutUI } from '../checkoutUI';
 import { useTheme } from '../theme';
-import { Row, useMoney, PAYMENT_LABEL } from './ui';
-import { printInvoice, shareInvoicePdf, type PrintableReceipt } from '../print';
+import { Row, PAYMENT_LABEL } from './ui';
+import { DEFAULT_BUSINESS_PROFILE, getBusinessProfile, type BusinessProfile } from '../businessProfile';
+import { RECEIPT_CURRENCY, printInvoice, shareInvoicePdf, type PrintableReceipt } from '../print';
 
 export function ReceiptModal() {
   const t = useTheme();
@@ -13,8 +16,21 @@ export function ReceiptModal() {
   const staff = useSession((s) => s.staff);
   const receipt = useCheckoutUI((s) => s.receipt);
   const clear = useCheckoutUI((s) => s.clearReceipt);
-  const money = useMoney();
+  const [business, setBusiness] = useState<BusinessProfile>(DEFAULT_BUSINESS_PROFILE);
+
+  useEffect(() => {
+    getBusinessProfile(store).then(setBusiness);
+  }, [store]);
+
   if (!store || !receipt) return null;
+
+  const money = (v: Minor) => format(v, RECEIPT_CURRENCY).replace(/\u00A0/g, ' ');
+  const contact = [
+    business.address,
+    business.phone,
+    business.email,
+    business.taxId ? `NIT: ${business.taxId}` : '',
+  ].filter(Boolean).join(' · ');
 
   const isCredit = receipt.paymentMethod === 'credit';
   const printable = (): PrintableReceipt => ({
@@ -40,7 +56,8 @@ export function ReceiptModal() {
             <View style={[s.check, { backgroundColor: t.accent }]}><Ionicons name="checkmark" size={30} color={t.accentFg} /></View>
           )}
           <Text style={{ color: t.fg, fontSize: 19, fontWeight: '800', textAlign: 'center' }}>Venta completada</Text>
-          <Text style={{ color: t.muted, fontSize: 12, marginBottom: 16, textAlign: 'center' }}>{store.name} · {receipt.invoiceNo}</Text>
+          <Text style={{ color: t.muted, fontSize: 12, textAlign: 'center' }}>{business.name} · {receipt.invoiceNo}</Text>
+          {contact ? <Text style={{ color: t.muted, fontSize: 11, marginBottom: 16, textAlign: 'center' }}>{contact}</Text> : <View style={{ marginBottom: 16 }} />}
 
           {receipt.lines.map((l, i) => (
             <Row key={i} label={`${l.name} ×${l.quantity}`} value={money(l.lineTotal)} />

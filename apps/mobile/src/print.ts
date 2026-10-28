@@ -1,10 +1,13 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
-import { format, type Minor } from '@openpocket/pos-core';
-import { currencyOf, type Store } from './session';
+import { format, type CurrencyConfig, type Minor } from '@openpocket/pos-core';
+import { type Store } from './session';
 import { profileOf } from './repos';
-import { safeAccent, onAccent, contactLines, shopInitials, DEFAULT_FOOTER, THERMAL_WIDTH_PT } from './branding';
+import { applyBusinessProfile, getBusinessProfile } from './businessProfile';
+import { safeAccent, onAccent, contactLines, shopInitials, DEFAULT_FOOTER, DEFAULT_RECEIPT_TERMS, THERMAL_WIDTH_PT } from './branding';
+
+export const RECEIPT_CURRENCY: CurrencyConfig = { code: 'COP', locale: 'es-CO', decimals: 0 };
 
 export interface PrintableReceipt {
   invoiceNo: string;
@@ -48,11 +51,13 @@ export async function loadLogoDataUri(store: Store): Promise<string | null> {
  */
 export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: string | null = null): string {
   const p = profileOf(store);
-  const currency = currencyOf(store);
-  const m = (v: Minor) => format(v, currency);
+  const m = (v: Minor) => format(v, RECEIPT_CURRENCY).replace(/\u00A0/g, ' ');
   const accent = safeAccent(p.receiptAccent);
   const accentFg = onAccent(accent);
   const date = new Date(r.soldAt);
+  const fecha = date.toLocaleString('es-CO', {
+    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
   const contact = p.showContact ? contactLines(p) : [];
   const thermal = p.receiptPaper !== 'a4';
   const logo = p.showLogo
@@ -75,14 +80,15 @@ export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: stri
     ${payLine}`;
 
   const metaItems = [
-    ['Fecha', date.toLocaleString()],
+    ['Fecha', fecha],
     p.showStaff && r.staffName ? ['Atendido por', r.staffName] : null,
     r.customerName ? ['Cliente', r.customerName] : null,
     ['Pago', r.paymentLabel],
   ].filter(Boolean) as string[][];
 
-  const terms = p.receiptTerms.trim() ? `<div class="terms">${multiline(p.receiptTerms)}</div>` : '';
-  const taxId = p.taxId.trim() ? `<div class="taxid">${esc(p.taxId.trim())}</div>` : '';
+  const termsText = p.receiptTerms.trim() || DEFAULT_RECEIPT_TERMS;
+  const terms = `<div class="terms">${multiline(termsText)}</div>`;
+  const taxId = p.taxId.trim() ? `<div class="taxid">NIT: ${esc(p.taxId.trim())}</div>` : '';
 
   if (thermal) {
     const w = p.receiptPaper === 'thermal58' ? '58mm' : '80mm';
@@ -116,7 +122,7 @@ export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: stri
     ${taxId}
   </div>
   <div class="rule"></div>
-  <div class="c"><b>INVOICE ${esc(r.invoiceNo)}</b></div>
+  <div class="c"><b>RECIBO ${esc(r.invoiceNo)}</b></div>
   <div class="meta">${metaItems.map(([k, v]) => `<div><span>${esc(k!)}</span><span>${esc(v!)}</span></div>`).join('')}</div>
   <div class="rule"></div>
   <table>${rows}</table>
@@ -187,7 +193,7 @@ export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: stri
       </div>
     </div>
     <div class="doc">
-      <div class="k">INVOICE</div>
+      <div class="k">RECIBO</div>
       <div class="n">${esc(r.invoiceNo)}</div>
     </div>
   </div>
@@ -195,7 +201,7 @@ export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: stri
   <div class="meta">${metaItems.map(([k, v]) => `<div><span>${esc(k!)}</span><b>${esc(v!)}</b></div>`).join('')}</div>
 
   <table class="items">
-    <thead><tr><th class="c">#</th><th>Item</th><th class="c">Qty</th><th class="r">Price</th><th class="r">Amount</th></tr></thead>
+    <thead><tr><th class="c">#</th><th>PRODUCTO</th><th class="c">CANT.</th><th class="r">PRECIO</th><th class="r">TOTAL</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>
 
@@ -217,14 +223,18 @@ function pageSize(store: Store, lineCount: number): { width?: number; height?: n
 
 /** Print the invoice through the OS print service (thermal, laser, or Save-as-PDF). */
 export async function printInvoice(store: Store, receipt: PrintableReceipt): Promise<void> {
-  const logo = await loadLogoDataUri(store);
-  await Print.printAsync({ html: invoiceHtml(store, receipt, logo), ...pageSize(store, receipt.lines.length) });
+  const business = await getBusinessProfile(store);
+  const shop = applyBusinessProfile(store, business);
+  const logo = await loadLogoDataUri(shop);
+  await Print.printAsync({ html: invoiceHtml(shop, receipt, logo), ...pageSize(shop, receipt.lines.length) });
 }
 
 /** Render the invoice to a real PDF file and open the share sheet with it. */
 export async function shareInvoicePdf(store: Store, receipt: PrintableReceipt): Promise<void> {
-  const logo = await loadLogoDataUri(store);
-  const { uri } = await Print.printToFileAsync({ html: invoiceHtml(store, receipt, logo), ...pageSize(store, receipt.lines.length) });
+  const business = await getBusinessProfile(store);
+  const shop = applyBusinessProfile(store, business);
+  const logo = await loadLogoDataUri(shop);
+  const { uri } = await Print.printToFileAsync({ html: invoiceHtml(shop, receipt, logo), ...pageSize(shop, receipt.lines.length) });
   // Rename the temp UUID file so recipients get "INV-0008.pdf".
   const safe = receipt.invoiceNo.replace(/[^\w-]/g, '_');
   const named = `${FileSystem.cacheDirectory}${safe}.pdf`;

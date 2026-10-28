@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useSession, useRole, currencyOf } from '../src/session';
 import { can } from '../src/roles';
 import { profileOf, updateStoreProfile, type StoreProfile } from '../src/repos';
+import { saveBusinessProfile } from '../src/businessProfile';
 import { ShopDetailsFields, ReceiptFields, ReceiptPreview } from '../src/pos/StoreProfileForm';
 import { useTheme, space, type as ty } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
@@ -41,6 +42,13 @@ export default function StoreSettings() {
     setBusy(true);
     try {
       await updateStoreProfile(store.id, profile);
+      await saveBusinessProfile(store.id, {
+        name: profile.name,
+        address: profile.address,
+        phone: profile.phone,
+        email: profile.email,
+        taxId: profile.taxId,
+      });
       await reload();
       router.back();
     } catch (e) {

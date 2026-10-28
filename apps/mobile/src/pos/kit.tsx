@@ -78,7 +78,7 @@ export function PrimaryButton({ label, onPress, disabled, busy, icon }: {
     <Pressable onPress={onPress} disabled={off} accessibilityRole="button"
       style={({ pressed }) => [s.primary, { backgroundColor: t.accent, opacity: off ? 0.5 : pressed ? 0.85 : 1 }]}>
       {icon ? <Ionicons name={icon} size={18} color={t.accentFg} style={{ marginRight: 8 }} /> : null}
-      <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 16 }}>{busy ? 'Please wait…' : label}</Text>
+      <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 16 }}>{busy ? 'Guardando…' : label}</Text>
     </Pressable>
   );
 }

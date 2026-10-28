@@ -142,7 +142,7 @@ export function ReceiptFields({ value, onChange }: Props) {
       <Field t={t} label="Mensaje de agradecimiento" value={value.receiptFooter} onChangeText={(receiptFooter) => onChange({ receiptFooter })}
         placeholder={DEFAULT_FOOTER_ES} multiline />
       <Field t={t} label="Términos / política de devoluciones (opcional)" value={value.receiptTerms} onChangeText={(receiptTerms) => onChange({ receiptTerms })}
-        placeholder="ej. Los artículos se pueden cambiar dentro de 7 días con este recibo." multiline />
+        placeholder="Los artículos pueden devolverse dentro de los 14 días con este recibo." multiline />
 
       <Label t={t}>Mostrar en el recibo</Label>
       <View style={[s.card, { borderColor: t.line, backgroundColor: t.panel }]}>
@@ -187,19 +187,19 @@ export function ReceiptPreview({ value, currency }: { value: StoreProfile; curre
             <Text style={[p.name, mono]} numberOfLines={2}>{name}</Text>
             {value.tagline.trim() ? <Text style={[p.small, mono]}>{value.tagline.trim()}</Text> : null}
             {contact.map((c, i) => <Text key={i} style={[p.small, mono]}>{c}</Text>)}
-            {value.taxId.trim() ? <Text style={[p.small, mono, { fontWeight: '700' }]}>{value.taxId.trim()}</Text> : null}
+            {value.taxId.trim() ? <Text style={[p.small, mono, { fontWeight: '700' }]}>NIT: {value.taxId.trim()}</Text> : null}
           </View>
         </View>
         {!thermal && (
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={{ color: accent, fontWeight: '800', fontSize: 16, letterSpacing: 1 }}>FACTURA</Text>
+            <Text style={{ color: accent, fontWeight: '800', fontSize: 16, letterSpacing: 1 }}>RECIBO</Text>
             <Text style={{ fontSize: 11, fontWeight: '700', color: '#111827' }}>INV-0001</Text>
           </View>
         )}
       </View>
       <View style={[p.rule, { borderColor: thermal ? '#000' : accent, borderStyle: thermal ? 'dashed' : 'solid', borderTopWidth: thermal ? 1 : 2 }]} />
-      {thermal && <Text style={[p.small, mono, { textAlign: 'center', fontWeight: '800', color: '#000' }]}>FACTURA INV-0001</Text>}
-      <Text style={[p.small, mono, { color: '#6b7280' }]}>{new Date().toLocaleDateString()}{value.showStaff ? '  ·  Atendido por Sam' : ''}</Text>
+      {thermal && <Text style={[p.small, mono, { textAlign: 'center', fontWeight: '800', color: '#000' }]}>RECIBO INV-0001</Text>}
+      <Text style={[p.small, mono, { color: '#6b7280' }]}>{new Date().toLocaleDateString('es-CO')}{value.showStaff ? '  ·  Atendido por Ana' : ''}</Text>
 
       {rows.map(([n, q, price]) => (
         <View key={n} style={p.line}>

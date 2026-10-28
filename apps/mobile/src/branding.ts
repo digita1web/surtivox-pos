@@ -7,13 +7,14 @@ import type { ReceiptPaper } from './repos';
 
 export const DEFAULT_ACCENT = '#0ca678';
 export const DEFAULT_FOOTER = '¡Gracias por su compra!';
+export const DEFAULT_RECEIPT_TERMS = 'Los artículos pueden devolverse dentro de los 14 días con este recibo.';
 
 export const ACCENT_PRESETS = ['#0ca678', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#dc2626', '#0891b2', '#111827'];
 
 export const PAPER_OPTIONS: { key: ReceiptPaper; label: string; hint: string }[] = [
-  { key: 'a4', label: 'A4 invoice', hint: 'Full page, laser / PDF' },
-  { key: 'thermal80', label: '80 mm', hint: 'Thermal roll' },
-  { key: 'thermal58', label: '58 mm', hint: 'Small thermal roll' },
+  { key: 'a4', label: 'Factura A4', hint: 'Página completa, láser / PDF' },
+  { key: 'thermal80', label: '80 mm', hint: 'Rollo térmico' },
+  { key: 'thermal58', label: '58 mm', hint: 'Rollo térmico pequeño' },
 ];
 
 /** The accent ends up inside CSS, so only ever accept a plain #rrggbb value. */

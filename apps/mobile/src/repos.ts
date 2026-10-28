@@ -53,7 +53,7 @@ export interface StoreProfile {
 }
 
 export const DEFAULT_RECEIPT_ACCENT = '#0ca678';
-export const DEFAULT_RECEIPT_FOOTER = 'Thank you for your business!';
+export const DEFAULT_RECEIPT_FOOTER = '¡Gracias por su compra!';
 
 export function profileOf(s: Store): StoreProfile {
   return {

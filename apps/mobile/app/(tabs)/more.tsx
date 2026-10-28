@@ -28,6 +28,7 @@ export default function More() {
   // Management links gated by the current role. Selling and sales history are
   // available to everyone; the rest need a capability.
   const allItems: { icon: keyof typeof Ionicons.glyphMap; label: string; route: string; show: boolean }[] = [
+    { icon: 'id-card-outline', label: 'Datos del negocio', route: '/business-settings', show: can(role, 'shop') },
     { icon: 'storefront-outline', label: 'Perfil y recibos', route: '/store-settings', show: can(role, 'shop') },
     { icon: 'bar-chart-outline', label: 'Reportes', route: '/reports', show: can(role, 'reports') },
     { icon: 'sparkles-outline', label: 'Sugerencia de pedido', route: '/reorder', show: can(role, 'reports') },

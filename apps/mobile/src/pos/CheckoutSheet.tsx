@@ -67,7 +67,7 @@ export function CheckoutSheet() {
   const change = enough ? ((receivedMinor - totals.grandTotal) as Minor) : asMinor(0);
   const cashSteps = currency.code === 'COP' ? COP_CASH_STEPS : cashSuggestionSteps(totals.grandTotal, currency.decimals);
   const suggestions = suggestCashAmounts(totals.grandTotal, cashSteps).slice(0, 5);
-  const blocked = lines.length === 0 || (isCash && !enough) || (isCredit && !customer) || busy;
+  const blocked = lines.length === 0 || (isCredit && !customer) || busy;
   const outOfStock = lines.filter((it) => it.quantity > it.product.stock);
 
   const reset = () => { setReceived(''); setDiscountOn(false); setDiscountPct(''); setMethod('cash'); setCustomer(null); };
@@ -102,12 +102,34 @@ export function CheckoutSheet() {
 
   const confirm = () => {
     if (blocked) return;
+    const cashMissing = isCash && !enough;
     if (outOfStock.length > 0) {
+      const one = outOfStock.length === 1;
       const names = outOfStock.map((it) => it.product.name).join(', ');
-      showAlert('Producto sin stock', `${names} no tiene stock suficiente. ¿Deseas venderlo de todas formas?`, [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Vender de todas formas', style: 'destructive', onPress: () => { void performCheckout(); } },
-      ]);
+      showAlert(
+        one ? 'Producto sin stock' : 'Productos sin stock',
+        one
+          ? `El producto ${names} no tiene stock. ¿Deseas venderlo de todas formas?`
+          : `Los productos ${names} no tienen stock. ¿Deseas venderlos de todas formas?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Vender de todas formas',
+            style: 'destructive',
+            onPress: () => {
+              if (cashMissing) {
+                showAlert('Monto recibido', 'Ingresa el monto recibido para completar la venta.');
+                return;
+              }
+              void performCheckout();
+            },
+          },
+        ],
+      );
+      return;
+    }
+    if (cashMissing) {
+      showAlert('Monto recibido', 'Ingresa el monto recibido para completar la venta.');
       return;
     }
     void performCheckout();
