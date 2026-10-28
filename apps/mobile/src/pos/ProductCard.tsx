@@ -11,6 +11,20 @@ import { isLowStock, type Product } from '../repos';
 import { useRole } from '../session';
 import { can } from '../roles';
 
+const UNIT_SHORT: Record<string, string> = {
+  pcs: 'pza',
+  pack: 'paq',
+  box: 'caja',
+  dozen: 'doc',
+  lb: 'lb',
+  bulto: 'bulto',
+  bottle: 'botella',
+  kg: 'kg',
+  g: 'g',
+  L: 'L',
+  ml: 'ml',
+};
+
 /**
  * Compact grid card: photo, name, price + stock, add button (or a - qty + stepper
  * once it is in the cart). No shadows on purpose: many cards with shadows are what
@@ -25,7 +39,7 @@ function ProductCardBase({ product }: { product: Product }) {
   const qty = cart.items[product.id]?.quantity ?? 0;
   const out = product.stock <= 0;
   const low = !out && isLowStock(product);
-  const unit = product.unit && product.unit !== 'unit' ? product.unit : 'en stock';
+  const unit = product.unit && product.unit !== 'unit' ? (UNIT_SHORT[product.unit] ?? product.unit) : 'en stock';
 
   return (
     <View style={[s.card, { backgroundColor: t.panel, borderColor: qty > 0 ? t.accent : t.line }]}>

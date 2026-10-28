@@ -8,7 +8,7 @@ import { useCloudEntitlement } from '../../src/subscription';
 import { useTheme, initials, space, radius, type Theme } from '../../src/theme';
 import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { showAlert } from '../../src/pos/alert';
-import { resetAllData } from '../../src/repos';
+import { resetAllData, seedColombianCatalog } from '../../src/repos';
 import { resetFirstRunGuide } from '../../src/localFlags';
 import { getReminderCount, resetReminderCount } from '../../src/fiadoReminderStorage';
 
@@ -25,6 +25,7 @@ export default function More() {
   const cloud = useCloudEntitlement();
   const [reminderCount, setReminderCount] = useState(0);
   const [resetting, setResetting] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   useFocusEffect(useCallback(() => {
     cloud.refresh();
     getReminderCount().then(setReminderCount);
@@ -58,6 +59,26 @@ export default function More() {
           ]);
         },
       },
+    ]);
+  };
+
+  const runSeed = async () => {
+    if (seeding) return;
+    setSeeding(true);
+    try {
+      const result = await seedColombianCatalog(store.id);
+      showAlert('Catálogo cargado', `${result.inserted} productos agregados. ${result.skipped} ya existían.`);
+    } catch (e) {
+      showAlert('No se pudo cargar el catálogo', e instanceof Error ? e.message : String(e));
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  const confirmSeed = () => {
+    showAlert('Cargar catálogo de ejemplo', 'Se agregarán 60 productos típicos de tienda de barrio. Los productos existentes no se duplican. ¿Continuar?', [
+      { text: 'Cancelar', style: 'cancel' as const },
+      { text: 'Cargar catálogo', onPress: () => { void runSeed(); } },
     ]);
   };
 
@@ -147,6 +168,27 @@ export default function More() {
         ))}
       </Group>
 
+      {can(role, 'products') && (
+        <>
+          <Text style={[s.section, { color: t.muted }]}>CATÁLOGO DE EJEMPLO</Text>
+          <Pressable onPress={confirmSeed} disabled={seeding}
+            style={[s.seedBtn, { backgroundColor: t.panel, borderColor: t.line, opacity: seeding ? 0.6 : 1 }]}>
+            <View style={[s.seedIcon, { backgroundColor: t.accentSoft }]}>
+              <Ionicons name="albums-outline" size={20} color={t.accent} />
+            </View>
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={{ color: t.fg, fontWeight: '800' }}>
+                {seeding ? 'Cargando catálogo…' : 'Cargar catálogo de ejemplo'}
+              </Text>
+              <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 2 }}>
+                60 productos típicos de tienda de barrio.
+              </Text>
+            </View>
+            {!seeding && <Ionicons name="chevron-forward" size={18} color={t.faint} />}
+          </Pressable>
+        </>
+      )}
+
       {can(role, 'shop') && (
         <>
           <Text style={[s.section, { color: t.danger }]}>Zona de peligro</Text>
@@ -212,6 +254,8 @@ const s = StyleSheet.create({
   planCta: { borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
   section: { fontSize: 12, fontWeight: '800', letterSpacing: 0.6, marginTop: 24, marginBottom: 8, marginLeft: 4 },
   group: { borderWidth: 1, borderRadius: 16, overflow: 'hidden' },
+  seedBtn: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 16, padding: 14 },
+  seedIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   dangerBtn: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 16, padding: 14 },
   item: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, paddingHorizontal: 14 },
   itemIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },

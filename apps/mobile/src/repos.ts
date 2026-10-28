@@ -16,6 +16,7 @@ import {
 import { getDb } from './db';
 import { APP_CURRENCY } from './branding';
 import { newId, DEVICE_ID } from './id';
+import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
 import { type Role, hashPin, verifyPin, randomSalt } from './roles';
 
 export type ReceiptPaper = 'a4' | 'thermal80' | 'thermal58';
@@ -1027,6 +1028,10 @@ export async function resetAllData(): Promise<void> {
     await db.runAsync('UPDATE app_state SET current_store_id=NULL WHERE id=1');
     await db.runAsync('UPDATE sync_state SET server_url=NULL, token=NULL, last_pushed_at=0, last_pulled_at=0, last_synced_at=NULL WHERE id=1');
   });
+}
+
+export async function seedColombianCatalog(storeId: string): Promise<SeedResult> {
+  return runSeedCatalog(getDb(), storeId, { newId, deviceId: DEVICE_ID });
 }
 
 export interface SalesExportRow {

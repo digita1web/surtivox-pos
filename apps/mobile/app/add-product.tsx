@@ -17,7 +17,7 @@ import { Chip, PrimaryButton } from '../src/pos/kit';
 import { useMoney } from '../src/pos/ui';
 import { APP_CURRENCY, parseCurrencyInput } from '../src/branding';
 
-const UNITS = ['unit', 'pcs', 'pack', 'box', 'dozen', 'kg', 'g', 'L', 'ml'];
+const UNITS = ['unit', 'pcs', 'pack', 'box', 'dozen', 'kg', 'g', 'L', 'ml', 'lb', 'bulto', 'bottle'];
 const UNIT_LABEL: Record<string, string> = {
   unit: 'Unidad',
   pcs: 'Pieza',
@@ -28,6 +28,9 @@ const UNIT_LABEL: Record<string, string> = {
   g: 'g',
   L: 'L',
   ml: 'ml',
+  lb: 'Libra',
+  bulto: 'Bulto',
+  bottle: 'Botella',
 };
 
 /** Add a product, or edit one when opened with ?id=… (stock is adjusted via Purchases, not here). */
