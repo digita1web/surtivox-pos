@@ -40,7 +40,7 @@ export function Header({ title, subtitle, back = true, right }: { title: string;
   return (
     <View style={[s.header, { paddingTop: insets.top, backgroundColor: t.bg, borderBottomColor: t.line }]}>
       <View style={s.headerRow}>
-        {back ? <IconButton icon="chevron-back" label="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} /> : null}
+        {back ? <IconButton icon="chevron-back" label="Atrás" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} /> : null}
         <View style={s.headerText}>
           <Text style={[ty.h1, { color: t.fg }]} numberOfLines={1}>{title}</Text>
           {subtitle ? <Text style={[ty.small, { color: t.muted }]} numberOfLines={1}>{subtitle}</Text> : null}

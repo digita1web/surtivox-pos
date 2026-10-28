@@ -22,7 +22,7 @@ export default function AddSupplier() {
 
   const save = async () => {
     if (!store || busy) return;
-    if (!name.trim()) { setErr('Name is required'); return; }
+    if (!name.trim()) { setErr('El nombre es obligatorio'); return; }
     setBusy(true);
     try {
       await createSupplier({ storeId: store.id, name, phone, email, address, notes });
@@ -40,12 +40,12 @@ export default function AddSupplier() {
   );
 
   return (
-    <Screen title="New supplier" footer={<PrimaryButton label="Save supplier" onPress={save} busy={busy} disabled={!store} />}>
-      {field('Name', name, setName, { ph: 'e.g. Metro Wholesale' })}
-      {field('Phone', phone, setPhone, { kb: 'phone-pad', ph: 'optional' })}
-      {field('Email', email, setEmail, { kb: 'email-address', ph: 'optional' })}
-      {field('Address', address, setAddress, { ph: 'optional' })}
-      {field('Notes', notes, setNotes, { ph: 'optional', multi: true })}
+    <Screen title="Nuevo proveedor" footer={<PrimaryButton label="Guardar proveedor" onPress={save} busy={busy} disabled={!store} />}>
+      {field('Nombre', name, setName, { ph: 'ej. Distribuidora La 14' })}
+      {field('Teléfono', phone, setPhone, { kb: 'phone-pad', ph: 'opcional' })}
+      {field('Correo electrónico', email, setEmail, { kb: 'email-address', ph: 'opcional' })}
+      {field('Dirección', address, setAddress, { ph: 'opcional' })}
+      {field('Notas', notes, setNotes, { ph: 'opcional', multi: true })}
 
       {err && <Text style={{ color: t.danger, marginTop: space.lg }}>{err}</Text>}
     </Screen>

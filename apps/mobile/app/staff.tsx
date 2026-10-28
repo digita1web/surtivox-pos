@@ -27,20 +27,20 @@ export default function StaffScreen() {
   useFocusEffect(reload);
 
   const confirmDelete = (m: Staff) => {
-    showAlert('Remove staff', `Remove ${m.name}? Their past sales stay on record.`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: async () => {
+    showAlert('Quitar personal', `¿Quitar a ${m.name}? Sus ventas anteriores se conservan.`, [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Quitar', style: 'destructive', onPress: async () => {
         try { await deleteStaff(store.id, m.id); reload(); }
-        catch (e) { showAlert('Cannot remove', e instanceof Error ? e.message : String(e)); }
+        catch (e) { showAlert('No se pudo quitar', e instanceof Error ? e.message : String(e)); }
       } },
     ]);
   };
 
   return (
     <Screen
-      title="Staff & roles"
+      title="Personal y roles"
       scroll={false}
-      right={<IconButton icon="person-add-outline" label="Add staff" filled onPress={() => router.push('/add-staff')} />}
+      right={<IconButton icon="person-add-outline" label="Agregar personal" filled onPress={() => router.push('/add-staff')} />}
     >
       <FlatList
         {...listProps}
@@ -48,14 +48,14 @@ export default function StaffScreen() {
         keyExtractor={(m) => m.id}
         contentContainerStyle={{ padding: space.lg, paddingBottom: insets.bottom + space.xxl, flexGrow: 1 }}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-        ListEmptyComponent={<EmptyState icon="people-outline" title="No staff yet" hint="Add accounts so each person signs in with their own PIN." />}
+        ListEmptyComponent={<EmptyState icon="people-outline" title="Aún no hay personal" hint="Agrega cuentas para que cada persona entre con su propio PIN." />}
         renderItem={({ item }) => (
           <Pressable onPress={() => router.push({ pathname: '/add-staff', params: { id: item.id, name: item.name, role: item.role } })}
             style={[s.row, { backgroundColor: t.panel, borderColor: t.line }]}>
             <View style={[s.avatar, { backgroundColor: tileColor(item.id) }]}><Text style={{ color: '#fff', fontWeight: '800' }}>{initials(item.name)}</Text></View>
             <View style={{ flex: 1, marginLeft: space.md }}>
               <Text style={{ color: t.fg, fontWeight: '700' }}>
-                {item.name}{me?.id === item.id ? <Text style={{ color: t.accent }}>  · you</Text> : null}
+                {item.name}{me?.id === item.id ? <Text style={{ color: t.accent }}>  · tú</Text> : null}
               </Text>
               <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>{ROLE_LABEL[item.role]}</Text>
             </View>

@@ -22,15 +22,15 @@ export default function Shops() {
   };
 
   const logout = () => {
-    if (!me) { showAlert('Not signed in', 'Add staff with PINs to enable sign-in.'); return; }
-    showAlert('Log out?', `Sign ${me.name} out. Anyone will need a PIN to use this shop again.`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Log out', style: 'destructive', onPress: () => { signOut(); router.replace('/'); } },
+    if (!me) { showAlert('Sesión no iniciada', 'Agrega personal con PIN para activar el inicio de sesión.'); return; }
+    showAlert('¿Cerrar sesión?', `Cerrar la sesión de ${me.name}. Cualquier persona necesitará un PIN para usar esta tienda de nuevo.`, [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Cerrar sesión', style: 'destructive', onPress: () => { signOut(); router.replace('/'); } },
     ]);
   };
 
   return (
-    <Screen title="Shops" subtitle="Switch between shops on this device">
+    <Screen title="Tiendas" subtitle="Cambia entre las tiendas de este dispositivo">
       {stores.map((shop) => {
         const on = shop.id === current?.id;
         return (
@@ -44,7 +44,7 @@ export default function Shops() {
               <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>{shop.currency_code}{shop.tagline ? ` · ${shop.tagline}` : ''}</Text>
             </View>
             {on
-              ? <View style={[s.badge, { backgroundColor: t.accentSoft }]}><Text style={{ color: t.accent, fontWeight: '800', fontSize: 12 }}>Current</Text></View>
+              ? <View style={[s.badge, { backgroundColor: t.accentSoft }]}><Text style={{ color: t.accent, fontWeight: '800', fontSize: 12 }}>Actual</Text></View>
               : <Ionicons name="chevron-forward" size={18} color={t.muted} />}
           </Pressable>
         );
@@ -52,13 +52,13 @@ export default function Shops() {
 
       <Pressable onPress={() => router.push('/new-shop')} style={[s.add, { borderColor: t.accent }]}>
         <Ionicons name="add-circle-outline" size={20} color={t.accent} />
-        <Text style={{ color: t.accent, fontWeight: '800', marginLeft: 8 }}>Add a shop</Text>
+        <Text style={{ color: t.accent, fontWeight: '800', marginLeft: 8 }}>Agregar tienda</Text>
       </Pressable>
 
       {me && (
         <Pressable onPress={logout} style={[s.logout, { borderColor: t.line }]}>
           <Ionicons name="log-out-outline" size={18} color={t.danger} />
-          <Text style={{ color: t.danger, fontWeight: '700', marginLeft: 8 }}>Log out ({me.name})</Text>
+          <Text style={{ color: t.danger, fontWeight: '700', marginLeft: 8 }}>Cerrar sesión ({me.name})</Text>
         </Pressable>
       )}
     </Screen>

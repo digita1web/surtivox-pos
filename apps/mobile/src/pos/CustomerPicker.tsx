@@ -36,19 +36,19 @@ export function CustomerPicker({ visible, onClose, onPick }: {
         <View style={[s.sheet, { backgroundColor: t.panel, paddingBottom: 20 + insets.bottom }]}>
           <View style={[s.grabber, { backgroundColor: t.line }]} />
           <View style={s.head}>
-            <Text style={{ color: t.fg, fontSize: 19, fontWeight: '800' }}>Choose customer</Text>
+            <Text style={{ color: t.fg, fontSize: 19, fontWeight: '800' }}>Elegir cliente</Text>
             <Pressable onPress={onClose} hitSlop={10}><Ionicons name="close" size={24} color={t.muted} /></Pressable>
           </View>
 
           <View style={[s.search, { backgroundColor: t.surfaceAlt }]}>
             <Ionicons name="search-outline" size={18} color={t.muted} />
-            <TextInput value={q} onChangeText={setQ} placeholder="Search name or phone" placeholderTextColor={t.muted}
+            <TextInput value={q} onChangeText={setQ} placeholder="Buscar nombre o teléfono" placeholderTextColor={t.muted}
               style={{ flex: 1, marginLeft: 8, color: t.fg, fontSize: 15, paddingVertical: 0 }} />
           </View>
 
           <Pressable onPress={() => { onPick(null); onClose(); }} style={[s.row, { borderColor: t.line }]}>
             <View style={[s.avatar, { backgroundColor: t.surfaceAlt }]}><Ionicons name="walk-outline" size={20} color={t.muted} /></View>
-            <Text style={{ color: t.fg, fontWeight: '700', flex: 1, marginLeft: 12 }}>Walk-in (no customer)</Text>
+            <Text style={{ color: t.fg, fontWeight: '700', flex: 1, marginLeft: 12 }}>Cliente ocasional</Text>
           </Pressable>
 
           <FlatList
@@ -62,15 +62,15 @@ export function CustomerPicker({ visible, onClose, onPick }: {
                   <Text style={{ color: t.fg, fontWeight: '700' }}>{item.name}</Text>
                   {item.phone ? <Text style={{ color: t.muted, fontSize: 12 }}>{item.phone}</Text> : null}
                 </View>
-                {item.balance > 0 && <Text style={{ color: t.danger, fontWeight: '700' }}>{money(item.balance as any)} due</Text>}
+                {item.balance > 0 && <Text style={{ color: t.danger, fontWeight: '700' }}>{money(item.balance as any)} pendiente</Text>}
               </Pressable>
             )}
-            ListEmptyComponent={<Text style={{ color: t.muted, textAlign: 'center', paddingVertical: 20 }}>No customers yet.</Text>}
+            ListEmptyComponent={<Text style={{ color: t.muted, textAlign: 'center', paddingVertical: 20 }}>Aún no hay clientes.</Text>}
           />
 
           <Pressable onPress={() => { onClose(); router.push('/add-customer'); }} style={[s.addBtn, { borderColor: t.accent }]}>
             <Ionicons name="person-add-outline" size={18} color={t.accent} />
-            <Text style={{ color: t.accent, fontWeight: '800', marginLeft: 8 }}>New customer</Text>
+            <Text style={{ color: t.accent, fontWeight: '800', marginLeft: 8 }}>Nuevo cliente</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>

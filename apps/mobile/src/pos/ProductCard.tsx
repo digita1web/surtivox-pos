@@ -24,13 +24,12 @@ function ProductCardBase({ product }: { product: Product }) {
   const canEdit = can(useRole(), 'products') && !product.isQuick;
   const qty = cart.items[product.id]?.quantity ?? 0;
   const out = product.stock <= 0;
-  const soldOut = product.stock <= qty;
   const low = !out && isLowStock(product);
   const unit = product.unit && product.unit !== 'unit' ? product.unit : 'en stock';
 
   return (
     <View style={[s.card, { backgroundColor: t.panel, borderColor: qty > 0 ? t.accent : t.line }]}>
-      <Pressable onPress={() => cart.add(product)} disabled={soldOut} accessibilityLabel={`Agregar ${product.name}`} style={{ opacity: out ? 0.55 : 1 }}>
+      <Pressable onPress={() => cart.add(product)} accessibilityLabel={`Agregar ${product.name}`}>
         <View style={[s.imageWrap, { backgroundColor: '#ffffff', borderColor: t.line }]}>
           <Thumb uri={product.image_uri} name={product.name} style={s.image} textSize={26} />
           {(out || low) && (
@@ -52,15 +51,15 @@ function ProductCardBase({ product }: { product: Product }) {
             <Ionicons name="remove" size={20} color={t.fg} />
           </Pressable>
           <Text style={{ color: t.fg, fontWeight: '800', fontSize: 15 }}>{qty}</Text>
-          <Pressable onPress={() => cart.add(product)} disabled={soldOut} style={[s.stepBtn, { opacity: soldOut ? 0.35 : 1 }]} hitSlop={6} accessibilityLabel="Agregar uno">
+          <Pressable onPress={() => cart.add(product)} style={s.stepBtn} hitSlop={6} accessibilityLabel="Agregar uno">
             <Ionicons name="add" size={20} color={t.fg} />
           </Pressable>
         </View>
       ) : (
-        <Pressable onPress={() => cart.add(product)} disabled={soldOut}
-          style={({ pressed }) => [s.addBtn, { backgroundColor: soldOut ? t.surfaceAlt : t.accentSoft, opacity: pressed ? 0.7 : 1 }]}>
-          <Ionicons name={soldOut ? 'close' : 'add'} size={16} color={soldOut ? t.muted : t.accent} />
-          <Text style={{ color: soldOut ? t.muted : t.accent, fontWeight: '800', marginLeft: 4, fontSize: 13.5 }}>{soldOut ? 'Sin stock' : 'Agregar'}</Text>
+        <Pressable onPress={() => cart.add(product)}
+          style={({ pressed }) => [s.addBtn, { backgroundColor: t.accentSoft, opacity: pressed ? 0.7 : 1 }]}>
+          <Ionicons name="add" size={16} color={t.accent} />
+          <Text style={{ color: t.accent, fontWeight: '800', marginLeft: 4, fontSize: 13.5 }}>Agregar</Text>
         </Pressable>
       )}
 

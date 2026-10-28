@@ -8,12 +8,14 @@ import { useSession } from '../session';
 import { useCheckoutUI } from '../checkoutUI';
 import { newId } from '../id';
 import { useTheme } from '../theme';
+import { useMoney } from './ui';
 import type { Product } from '../repos';
 
 /** Sell an ad-hoc item that isn't in the catalog (records product_id = NULL). */
 export function QuickSaleModal() {
   const t = useTheme();
   const insets = useSafeAreaInsets();
+  const money = useMoney();
   const cart = useCart();
   const store = useSession((s) => s.store);
   const open = useCheckoutUI((s) => s.quickOpen);
@@ -26,6 +28,11 @@ export function QuickSaleModal() {
   const [err, setErr] = useState<string | null>(null);
 
   if (!store) return null;
+
+  const pricePreview = (() => {
+    if (!price.trim()) return null;
+    try { return money(fromMajorString(price, store.currency_decimals)); } catch { return null; }
+  })();
 
   const add = () => {
     setErr(null);
@@ -68,9 +75,10 @@ export function QuickSaleModal() {
 
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <View style={{ flex: 2 }}>
-              <Text style={[s.label, { color: t.muted }]}>PRECIO ({store.currency_code})</Text>
-              <TextInput value={price} onChangeText={setPrice} keyboardType="decimal-pad" placeholder="0.00" placeholderTextColor={t.muted}
+              <Text style={[s.label, { color: t.muted }]}>PRECIO</Text>
+              <TextInput value={price} onChangeText={setPrice} keyboardType="decimal-pad" placeholder="0" placeholderTextColor={t.muted}
                 style={[s.input, { color: t.fg, borderColor: t.line, backgroundColor: t.bg }]} />
+              {pricePreview && <Text style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>Se mostrará como {pricePreview}</Text>}
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[s.label, { color: t.muted }]}>CANT.</Text>

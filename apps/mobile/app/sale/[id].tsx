@@ -13,10 +13,10 @@ import { useTheme, space, radius, type as ty } from '../../src/theme';
 import { Screen, IconButton } from '../../src/pos/Screen';
 
 const METHODS: { key: RefundMethod; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: 'cash', label: 'Cash', icon: 'cash-outline' },
-  { key: 'card', label: 'Card', icon: 'card-outline' },
-  { key: 'bank', label: 'Transfer', icon: 'swap-horizontal-outline' },
-  { key: 'account', label: 'To account', icon: 'person-outline' },
+  { key: 'cash', label: 'Efectivo', icon: 'cash-outline' },
+  { key: 'card', label: 'Tarjeta', icon: 'card-outline' },
+  { key: 'bank', label: 'Transferencia', icon: 'swap-horizontal-outline' },
+  { key: 'account', label: 'A la cuenta', icon: 'person-outline' },
 ];
 
 export default function SaleDetailScreen() {
@@ -54,10 +54,11 @@ export default function SaleDetailScreen() {
     try {
       const list = Object.entries(picks).filter(([, q]) => q > 0).map(([saleItemId, quantity]) => ({ saleItemId, quantity }));
       const r = await processReturn(store.id, detail.header.id, list, method);
-      showAlert('Return processed', `Refunded ${money(r.grandTotal)} via ${method === 'account' ? 'customer account' : method}.`);
+      const methodLabel = METHODS.find((m) => m.key === method)?.label ?? method;
+      showAlert('Devolución procesada', `Se devolvieron ${money(r.grandTotal)} por ${method === 'account' ? 'la cuenta del cliente' : methodLabel}.`);
       refresh();
     } catch (e) {
-      showAlert('Could not process return', e instanceof Error ? e.message : String(e));
+      showAlert('No se pudo procesar la devolución', e instanceof Error ? e.message : String(e));
     } finally { setBusy(false); }
   };
 
@@ -77,14 +78,14 @@ export default function SaleDetailScreen() {
   };
   const reprint = () => {
     const p = printable(); if (!p) return;
-    printInvoice(store, p).catch((e) => showAlert('Print failed', e instanceof Error ? e.message : String(e)));
+    printInvoice(store, p).catch((e) => showAlert('No se pudo imprimir', e instanceof Error ? e.message : String(e)));
   };
   const sharePdf = () => {
     const p = printable(); if (!p) return;
-    shareInvoicePdf(store, p).catch((e) => showAlert('Share failed', e instanceof Error ? e.message : String(e)));
+    shareInvoicePdf(store, p).catch((e) => showAlert('No se pudo compartir', e instanceof Error ? e.message : String(e)));
   };
 
-  if (!detail) return <Screen title="Sale"><View /></Screen>;
+  if (!detail) return <Screen title="Venta"><View /></Screen>;
   const { header, items, refundedTotal } = detail;
   const fullyReturned = items.every((i) => i.quantity - i.returned <= 0);
   const showReturns = canReturn && !fullyReturned;
@@ -94,7 +95,7 @@ export default function SaleDetailScreen() {
       style={[s.primary, { backgroundColor: t.danger, opacity: !anySelected || busy ? 0.5 : 1 }]}>
       <Ionicons name="arrow-undo-outline" size={18} color="#fff" />
       <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16, marginLeft: space.sm }}>
-        {busy ? 'Processing…' : anySelected ? `Refund ${money(asMinor(refundPreview))}` : 'Select items to return'}
+        {busy ? 'Procesando…' : anySelected ? `Devolver ${money(asMinor(refundPreview))}` : 'Selecciona artículos para devolver'}
       </Text>
     </Pressable>
   ) : undefined;
@@ -106,31 +107,31 @@ export default function SaleDetailScreen() {
       footer={refundFooter}
       right={
         <>
-          <IconButton icon="share-outline" label="Share invoice" onPress={sharePdf} />
-          <IconButton icon="print-outline" label="Print invoice" onPress={reprint} />
+          <IconButton icon="share-outline" label="Compartir factura" onPress={sharePdf} />
+          <IconButton icon="print-outline" label="Imprimir factura" onPress={reprint} />
         </>
       }
     >
       <View style={[s.card, { backgroundColor: t.panel, borderColor: t.line }]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={[ty.body, { color: t.muted }]}>Sale total</Text>
+          <Text style={[ty.body, { color: t.muted }]}>Total de la venta</Text>
           <Text style={[ty.h1, { color: t.fg }]}>{money(asMinor(header.grand_total))}</Text>
         </View>
         {header.staff_name && (
           <View style={s.metaRow}>
             <Ionicons name="person-circle-outline" size={15} color={t.muted} />
-            <Text style={[ty.small, { color: t.muted, marginLeft: 5 }]}>Sold by {header.staff_name}</Text>
+            <Text style={[ty.small, { color: t.muted, marginLeft: 5 }]}>Vendido por {header.staff_name}</Text>
           </View>
         )}
         {refundedTotal > 0 && (
           <View style={[s.refundedTag, { backgroundColor: t.warn + '22' }]}>
             <Ionicons name="arrow-undo-outline" size={14} color={t.warn} />
-            <Text style={{ color: t.warn, fontWeight: '700', marginLeft: 6 }}>{money(asMinor(refundedTotal))} refunded</Text>
+            <Text style={{ color: t.warn, fontWeight: '700', marginLeft: 6 }}>{money(asMinor(refundedTotal))} devueltos</Text>
           </View>
         )}
       </View>
 
-      <Text style={[ty.h2, s.section, { color: t.fg }]}>{showReturns ? 'Return items' : 'Items'}</Text>
+      <Text style={[ty.h2, s.section, { color: t.fg }]}>{showReturns ? 'Artículos a devolver' : 'Artículos'}</Text>
         <View style={[s.card, { backgroundColor: t.panel, borderColor: t.line }]}>
           {items.map((it, i) => {
             const remaining = it.quantity - it.returned;
@@ -140,7 +141,7 @@ export default function SaleDetailScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: t.fg, fontWeight: '600' }} numberOfLines={1}>{it.name}</Text>
                   <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>
-                    {it.quantity} × {money(asMinor(it.unit_price))}{it.returned > 0 ? ` · ${it.returned} returned` : ''}
+                    {it.quantity} × {money(asMinor(it.unit_price))}{it.returned > 0 ? ` · ${it.returned} devueltos` : ''}
                   </Text>
                 </View>
                 {showReturns && remaining > 0 ? (
@@ -150,7 +151,7 @@ export default function SaleDetailScreen() {
                     <Pressable onPress={() => setQty(it.id, q + 1, remaining)} style={s.stepBtn} hitSlop={6}><Ionicons name="add" size={18} color={t.fg} /></Pressable>
                   </View>
                 ) : remaining <= 0 ? (
-                  <Text style={{ color: t.muted, fontSize: 12 }}>Returned</Text>
+                  <Text style={{ color: t.muted, fontSize: 12 }}>Devuelto</Text>
                 ) : null}
               </View>
             );
@@ -160,13 +161,13 @@ export default function SaleDetailScreen() {
       {!canReturn && !fullyReturned && (
         <View style={[s.noteRow, { backgroundColor: t.accentSoft }]}>
           <Ionicons name="lock-closed-outline" size={16} color={t.muted} />
-          <Text style={[ty.small, { color: t.muted, marginLeft: space.sm, flex: 1 }]}>Only managers and owners can process returns.</Text>
+          <Text style={[ty.small, { color: t.muted, marginLeft: space.sm, flex: 1 }]}>Solo gerentes y propietarios pueden procesar devoluciones.</Text>
         </View>
       )}
 
       {showReturns && (
         <>
-          <Text style={[ty.h2, s.section, { color: t.fg }]}>Refund method</Text>
+          <Text style={[ty.h2, s.section, { color: t.fg }]}>Método de devolución</Text>
           <View style={s.methods}>
             {methods.map((m) => {
               const on = method === m.key;

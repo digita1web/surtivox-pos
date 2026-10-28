@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -15,6 +15,8 @@ import { useCart } from '../../src/cart';
 import { useCloudEntitlement } from '../../src/subscription';
 import { Thumb } from '../../src/pos/Thumb';
 import { TabHeader, IconButton, scrollProps, useTabListInset } from '../../src/pos/Screen';
+import { FirstRunGuide } from '../../src/pos/FirstRunGuide';
+import { hasSeenFirstRunGuide } from '../../src/localFlags';
 import { useTheme, space, radius, type as ty, type Theme } from '../../src/theme';
 
 export default function Home() {
@@ -32,6 +34,11 @@ export default function Home() {
   const [stats, setStats] = useState<TodayStats>({ totalSales: 0, orders: 0, itemsSold: 0 });
   const [strip, setStrip] = useState<Product[]>([]);
   const [alerts, setAlerts] = useState<LowStockItem[]>([]);
+  const [guideOpen, setGuideOpen] = useState(false);
+
+  useEffect(() => {
+    hasSeenFirstRunGuide().then((seen) => { if (!seen) setGuideOpen(true); });
+  }, []);
 
   useFocusEffect(useCallback(() => {
     todayStats(store.id).then(setStats);
@@ -128,13 +135,12 @@ export default function Home() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.stripScroll} contentContainerStyle={s.strip}>
             {strip.map((p) => {
               const qty = cart.items[p.id]?.quantity ?? 0;
-              const soldOut = p.stock <= qty;
               return (
                 <View key={p.id} style={[s.mini, { backgroundColor: t.panel, borderColor: qty > 0 ? t.accent : t.line }]}>
                   <View style={[s.miniTileWrap, { borderColor: t.line }]}>
                     <Thumb uri={p.image_uri} name={p.name} style={s.miniTile} textSize={18} />
-                    <Pressable onPress={() => cart.add(p)} disabled={soldOut} accessibilityLabel={`Agregar ${p.name}`}
-                      style={[s.plus, { backgroundColor: t.accent, opacity: soldOut ? 0.4 : 1 }]}>
+                    <Pressable onPress={() => cart.add(p)} accessibilityLabel={`Agregar ${p.name}`}
+                      style={[s.plus, { backgroundColor: t.accent }]}>
                       {qty > 0 ? <Text style={{ color: t.accentFg, fontWeight: '800' }}>{qty}</Text> : <Ionicons name="add" size={18} color={t.accentFg} />}
                     </Pressable>
                   </View>
@@ -146,6 +152,7 @@ export default function Home() {
           </ScrollView>
         )}
       </ScrollView>
+      <FirstRunGuide visible={guideOpen} onClose={() => setGuideOpen(false)} />
     </View>
   );
 }

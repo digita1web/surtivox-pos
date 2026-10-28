@@ -6,7 +6,7 @@
 import type { ReceiptPaper } from './repos';
 
 export const DEFAULT_ACCENT = '#0ca678';
-export const DEFAULT_FOOTER = 'Thank you for your business!';
+export const DEFAULT_FOOTER = '¡Gracias por su compra!';
 
 export const ACCENT_PRESETS = ['#0ca678', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#dc2626', '#0891b2', '#111827'];
 

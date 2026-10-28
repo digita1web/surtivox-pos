@@ -32,12 +32,12 @@ export function ScanModal({ visible, onClose, onScan }: {
         {!permission || !permission.granted ? (
           <View style={[st.center, { backgroundColor: t.bg }]}>
             <View style={[st.icon, { backgroundColor: t.accentSoft }]}><Ionicons name="camera-outline" size={30} color={t.accent} /></View>
-            <Text style={[ty.h2, { color: t.fg, marginTop: space.lg }]}>Camera access needed</Text>
-            <Text style={[ty.body, { color: t.muted, textAlign: 'center', marginTop: space.sm, marginBottom: space.xl }]}>Allow the camera to scan a product barcode.</Text>
+            <Text style={[ty.h2, { color: t.fg, marginTop: space.lg }]}>Se necesita acceso a la cámara</Text>
+            <Text style={[ty.body, { color: t.muted, textAlign: 'center', marginTop: space.sm, marginBottom: space.xl }]}>Permite el acceso a la cámara para escanear códigos de barras.</Text>
             <Pressable onPress={requestPermission} style={[st.grant, { backgroundColor: t.accent }]}>
-              <Text style={{ color: t.accentFg, fontWeight: '800' }}>Grant camera access</Text>
+              <Text style={{ color: t.accentFg, fontWeight: '800' }}>Permitir acceso a la cámara</Text>
             </Pressable>
-            <Pressable onPress={onClose} style={{ marginTop: space.lg }} hitSlop={10}><Text style={{ color: t.muted }}>Cancel</Text></Pressable>
+            <Pressable onPress={onClose} style={{ marginTop: space.lg }} hitSlop={10}><Text style={{ color: t.muted }}>Cancelar</Text></Pressable>
           </View>
         ) : (
           <>
@@ -48,8 +48,8 @@ export function ScanModal({ visible, onClose, onScan }: {
               barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39', 'code93', 'itf14', 'qr'] }}
             />
             <View style={[st.label, { top: insets.top + 70 }]} pointerEvents="none">
-              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>Scan a barcode</Text>
-              <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 2 }}>Point the camera at a product barcode</Text>
+              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>Escanea un código de barras</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 2 }}>Apunta la cámara al código del producto</Text>
             </View>
             <View style={st.reticle} pointerEvents="none" />
             <Pressable onPress={onClose} hitSlop={12} style={[st.close, { top: insets.top + 10 }]}>

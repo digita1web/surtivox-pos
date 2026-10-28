@@ -85,11 +85,11 @@ export function ShopDetailsFields({ value, onChange }: Props) {
       <LogoPicker t={t} value={value} onChange={onChange} />
       <Field t={t} label="Nombre de la tienda" value={value.name} onChangeText={(name) => onChange({ name })} placeholder="ej. Mercado Fresco" />
       <Field t={t} label="Eslogan (opcional)" value={value.tagline} onChangeText={(tagline) => onChange({ tagline })} placeholder="ej. Abarrotes frescos, precios justos" />
-      <Field t={t} label="Teléfono" value={value.phone} onChangeText={(phone) => onChange({ phone })} placeholder="ej. +1 555 010 2030" keyboardType="phone-pad" />
+      <Field t={t} label="Teléfono" value={value.phone} onChangeText={(phone) => onChange({ phone })} placeholder="ej. +57 300 123 4567" keyboardType="phone-pad" />
       <Field t={t} label="Correo electrónico" value={value.email} onChangeText={(email) => onChange({ email })} placeholder="tienda@ejemplo.com" keyboardType="email-address" />
       <Field t={t} label="Sitio web o red social" value={value.website} onChangeText={(website) => onChange({ website })} placeholder="www.ejemplo.com o @tutienda" keyboardType="url" />
-      <Field t={t} label="Dirección" value={value.address} onChangeText={(address) => onChange({ address })} placeholder="Calle, colonia, ciudad" multiline />
-      <Field t={t} label="ID fiscal / RFC / NIT (opcional)" value={value.taxId} onChangeText={(taxId) => onChange({ taxId })} placeholder="Se imprime en los recibos si lo indicas" autoCapitalize="none" />
+      <Field t={t} label="Dirección" value={value.address} onChangeText={(address) => onChange({ address })} placeholder="Calle, barrio, ciudad" multiline />
+      <Field t={t} label="NIT / RUT (opcional)" value={value.taxId} onChangeText={(taxId) => onChange({ taxId })} placeholder="Se imprime en los recibos si lo indicas" autoCapitalize="none" />
     </View>
   );
 }

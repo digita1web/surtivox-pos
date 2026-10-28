@@ -27,12 +27,12 @@ export default function Suppliers() {
 
   return (
     <Screen
-      title="Suppliers"
+      title="Proveedores"
       scroll={false}
-      right={<IconButton icon="add" label="Add supplier" filled onPress={() => router.push('/add-supplier')} />}
+      right={<IconButton icon="add" label="Agregar proveedor" filled onPress={() => router.push('/add-supplier')} />}
     >
       <View style={s.pinned}>
-        <SearchField value={q} onChangeText={setQ} placeholder="Search name or phone" />
+        <SearchField value={q} onChangeText={setQ} placeholder="Buscar nombre o teléfono" />
       </View>
 
       <FlatList
@@ -41,7 +41,7 @@ export default function Suppliers() {
         keyExtractor={(c) => c.id}
         contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: insets.bottom + 96, flexGrow: 1 }}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-        ListEmptyComponent={<EmptyState icon="business-outline" title="No suppliers yet" hint="Add who you restock from." />}
+        ListEmptyComponent={<EmptyState icon="business-outline" title="Aún no hay proveedores" hint="Agrega a quién le compras." />}
         renderItem={({ item }) => (
           <View style={[s.row, { backgroundColor: t.panel, borderColor: t.line }]}>
             <View style={[s.avatar, { backgroundColor: t.accent }]}><Text style={{ color: t.accentFg, fontWeight: '800' }}>{initials(item.name)}</Text></View>
@@ -55,7 +55,7 @@ export default function Suppliers() {
 
       <Pressable onPress={() => router.push('/new-purchase')} style={[s.fab, { backgroundColor: t.accent, bottom: insets.bottom + 20, boxShadow: t.shadowStrong }]}>
         <Ionicons name="cart-outline" size={20} color={t.accentFg} />
-        <Text style={{ color: t.accentFg, fontWeight: '800', marginLeft: space.sm }}>New purchase</Text>
+        <Text style={{ color: t.accentFg, fontWeight: '800', marginLeft: space.sm }}>Nueva compra</Text>
       </Pressable>
     </Screen>
   );

@@ -94,7 +94,7 @@ async function api(base: string, path: string, token: string, init?: RequestInit
   const text = await res.text();
   let body: any = null;
   try { body = text ? JSON.parse(text) : null; } catch { /* non-json */ }
-  if (!res.ok) throw new Error(body?.error ?? `Sync failed (${res.status})`);
+  if (!res.ok) throw new Error(body?.error ?? `Error de sincronización (${res.status})`);
   return body;
 }
 
@@ -157,9 +157,9 @@ export interface SyncResult { pushedCursor: number; pulledCursor: number; at: nu
 /** Full reconcile for the device already bound to this store: push then pull. */
 export async function syncNow(): Promise<SyncResult> {
   const state = await getSyncState();
-  if (!isConfigured(state)) throw new Error('Cloud sync is not set up yet');
+  if (!isConfigured(state)) throw new Error('La sincronización en la nube aún no está configurada');
   const store = await getStore();
-  if (!store) throw new Error('No store to sync');
+  if (!store) throw new Error('No hay una tienda para sincronizar');
   const base = state.server_url!;
   const token = state.token!;
 
@@ -176,7 +176,7 @@ export async function syncNow(): Promise<SyncResult> {
 
 /** One-tap: pick/keep this shop's code, point at the hosted backend, and sync. */
 export async function turnOnCloudBackup(): Promise<SyncResult> {
-  if (!hasHostedSync()) throw new Error('Hosted cloud backup is not set up in this build.');
+  if (!hasHostedSync()) throw new Error('El respaldo en la nube no está configurado en esta compilación.');
   const state = await getSyncState();
   const token = state.token ?? newShopCode();
   await saveSyncConfig(DEFAULT_SYNC_URL, token);
@@ -185,9 +185,9 @@ export async function turnOnCloudBackup(): Promise<SyncResult> {
 
 /** Link this device to an existing shop using its code (destructive: replaces local data). */
 export async function linkDeviceByCode(code: string): Promise<number> {
-  if (!hasHostedSync()) throw new Error('Hosted cloud backup is not set up in this build.');
+  if (!hasHostedSync()) throw new Error('El respaldo en la nube no está configurado en esta compilación.');
   const token = normalizeCode(code);
-  if (token.length < 12) throw new Error('That code looks too short — check it and try again.');
+  if (token.length < 12) throw new Error('Ese código parece muy corto; revísalo e intenta de nuevo.');
   return restoreFromCloud(DEFAULT_SYNC_URL, token);
 }
 
@@ -206,7 +206,7 @@ export const DEMO_SHOP_CODE = 'XRVK2V3VQP7GFS69';
  * demo. Returns the number of records pulled.
  */
 export async function loadDemoShop(): Promise<number> {
-  if (!hasHostedSync()) throw new Error('The demo store needs a configured backend.');
+  if (!hasHostedSync()) throw new Error('La tienda de ejemplo necesita un backend configurado.');
   const n = await restoreFromCloud(DEFAULT_SYNC_URL, DEMO_SHOP_CODE);
   await disconnectSync();
   return n;

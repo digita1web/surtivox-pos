@@ -78,8 +78,8 @@ export async function restoreFullBackup(): Promise<RestoreResult | null> {
   if (res.canceled || !res.assets?.[0]) return null;
   const text = await FileSystem.readAsStringAsync(res.assets[0].uri);
   let payload: { app?: string; tables?: Record<string, Record<string, unknown>[]> };
-  try { payload = JSON.parse(text); } catch { throw new Error('That file is not valid JSON'); }
-  if (payload?.app !== BACKUP_MAGIC || !payload.tables) throw new Error('Not an OpenPocket backup file');
+  try { payload = JSON.parse(text); } catch { throw new Error('El archivo no es un JSON válido'); }
+  if (payload?.app !== BACKUP_MAGIC || !payload.tables) throw new Error('El archivo no es un respaldo válido de Surtivox');
 
   const db = getDb();
   const tableNames = Object.keys(payload.tables);
@@ -140,7 +140,7 @@ export async function importProducts(store: Store): Promise<ImportResult | null>
   const iCost = columnIndex(headers, 'cost_price');
   const iTax = columnIndex(headers, 'tax_percent');
   const iStock = columnIndex(headers, 'stock');
-  if (iName < 0 || iSell < 0) throw new Error('CSV needs at least "name" and "selling_price" columns');
+  if (iName < 0 || iSell < 0) throw new Error('El CSV debe incluir al menos las columnas "name" y "selling_price"');
 
   const dec = store.currency_decimals;
   let created = 0, updated = 0, skipped = 0;

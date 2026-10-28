@@ -22,7 +22,7 @@ export default function AddCustomer() {
 
   const save = async () => {
     if (!store || busy) return;
-    if (!name.trim()) { setErr('Name is required'); return; }
+    if (!name.trim()) { setErr('El nombre es obligatorio'); return; }
     setBusy(true);
     try {
       await createCustomer({ storeId: store.id, name, phone, email, address, notes });
@@ -40,12 +40,12 @@ export default function AddCustomer() {
   );
 
   return (
-    <Screen title="New customer" footer={<PrimaryButton label="Save customer" onPress={save} busy={busy} disabled={!store} />}>
-      {field('Name', name, setName, { ph: 'e.g. Jordan Smith' })}
-      {field('Phone', phone, setPhone, { kb: 'phone-pad', ph: 'optional' })}
-      {field('Email', email, setEmail, { kb: 'email-address', ph: 'optional' })}
-      {field('Address', address, setAddress, { ph: 'optional' })}
-      {field('Notes', notes, setNotes, { ph: 'optional', multi: true })}
+    <Screen title="Nuevo cliente" footer={<PrimaryButton label="Guardar cliente" onPress={save} busy={busy} disabled={!store} />}>
+      {field('Nombre', name, setName, { ph: 'ej. María Gómez' })}
+      {field('Teléfono', phone, setPhone, { kb: 'phone-pad', ph: 'opcional' })}
+      {field('Correo electrónico', email, setEmail, { kb: 'email-address', ph: 'opcional' })}
+      {field('Dirección', address, setAddress, { ph: 'opcional' })}
+      {field('Notas', notes, setNotes, { ph: 'opcional', multi: true })}
 
       {err && <Text style={{ color: t.danger, marginTop: space.lg }}>{err}</Text>}
     </Screen>

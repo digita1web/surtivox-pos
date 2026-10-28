@@ -54,8 +54,8 @@ export function StaffLock() {
             <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 22 }}>{initials(store.name)}</Text>
           </View>
         )}
-        <Text style={[st.title, { color: t.fg }]}>Who's working?</Text>
-        <Text style={[st.sub, { color: t.muted }]}>Tap your name to sign in</Text>
+        <Text style={[st.title, { color: t.fg }]}>¿Quién está trabajando?</Text>
+        <Text style={[st.sub, { color: t.muted }]}>Toca tu nombre para entrar</Text>
         <View style={st.grid}>
           {staff.map((m) => (
             <Pressable key={m.id} onPress={() => { setPin(''); setPicked(m); }} style={st.person}>
@@ -81,7 +81,7 @@ export function StaffLock() {
         <Text style={{ color: '#fff', fontWeight: '800', fontSize: 26 }}>{initials(picked.name)}</Text>
       </View>
       <Text style={[st.title, { color: t.fg, marginTop: 16 }]}>{picked.name}</Text>
-      <Text style={[st.sub, { color: t.muted }]}>Enter your 4-digit PIN</Text>
+      <Text style={[st.sub, { color: t.muted }]}>Ingresa tu PIN de 4 dígitos</Text>
 
       <Animated.View style={[st.dots, { transform: [{ translateX: shake }] }]}>
         {[0, 1, 2, 3].map((i) => (

@@ -148,7 +148,7 @@ export async function createStore(
 
 /** Save the shop profile + receipt look. Bumps version so it syncs. */
 export async function updateStoreProfile(storeId: string, p: StoreProfile): Promise<Store> {
-  if (!p.name.trim()) throw new Error('Shop name is required');
+  if (!p.name.trim()) throw new Error('El nombre de la tienda es obligatorio');
   await getDb().runAsync(
     `UPDATE stores SET name=?, address=?, phone=?, email=?, website=?, tax_id=?, tagline=?, logo_uri=?,
         receipt_footer=?, receipt_terms=?, receipt_accent=?, receipt_paper=?,
@@ -174,7 +174,7 @@ export async function listCategories(storeId: string): Promise<Category[]> {
 /** Returns the existing category with this name (case-insensitive) or creates it. */
 export async function ensureCategory(storeId: string, name: string): Promise<string> {
   const n = name.trim();
-  if (!n) throw new Error('Category name is required');
+  if (!n) throw new Error('El nombre de la categoría es obligatorio');
   const db = getDb();
   const hit = await db.getFirstAsync<{ id: string }>(
     'SELECT id FROM categories WHERE store_id=? AND lower(name)=lower(?)', [storeId, n]);
@@ -504,7 +504,7 @@ export async function customerLedger(customerId: string, limit = 100): Promise<L
 export async function recordCustomerPayment(
   storeId: string, customerId: string, amount: Minor, note?: string,
 ): Promise<void> {
-  if (amount <= 0) throw new Error('Payment must be greater than zero');
+  if (amount <= 0) throw new Error('El pago debe ser mayor que cero');
   await getDb().runAsync(
     `INSERT INTO customer_ledger (id,store_id,customer_id,type,amount,reference_type,note,created_at,device_id)
      VALUES (?,?,?,'payment',?, 'manual', ?, ?, ?)`,
@@ -765,9 +765,9 @@ export async function processReturn(
 ): Promise<ReturnReceipt> {
   const db = getDb();
   const detail = await getSale(saleId);
-  if (!detail) throw new Error('Sale not found');
+  if (!detail) throw new Error('No se encontró la venta');
   if (refundMethod === 'account' && !detail.header.customer_id) {
-    throw new Error('This sale has no customer to refund to their account');
+    throw new Error('Esta venta no tiene cliente para devolver a su cuenta');
   }
 
   const now = Date.now();
@@ -776,15 +776,15 @@ export async function processReturn(
   for (const pick of picks) {
     if (pick.quantity <= 0) continue;
     const item = detail.items.find((i) => i.id === pick.saleItemId);
-    if (!item) throw new Error('Line not found on sale');
+    if (!item) throw new Error('No se encontró el artículo en la venta');
     const remaining = item.quantity - item.returned;
-    if (pick.quantity > remaining) throw new Error(`Cannot return more than ${remaining} of ${item.name}`);
+    if (pick.quantity > remaining) throw new Error(`No puedes devolver más de ${remaining} de ${item.name}`);
     // prorate from the original line snapshot so partial returns are exact
     const refundLine = roundHalfAwayFromZero((item.line_total * pick.quantity) / item.quantity);
     const refundTax = roundHalfAwayFromZero((item.tax * pick.quantity) / item.quantity);
     rows.push({ pick, item, refundLine, refundTax });
   }
-  if (rows.length === 0) throw new Error('Select at least one item to return');
+  if (rows.length === 0) throw new Error('Selecciona al menos un artículo para devolver');
 
   const grandTotal = rows.reduce((n, r) => n + r.refundLine, 0);
   const taxTotal = rows.reduce((n, r) => n + r.refundTax, 0);
@@ -870,7 +870,7 @@ export async function createPurchase(
   storeId: string, supplierId: string | null, lines: PurchaseLine[], note?: string,
 ): Promise<PurchaseReceipt> {
   const valid = lines.filter((l) => l.quantity > 0);
-  if (valid.length === 0) throw new Error('Add at least one item to the purchase');
+  if (valid.length === 0) throw new Error('Agrega al menos un artículo a la compra');
   const db = getDb();
   const now = Date.now();
   const purchaseId = newId();
@@ -1038,7 +1038,7 @@ export async function deleteStaff(storeId: string, id: string): Promise<void> {
     const owners = await getDb().getFirstAsync<{ c: number }>(
       `SELECT COUNT(*) AS c FROM staff WHERE store_id=? AND role='owner' AND active=1 AND deleted_at IS NULL`, [storeId],
     );
-    if ((owners?.c ?? 0) <= 1) throw new Error('Cannot remove the last owner');
+    if ((owners?.c ?? 0) <= 1) throw new Error('No se puede quitar al último propietario');
   }
   await getDb().runAsync(
     `UPDATE staff SET active=0, deleted_at=?, updated_at=?, version=version+1 WHERE id=?`,

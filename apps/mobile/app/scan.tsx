@@ -70,15 +70,13 @@ export default function Scan() {
       draft.bump(product.id);
       Vibration.vibrate(40);
       flash(`Agregado ${product.name}`, true);
-    } else if (product.stock <= (cart.items[product.id]?.quantity ?? 0)) {
-      Vibration.vibrate(120);
-      flash(`${product.name} — sin stock`, false);
     } else {
+      const nextQty = (cart.items[product.id]?.quantity ?? 0) + 1;
       cart.add(product);
       Vibration.vibrate(40);
-      flash(`Agregado ${product.name}`, true);
+      flash(product.stock >= nextQty ? `Agregado ${product.name}` : `${product.name} — sin stock, agregado`, product.stock >= nextQty);
     }
-  }, [store, isStock]);
+  }, [store, isStock, cart]);
 
   const onScan = useCallback((r: BarcodeScanningResult) => {
     const now = Date.now();
@@ -176,11 +174,11 @@ export default function Scan() {
 
       {/* recently added */}
       <View style={st.listHead}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
-          <Text style={[ty.h2, { color: t.fg }]}>Agregados recientemente</Text>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.sm, marginRight: space.sm, minWidth: 0 }}>
+          <Text style={[ty.h2, { color: t.fg, flexShrink: 1 }]} numberOfLines={1}>Agregados recientemente</Text>
           {count > 0 && <View style={[st.countPill, { backgroundColor: t.accentSoft }]}><Text style={{ color: t.accent, fontWeight: '800', fontSize: 12 }}>{count}</Text></View>}
         </View>
-        <Pressable onPress={() => setManualOpen(true)} hitSlop={8}><Text style={{ color: t.accent, fontWeight: '700' }}>Agregar artículo</Text></Pressable>
+        <Pressable onPress={() => setManualOpen(true)} hitSlop={8}><Text style={{ color: t.accent, fontWeight: '700' }} numberOfLines={1}>Agregar artículo</Text></Pressable>
       </View>
 
       <FlatList
@@ -257,7 +255,7 @@ const st = StyleSheet.create({
   corner: {},
   banner: { position: 'absolute', top: 16, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
   manualBtn: { position: 'absolute', bottom: 14, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 16 },
-  listHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.lg, marginTop: space.lg, marginBottom: space.sm },
+  listHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.sm, paddingHorizontal: space.lg, marginTop: space.lg, marginBottom: space.sm },
   countPill: { minWidth: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
   row: { flexDirection: 'row', alignItems: 'center', padding: 14, borderWidth: 1, borderRadius: radius.lg },
   thumb: { width: 48, height: 48, borderRadius: 12 },

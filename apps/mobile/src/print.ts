@@ -64,21 +64,21 @@ export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: stri
     `<tr class="${cls}"><td class="tl">${esc(label)}</td><td class="tr">${esc(value)}</td></tr>`;
 
   const payLine = r.received != null
-    ? totalRow(`Paid · ${r.paymentLabel}`, m(r.received), 'pay') + (r.change != null ? totalRow('Change', m(r.change), 'pay') : '')
+    ? totalRow(`Pagado · ${r.paymentLabel}`, m(r.received), 'pay') + (r.change != null ? totalRow('Cambio', m(r.change), 'pay') : '')
     : totalRow(`A cuenta · ${r.paymentLabel}`, m(r.grandTotal), 'pay');
 
   const totals = `
     ${totalRow('Subtotal', m(r.subtotal))}
-    ${r.discountTotal && r.discountTotal > 0 ? totalRow('Discount', `- ${m(r.discountTotal)}`) : ''}
-    ${r.taxTotal > 0 ? totalRow('Tax', m(r.taxTotal)) : ''}
+    ${r.discountTotal && r.discountTotal > 0 ? totalRow('Descuento', `- ${m(r.discountTotal)}`) : ''}
+    ${r.taxTotal > 0 ? totalRow('Impuesto', m(r.taxTotal)) : ''}
     <tr class="grand"><td class="tl">Total</td><td class="tr">${esc(m(r.grandTotal))}</td></tr>
     ${payLine}`;
 
   const metaItems = [
-    ['Date', date.toLocaleString()],
-    p.showStaff && r.staffName ? ['Served by', r.staffName] : null,
-    r.customerName ? ['Customer', r.customerName] : null,
-    ['Payment', r.paymentLabel],
+    ['Fecha', date.toLocaleString()],
+    p.showStaff && r.staffName ? ['Atendido por', r.staffName] : null,
+    r.customerName ? ['Cliente', r.customerName] : null,
+    ['Pago', r.paymentLabel],
   ].filter(Boolean) as string[][];
 
   const terms = p.receiptTerms.trim() ? `<div class="terms">${multiline(p.receiptTerms)}</div>` : '';

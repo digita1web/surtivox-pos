@@ -29,7 +29,7 @@ export default function RootLayout() {
     return (
       <View style={[styles.center, { backgroundColor: t.bg }]}>
         <Text style={{ color: t.danger, padding: 24, textAlign: 'center' }}>
-          Database error:{'\n'}
+          Error de base de datos:{'\n'}
           {error}
         </Text>
       </View>
@@ -39,7 +39,7 @@ export default function RootLayout() {
     return (
       <View style={[styles.center, { backgroundColor: t.bg }]}>
         <ActivityIndicator color={t.accent} size="large" />
-        <Text style={{ color: t.muted, marginTop: 12 }}>Opening store…</Text>
+        <Text style={{ color: t.muted, marginTop: 12 }}>Abriendo tienda…</Text>
       </View>
     );
   }

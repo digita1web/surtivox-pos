@@ -68,6 +68,7 @@ export function CheckoutSheet() {
   const cashSteps = currency.code === 'COP' ? COP_CASH_STEPS : cashSuggestionSteps(totals.grandTotal, currency.decimals);
   const suggestions = suggestCashAmounts(totals.grandTotal, cashSteps).slice(0, 5);
   const blocked = lines.length === 0 || (isCash && !enough) || (isCredit && !customer) || busy;
+  const outOfStock = lines.filter((it) => it.quantity > it.product.stock);
 
   const reset = () => { setReceived(''); setDiscountOn(false); setDiscountPct(''); setMethod('cash'); setCustomer(null); };
   // Reset local entry state on cancel so a discount/cash amount never carries
@@ -83,8 +84,7 @@ export function CheckoutSheet() {
     ]);
   };
 
-  const confirm = async () => {
-    if (blocked) return;
+  const performCheckout = async () => {
     setBusy(true);
     try {
       const receipt = await checkoutSale(store.id, lines, {
@@ -93,7 +93,24 @@ export function CheckoutSheet() {
       cart.clear();
       reset();
       showReceipt(receipt);
-    } catch { /* insufficient guard prevents this */ } finally { setBusy(false); }
+    } catch (e) {
+      showAlert('No se pudo completar la venta', e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirm = () => {
+    if (blocked) return;
+    if (outOfStock.length > 0) {
+      const names = outOfStock.map((it) => it.product.name).join(', ');
+      showAlert('Producto sin stock', `${names} no tiene stock suficiente. ¿Deseas venderlo de todas formas?`, [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Vender de todas formas', style: 'destructive', onPress: () => { void performCheckout(); } },
+      ]);
+      return;
+    }
+    void performCheckout();
   };
 
   return (
@@ -203,6 +220,15 @@ export function CheckoutSheet() {
                 {customer
                   ? `Cargado a la cuenta de ${customer.name}. Nuevo saldo ${money((customer.balance + totals.grandTotal) as Minor)}.`
                   : 'Selecciona un cliente para registrar una venta fiada.'}
+              </Text>
+            </View>
+          )}
+
+          {outOfStock.length > 0 && (
+            <View style={[s.creditNote, { backgroundColor: t.accentSoft }]}>
+              <Ionicons name="alert-circle-outline" size={18} color={t.warn} />
+              <Text style={{ color: t.fg, marginLeft: 8, flex: 1 }}>
+                Sin stock: {outOfStock.map((it) => it.product.name).join(', ')}. Puedes venderlo con confirmación.
               </Text>
             </View>
           )}

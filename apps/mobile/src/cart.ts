@@ -20,14 +20,14 @@ export const useCart = create<CartState>((set) => ({
   add: (p) =>
     set((s) => {
       const cur = s.items[p.id];
-      const qty = Math.min((cur?.quantity ?? 0) + 1, p.stock);
+      const qty = (cur?.quantity ?? 0) + 1;
       return { items: { ...s.items, [p.id]: { product: p, quantity: qty } } };
     }),
   setQty: (id, q) =>
     set((s) => {
       const cur = s.items[id];
       if (!cur) return s;
-      const clamped = Math.max(0, Math.min(q, cur.product.stock));
+      const clamped = Math.max(0, q);
       if (clamped === 0) {
         const { [id]: _drop, ...rest } = s.items;
         return { items: rest };

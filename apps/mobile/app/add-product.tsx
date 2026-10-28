@@ -14,13 +14,26 @@ import { ScanModal } from '../src/pos/ScanModal';
 import { useTheme, space, radius } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
 import { Chip, PrimaryButton } from '../src/pos/kit';
+import { useMoney } from '../src/pos/ui';
 
 const UNITS = ['unit', 'pcs', 'pack', 'box', 'dozen', 'kg', 'g', 'L', 'ml'];
+const UNIT_LABEL: Record<string, string> = {
+  unit: 'Unidad',
+  pcs: 'Pieza',
+  pack: 'Paquete',
+  box: 'Caja',
+  dozen: 'Docena',
+  kg: 'kg',
+  g: 'g',
+  L: 'L',
+  ml: 'ml',
+};
 
 /** Add a product, or edit one when opened with ?id=… (stock is adjusted via Purchases, not here). */
 export default function AddProduct() {
   const t = useTheme();
   const router = useRouter();
+  const money = useMoney();
   const params = useLocalSearchParams<{ barcode?: string; id?: string }>();
   const editId = params.id;
   const [store, setStore] = useState<Store | null>(null);
@@ -76,21 +89,21 @@ export default function AddProduct() {
     const bc = code.trim();
     if (looking) return;
     if (!/^\d{8,14}$/.test(bc)) {
-      if (!silent) showAlert('Enter a barcode first', 'Type or scan a product barcode (8–14 digits), then tap Look up to auto-fill the name and photo.');
+      if (!silent) showAlert('Ingresa un código de barras', 'Escribe o escanea un código de 8 a 14 dígitos y toca Buscar para completar el nombre y la foto.');
       return;
     }
     setLooking(true);
     try {
       const info = await lookupBarcode(bc);
-      if (!info) { if (!silent) showAlert('Not found', 'No match for this barcode in the product database.'); return; }
+      if (!info) { if (!silent) showAlert('No encontrado', 'No hay coincidencias para este código en la base de productos.'); return; }
       if (info.name) setName((prev) => prev.trim() ? prev : info.name!);
       if (info.imageUrl && !imageUri) {
         const local = await downloadProductImage(info.imageUrl);
         if (local) setImageUri(local);
       }
-      if (!silent && !info.name && !info.imageUrl) showAlert('Not found', 'No details available for this barcode.');
+      if (!silent && !info.name && !info.imageUrl) showAlert('No encontrado', 'No hay información disponible para este código.');
     } catch {
-      if (!silent) showAlert('Lookup failed', 'Could not reach the product database. Check your connection.');
+      if (!silent) showAlert('No se pudo buscar', 'No se pudo conectar con la base de productos. Revisa tu conexión.');
     } finally { setLooking(false); }
   };
 
@@ -104,37 +117,49 @@ export default function AddProduct() {
     if (store && !editId) {
       const existing = await findProductByBarcode(store.id, bc);
       if (existing) {
-        showAlert('Already in your catalog', `"${existing.name}" already uses this barcode.`, [
-          { text: 'Edit that product', onPress: () => router.replace(`/add-product?id=${existing.id}`) },
-          { text: 'Keep adding new', style: 'cancel' as const },
+        showAlert('Ya está en tu catálogo', `"${existing.name}" ya usa este código de barras.`, [
+          { text: 'Editar ese producto', onPress: () => router.replace(`/add-product?id=${existing.id}`) },
+          { text: 'Seguir agregando', style: 'cancel' as const },
         ]);
         return;
       }
     }
-    lookup(bc, true); // silent: fill name/photo if found, no popup if not
+    lookup(bc, true);
+  };
+
+  const generateBarcode = async () => {
+    if (!store) return;
+    for (let i = 0; i < 20; i += 1) {
+      const code = `INT-${Math.floor(1000 + Math.random() * 9000)}`;
+      if (!(await findProductByBarcode(store.id, code))) {
+        setBarcode(code);
+        return;
+      }
+    }
+    showAlert('No se pudo generar el código', 'Intenta de nuevo.');
   };
 
   const pick = async (fn: () => Promise<string | null>) => {
     try { const u = await fn(); if (u) setImageUri(u); }
-    catch (e) { showAlert('Could not add photo', e instanceof Error ? e.message : String(e)); }
+    catch (e) { showAlert('No se pudo agregar la foto', e instanceof Error ? e.message : String(e)); }
   };
 
   const remove = () => {
     if (!editId) return;
-    showAlert('Delete this product?', `"${name.trim() || 'This product'}" will be removed from your catalog. Past sales keep their records.`, [
-      { text: 'Keep', style: 'cancel' as const },
-      { text: 'Delete', style: 'destructive' as const, onPress: async () => { await deleteProduct(editId); router.back(); } },
+    showAlert('¿Eliminar este producto?', `"${name.trim() || 'Este producto'}" se quitará del catálogo. Las ventas anteriores conservan su registro.`, [
+      { text: 'Conservar', style: 'cancel' as const },
+      { text: 'Eliminar', style: 'destructive' as const, onPress: async () => { await deleteProduct(editId); router.back(); } },
     ]);
   };
 
   // Tapping the photo: view it full-screen if one exists, plus take / gallery.
   // Remove is the ✕ on the preview. The themed alert stacks any number of buttons.
   const chooseImage = () => {
-    showAlert('Product photo', undefined, [
-      ...(imageUri ? [{ text: 'View photo', onPress: () => setViewing(true) }] : []),
-      { text: imageUri ? 'Replace — take photo' : 'Take photo', onPress: () => pick(takePhoto) },
-      { text: imageUri ? 'Replace — from gallery' : 'Choose from gallery', onPress: () => pick(pickFromGallery) },
-      { text: 'Cancel', style: 'cancel' as const },
+    showAlert('Foto del producto', undefined, [
+      ...(imageUri ? [{ text: 'Ver foto', onPress: () => setViewing(true) }] : []),
+      { text: imageUri ? 'Reemplazar — tomar foto' : 'Tomar foto', onPress: () => pick(takePhoto) },
+      { text: imageUri ? 'Reemplazar — desde galería' : 'Elegir de la galería', onPress: () => pick(pickFromGallery) },
+      { text: 'Cancelar', style: 'cancel' as const },
     ]);
   };
 
@@ -142,12 +167,12 @@ export default function AddProduct() {
     if (!store || busy) return;
     const decimals = store.currency_decimals;
     try {
-      if (!name.trim()) throw new Error('Name is required');
+      if (!name.trim()) throw new Error('El nombre es obligatorio');
       const sellingPrice = fromMajorString(price || '0', decimals);
-      if (sellingPrice <= 0) throw new Error('Selling price must be greater than 0');
+      if (sellingPrice <= 0) throw new Error('El precio de venta debe ser mayor que 0');
       const costPrice = cost ? fromMajorString(cost, decimals) : asMinor(0);
       const taxBps = Math.round(parseFloat(taxPct || '0') * 100);
-      if (!(taxBps >= 0)) throw new Error('Tax % must be 0 or more');
+      if (!(taxBps >= 0)) throw new Error('El impuesto debe ser 0 o mayor');
       const openingStock = Math.max(0, Math.floor(parseFloat(stock || '0')));
       const lowStockThreshold = lowStock.trim() === '' ? null : Math.max(0, Math.floor(parseFloat(lowStock)));
       setBusy(true);
@@ -177,7 +202,7 @@ export default function AddProduct() {
       // Surface the reason clearly — the old inline note sat below the fold,
       // hidden by the keyboard, so a failed save looked like nothing happened.
       Keyboard.dismiss();
-      showAlert('Cannot save product', e instanceof Error ? e.message : String(e));
+      showAlert('No se pudo guardar el producto', e instanceof Error ? e.message : String(e));
       setBusy(false);
     }
   };
@@ -197,12 +222,20 @@ export default function AddProduct() {
   // Margin hint so shopkeepers can sanity-check their pricing.
   const sp = parseFloat(price), cp = parseFloat(cost);
   const margin = sp > 0 && cp > 0 && Number.isFinite(sp) && Number.isFinite(cp) ? Math.round(((sp - cp) / sp) * 100) : null;
+  const sellingPreview = (() => {
+    if (!store || !price.trim()) return null;
+    try { return money(fromMajorString(price, store.currency_decimals)); } catch { return null; }
+  })();
+  const costPreview = (() => {
+    if (!store || !cost.trim()) return null;
+    try { return money(fromMajorString(cost, store.currency_decimals)); } catch { return null; }
+  })();
 
   return (
-    <Screen title={editId ? 'Edit product' : 'Add product'}>
+    <Screen title={editId ? 'Editar producto' : 'Agregar producto'}>
       {params.barcode ? (
         <View style={[st.scanned, { borderColor: t.ok, backgroundColor: t.panel }]}>
-          <Text style={{ color: t.muted, fontSize: 12 }}>Scanned barcode</Text>
+          <Text style={{ color: t.muted, fontSize: 12 }}>Código escaneado</Text>
           <Text style={{ color: t.fg, fontSize: 16, fontWeight: '700', letterSpacing: 1 }}>{params.barcode}</Text>
         </View>
       ) : null}
@@ -214,7 +247,7 @@ export default function AddProduct() {
           ) : (
             <View style={[st.photo, st.photoEmpty, { borderColor: t.line, backgroundColor: t.surfaceAlt }]}>
               <Ionicons name="camera-outline" size={30} color={t.muted} />
-              <Text style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>Add photo</Text>
+              <Text style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>Agregar foto</Text>
             </View>
           )}
         </Pressable>
@@ -225,69 +258,75 @@ export default function AddProduct() {
         )}
       </View>
 
-      {field('Name', name, setName, { ph: 'e.g. Cola 500ml', caps: 'words', req: true })}
+      {field('Nombre', name, setName, { ph: 'ej. Cola 500 ml', caps: 'words', req: true })}
 
-      <Text style={[st.label, { color: t.muted }]}>Category</Text>
+      <Text style={[st.label, { color: t.muted }]}>Categoría</Text>
       <View style={st.wrap}>
-        {chip('None', !addingCategory && categoryId === null, () => { setAddingCategory(false); setCategoryId(null); })}
+        {chip('Ninguna', !addingCategory && categoryId === null, () => { setAddingCategory(false); setCategoryId(null); })}
         {categories.map((c) => chip(c.name, !addingCategory && categoryId === c.id, () => { setAddingCategory(false); setCategoryId(c.id); }, c.id))}
-        {chip('+ New', addingCategory, () => setAddingCategory(true))}
+        {chip('+ Nueva', addingCategory, () => setAddingCategory(true))}
       </View>
       {addingCategory && (
-        <TextInput value={newCategory} onChangeText={setNewCategory} placeholder="New category name" placeholderTextColor={t.muted} autoCapitalize="words"
+        <TextInput value={newCategory} onChangeText={setNewCategory} placeholder="Nombre de la nueva categoría" placeholderTextColor={t.muted} autoCapitalize="words"
           style={[st.input, { color: t.fg, borderColor: t.accent, backgroundColor: t.panel, marginTop: space.md }]} />
       )}
 
-      <Text style={[st.label, { color: t.muted }]}>Barcode</Text>
+      <Text style={[st.label, { color: t.muted }]}>Código de barras</Text>
       <View style={{ flexDirection: 'row', gap: space.sm }}>
-        <TextInput value={barcode} onChangeText={setBarcode} placeholder="scan or type (optional)" placeholderTextColor={t.muted}
-          keyboardType="number-pad" style={[st.input, { flex: 1, color: t.fg, borderColor: t.line, backgroundColor: t.panel }]} />
+        <TextInput value={barcode} onChangeText={setBarcode} placeholder="escanea o escribe (opcional)" placeholderTextColor={t.muted}
+          style={[st.input, { flex: 1, color: t.fg, borderColor: t.line, backgroundColor: t.panel }]} />
         <Pressable onPress={() => { Keyboard.dismiss(); setScanning(true); }}
-          accessibilityLabel="Scan barcode with camera" style={[st.scan, { backgroundColor: t.accent }]}>
+          accessibilityLabel="Escanear código con la cámara" style={[st.scan, { backgroundColor: t.accent }]}>
           <Ionicons name="barcode-outline" size={22} color={t.accentFg} />
         </Pressable>
         <Pressable onPress={() => lookup(barcode)} disabled={looking}
           style={[st.lookup, { backgroundColor: t.accentSoft, opacity: looking ? 0.6 : 1 }]}>
           {looking ? <ActivityIndicator color={t.accent} size="small" /> : <Ionicons name="sparkles-outline" size={18} color={t.accent} />}
-          <Text style={{ color: t.accent, fontWeight: '700', marginLeft: 6, fontSize: 13 }}>Look up</Text>
+          <Text style={{ color: t.accent, fontWeight: '700', marginLeft: 6, fontSize: 13 }}>Buscar</Text>
         </Pressable>
       </View>
-      <Text style={{ color: t.faint, fontSize: 11, marginTop: 6 }}>Tap the camera to scan, or type a barcode — then it auto-fills the name and photo from Open Food Facts.</Text>
+      <Pressable onPress={generateBarcode} style={[st.lookup, { alignSelf: 'flex-start', marginTop: space.sm, paddingVertical: 10, backgroundColor: t.surfaceAlt }]}>
+        <Ionicons name="refresh-outline" size={18} color={t.accent} />
+        <Text style={{ color: t.accent, fontWeight: '700', marginLeft: 6, fontSize: 13 }}>Generar código</Text>
+      </Pressable>
+      <Text style={{ color: t.faint, fontSize: 11, marginTop: 6 }}>Toca la cámara para escanear o escribe un código; se completa el nombre y la foto desde Open Food Facts.</Text>
 
-      {field(`Selling price (${store?.currency_code ?? ''})`, price, setPrice, { kb: 'decimal-pad', ph: '0.00', req: true })}
-      {field(`Cost price (${store?.currency_code ?? ''})`, cost, setCost, { kb: 'decimal-pad', ph: '0.00 (optional)' })}
+      {field('Precio de venta', price, setPrice, { kb: 'decimal-pad', ph: '0', req: true })}
+      {sellingPreview && <Text style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>Se mostrará como {sellingPreview}</Text>}
+      {field('Precio de costo', cost, setCost, { kb: 'decimal-pad', ph: '0 (opcional)' })}
+      {costPreview && <Text style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>Se mostrará como {costPreview}</Text>}
       {margin !== null && (
         <Text style={{ color: margin >= 0 ? t.ok : t.danger, fontSize: 12, marginTop: 6, fontWeight: '600' }}>
-          {margin >= 0 ? `${margin}% margin` : `Selling below cost (${margin}%)`}
+          {margin >= 0 ? `Margen ${margin}%` : `Vendiendo por debajo del costo (${margin}%)`}
         </Text>
       )}
-      {field('Tax %', taxPct, setTaxPct, { kb: 'decimal-pad', ph: '0' })}
+      {field('Impuesto %', taxPct, setTaxPct, { kb: 'decimal-pad', ph: '0' })}
 
-      {field('SKU / item code', sku, setSku, { ph: 'optional', caps: 'none' })}
-      <Text style={[st.label, { color: t.muted }]}>Unit</Text>
-      <View style={st.wrap}>{UNITS.map((u) => chip(u, unit === u, () => setUnit(u)))}</View>
+      {field('SKU / código interno', sku, setSku, { ph: 'opcional', caps: 'none' })}
+      <Text style={[st.label, { color: t.muted }]}>Unidad</Text>
+      <View style={st.wrap}>{UNITS.map((u) => chip(UNIT_LABEL[u] ?? u, unit === u, () => setUnit(u)))}</View>
 
       {editId ? (
         <>
-          <Text style={[st.label, { color: t.muted }]}>Stock on hand</Text>
+          <Text style={[st.label, { color: t.muted }]}>Stock actual</Text>
           <View style={[st.input, { borderColor: t.line, backgroundColor: t.surfaceAlt }]}>
-            <Text style={{ color: t.fg, fontSize: 16 }}>{currentStock ?? '…'} {unit}</Text>
+            <Text style={{ color: t.fg, fontSize: 16 }}>{currentStock ?? '…'} {UNIT_LABEL[unit] ?? unit}</Text>
           </View>
-          <Text style={{ color: t.faint, fontSize: 11, marginTop: 6 }}>Change stock from More → Purchases / restock so every movement is recorded.</Text>
+          <Text style={{ color: t.faint, fontSize: 11, marginTop: 6 }}>Cambia el stock desde Más → Compras / reabastecer para que quede registrado cada movimiento.</Text>
         </>
       ) : (
-        field('Opening stock', stock, setStock, { kb: 'number-pad', ph: '0' })
+        field('Stock inicial', stock, setStock, { kb: 'number-pad', ph: '0' })
       )}
-      {field('Low-stock alert at', lowStock, setLowStock, { kb: 'number-pad', ph: `${DEFAULT_LOW_STOCK} (default)` })}
+      {field('Alerta de stock bajo en', lowStock, setLowStock, { kb: 'number-pad', ph: `${DEFAULT_LOW_STOCK} (predeterminado)` })}
 
       {/* Save lives at the end of the form (not a pinned bar), so it scrolls up
           with the keyboard the same way the onboarding form does. */}
       <View style={{ marginTop: space.xl }}>
-        <PrimaryButton label={editId ? 'Save changes' : 'Save product'} onPress={save} busy={busy} disabled={!store} />
+        <PrimaryButton label={editId ? 'Guardar cambios' : 'Guardar producto'} onPress={save} busy={busy} disabled={!store} />
       </View>
       {editId ? (
         <Pressable onPress={remove} disabled={busy} hitSlop={8} style={{ alignSelf: 'center', paddingVertical: 14, marginTop: 4 }}>
-          <Text style={{ color: t.danger, fontWeight: '700', fontSize: 15 }}>Delete product</Text>
+          <Text style={{ color: t.danger, fontWeight: '700', fontSize: 15 }}>Eliminar producto</Text>
         </Pressable>
       ) : null}
 

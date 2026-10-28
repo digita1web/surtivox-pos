@@ -9,9 +9,9 @@ import { useSession } from '../src/session';
 import { useTheme, space, radius } from '../src/theme';
 
 const ROLE_HINT: Record<Role, string> = {
-  owner: 'Full access, including staff management',
-  manager: 'Reports, products, returns, purchases — no staff management',
-  cashier: 'Can sell and take payments only',
+  owner: 'Acceso total, incluida la gestión de personal',
+  manager: 'Reportes, productos, devoluciones y compras; sin gestión de personal',
+  cashier: 'Solo puede vender y recibir pagos',
 };
 
 export default function AddStaff() {
@@ -44,12 +44,12 @@ export default function AddStaff() {
   const save = async () => {
     if (!store || busy) return;
     setErr(null);
-    if (!name.trim()) { setErr('Name is required'); return; }
+    if (!name.trim()) { setErr('El nombre es obligatorio'); return; }
     // PIN required on create; optional on edit (blank = keep existing).
     const changingPin = pin.length > 0 || confirm.length > 0 || !editing;
     if (changingPin) {
-      if (!isValidPin(pin)) { setErr('PIN must be exactly 4 digits'); return; }
-      if (pin !== confirm) { setErr('PINs do not match'); return; }
+      if (!isValidPin(pin)) { setErr('El PIN debe tener exactamente 4 dígitos'); return; }
+      if (pin !== confirm) { setErr('Los PIN no coinciden'); return; }
     }
     setBusy(true);
     try {
@@ -69,14 +69,14 @@ export default function AddStaff() {
   };
 
   return (
-    <Screen title={editing ? 'Edit staff' : 'New staff'}
-      footer={<PrimaryButton label={editing ? 'Save changes' : 'Add staff'} onPress={save} busy={busy} disabled={!store} />}>
-      <Text style={[st.label, { color: t.muted }]}>Name</Text>
-      <TextInput value={name} onChangeText={setName} placeholder="e.g. Jordan Smith" placeholderTextColor={t.muted}
+    <Screen title={editing ? 'Editar personal' : 'Nuevo personal'}
+      footer={<PrimaryButton label={editing ? 'Guardar cambios' : 'Agregar personal'} onPress={save} busy={busy} disabled={!store} />}>
+      <Text style={[st.label, { color: t.muted }]}>Nombre</Text>
+      <TextInput value={name} onChangeText={setName} placeholder="ej. Camila Rodríguez" placeholderTextColor={t.muted}
         style={[st.input, { color: t.fg, borderColor: t.line, backgroundColor: t.panel }]} />
 
-      <Text style={[st.label, { color: t.muted }]}>Role</Text>
-      {firstEver && <Text style={{ color: t.muted, fontSize: 12, marginBottom: space.sm }}>The first account must be an owner.</Text>}
+      <Text style={[st.label, { color: t.muted }]}>Rol</Text>
+      {firstEver && <Text style={{ color: t.muted, fontSize: 12, marginBottom: space.sm }}>La primera cuenta debe ser del propietario.</Text>}
       <View style={st.roleRow}>
         {ROLES.map((r) => {
           const on = role === r;
@@ -91,12 +91,12 @@ export default function AddStaff() {
       </View>
       <Text style={{ color: t.muted, fontSize: 13, marginTop: space.sm }}>{ROLE_HINT[role]}</Text>
 
-      <Text style={[st.label, { color: t.muted }]}>{editing ? '4-digit PIN (leave blank to keep)' : '4-digit PIN'}</Text>
+      <Text style={[st.label, { color: t.muted }]}>{editing ? 'PIN de 4 dígitos (déjalo vacío para conservarlo)' : 'PIN de 4 dígitos'}</Text>
       <TextInput value={pin} onChangeText={(v) => setPin(v.replace(/\D/g, '').slice(0, 4))}
         keyboardType="number-pad" secureTextEntry maxLength={4} placeholder="••••" placeholderTextColor={t.muted}
         style={[st.input, { color: t.fg, borderColor: t.line, backgroundColor: t.panel, letterSpacing: 8 }]} />
 
-      <Text style={[st.label, { color: t.muted }]}>Confirm PIN</Text>
+      <Text style={[st.label, { color: t.muted }]}>Confirmar PIN</Text>
       <TextInput value={confirm} onChangeText={(v) => setConfirm(v.replace(/\D/g, '').slice(0, 4))}
         keyboardType="number-pad" secureTextEntry maxLength={4} placeholder="••••" placeholderTextColor={t.muted}
         style={[st.input, { color: t.fg, borderColor: t.line, backgroundColor: t.panel, letterSpacing: 8 }]} />

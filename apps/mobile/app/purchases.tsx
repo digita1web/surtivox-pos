@@ -14,7 +14,7 @@ import { useTheme, space, radius } from '../src/theme';
 function when(ts: number): string {
   const d = new Date(ts); const today = new Date(); today.setHours(0, 0, 0, 0);
   const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  return d.getTime() >= today.getTime() ? `Today ${time}` : `${d.toLocaleDateString()} ${time}`;
+  return d.getTime() >= today.getTime() ? `Hoy ${time}` : `${d.toLocaleDateString()} ${time}`;
 }
 
 export default function Purchases() {
@@ -29,9 +29,9 @@ export default function Purchases() {
 
   return (
     <Screen
-      title="Purchases"
+      title="Compras"
       scroll={false}
-      right={<IconButton icon="add" label="New purchase" filled onPress={() => router.push('/new-purchase')} />}
+      right={<IconButton icon="add" label="Nueva compra" filled onPress={() => router.push('/new-purchase')} />}
     >
       <FlatList
         {...listProps}
@@ -40,8 +40,8 @@ export default function Purchases() {
         contentContainerStyle={{ padding: space.lg, paddingBottom: insets.bottom + space.xxl, flexGrow: 1 }}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         ListEmptyComponent={
-          <EmptyState icon="cart-outline" title="No purchases yet" hint="Record a purchase to restock."
-            action={{ label: 'New purchase', onPress: () => router.push('/new-purchase') }} />
+          <EmptyState icon="cart-outline" title="Aún no hay compras" hint="Registra una compra para reabastecer."
+            action={{ label: 'Nueva compra', onPress: () => router.push('/new-purchase') }} />
         }
         renderItem={({ item }) => (
           <View style={[s.row, { backgroundColor: t.panel, borderColor: t.line }]}>
@@ -49,7 +49,7 @@ export default function Purchases() {
             <View style={{ flex: 1, marginLeft: space.md }}>
               <Text style={{ color: t.fg, fontWeight: '700' }}>{item.reference_no}</Text>
               <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>
-                {when(item.purchased_at)} · {item.item_count} item{item.item_count === 1 ? '' : 's'}{item.supplier_name ? ` · ${item.supplier_name}` : ''}
+                {when(item.purchased_at)} · {item.item_count} artículo{item.item_count === 1 ? '' : 's'}{item.supplier_name ? ` · ${item.supplier_name}` : ''}
               </Text>
             </View>
             <Text style={{ color: t.fg, fontWeight: '800', fontSize: 16 }}>{money(asMinor(item.total))}</Text>

@@ -33,16 +33,16 @@ export default function NewShop() {
       await reload();          // new shop is now the active one (created as current)
       router.replace('/');     // fresh shop has no staff yet → straight to Home
     } catch (e) {
-      showAlert('Could not create shop', e instanceof Error ? e.message : String(e));
+      showAlert('No se pudo crear la tienda', e instanceof Error ? e.message : String(e));
       setBusy(false);
     }
   };
 
   return (
-    <Screen title="Add a shop" subtitle="A separate shop on this device"
-      footer={<PrimaryButton label="Create shop" onPress={create} busy={busy} disabled={!profile.name.trim()} />}>
+    <Screen title="Agregar tienda" subtitle="Una tienda separada en este dispositivo"
+      footer={<PrimaryButton label="Crear tienda" onPress={create} busy={busy} disabled={!profile.name.trim()} />}>
       <Text style={{ color: t.muted, marginBottom: space.xs }}>
-        Logo, name and contact details appear on this shop's receipts. Only the name is required — the rest is optional and editable later.
+        El logo, el nombre y los datos de contacto aparecen en los recibos de esta tienda. Solo el nombre es obligatorio; lo demás es opcional y se puede editar después.
       </Text>
 
       <ShopDetailsFields value={profile} onChange={patch} />
@@ -58,7 +58,7 @@ export default function NewShop() {
           );
         })}
       </View>
-      <Text style={{ color: t.faint, fontSize: 12, marginTop: space.md }}>You can fine-tune the receipt design (paper size, colour, footer) in Shop profile after it's created.</Text>
+      <Text style={{ color: t.faint, fontSize: 12, marginTop: space.md }}>Puedes ajustar el diseño del recibo (tamaño del papel, color y pie) en Perfil de la tienda después de crearla.</Text>
     </Screen>
   );
 }

@@ -56,21 +56,21 @@ export default function NewPurchase() {
         .map((p) => ({ productId: p.id, name: p.name, quantity: draft.qty[p.id]!, unitCost: asMinor(parseCost(p.id)) }));
       const r = await createPurchase(store.id, draft.supplierId, lines);
       draft.reset();
-      showAlert('Purchase received', `${r.referenceNo} · ${r.itemCount} item${r.itemCount === 1 ? '' : 's'} · ${money(r.total)}. Stock updated.`);
+      showAlert('Compra recibida', `${r.referenceNo} · ${r.itemCount} artículo${r.itemCount === 1 ? '' : 's'} · ${money(r.total)}. Stock actualizado.`);
       router.back();
     } catch (e) {
-      showAlert('Could not save purchase', e instanceof Error ? e.message : String(e));
+      showAlert('No se pudo guardar la compra', e instanceof Error ? e.message : String(e));
       setBusy(false);
     }
   };
 
-  const footerLabel = lineCount === 0 ? 'Scan or set quantities' : `Receive ${lineCount} item${lineCount === 1 ? '' : 's'} · ${money(asMinor(total))}`;
+  const footerLabel = lineCount === 0 ? 'Escanea o ajusta cantidades' : `Recibir ${lineCount} artículo${lineCount === 1 ? '' : 's'} · ${money(asMinor(total))}`;
 
   return (
     <Screen
-      title="New purchase"
+      title="Nueva compra"
       scroll={false}
-      right={<Pressable onPress={() => { draft.reset(); }} hitSlop={8}><Text style={{ color: t.muted, fontWeight: '600' }}>Clear</Text></Pressable>}
+      right={<Pressable onPress={() => { draft.reset(); }} hitSlop={8}><Text style={{ color: t.muted, fontWeight: '600' }}>Limpiar</Text></Pressable>}
       footer={<PrimaryButton icon="cube-outline" label={footerLabel} onPress={save} busy={busy} disabled={lineCount === 0} />}
     >
       <View style={s.pinned}>
@@ -78,29 +78,29 @@ export default function NewPurchase() {
         <Pressable onPress={() => router.push('/scan?mode=stock')} style={[s.scanBtn, { backgroundColor: t.accent }]}>
           <Ionicons name="barcode-outline" size={24} color={t.accentFg} />
           <View style={{ marginLeft: space.md }}>
-            <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 16 }}>Scan barcode to add stock</Text>
-            <Text style={{ color: t.accentFg, opacity: 0.9, fontSize: 12, marginTop: 1 }}>Fastest way — scan each item to restock</Text>
+            <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 16 }}>Escanea el código para agregar stock</Text>
+            <Text style={{ color: t.accentFg, opacity: 0.9, fontSize: 12, marginTop: 1 }}>La forma más rápida: escanea cada artículo para reabastecer</Text>
           </View>
         </Pressable>
 
-        <Text style={[s.label, { color: t.muted }]}>Supplier</Text>
+        <Text style={[s.label, { color: t.muted }]}>Proveedor</Text>
         <ChipRow>
-          <Chip label="No supplier" on={draft.supplierId === null} onPress={() => draft.setSupplier(null)} />
+          <Chip label="Sin proveedor" on={draft.supplierId === null} onPress={() => draft.setSupplier(null)} />
           {suppliers.map((sp) => (
             <Chip key={sp.id} label={sp.name} on={draft.supplierId === sp.id} onPress={() => draft.setSupplier(sp.id)} />
           ))}
           <Pressable onPress={() => router.push('/add-supplier')} style={[s.newChip, { borderColor: t.accent }]}>
             <Ionicons name="add" size={16} color={t.accent} />
-            <Text style={{ color: t.accent, fontWeight: '700', marginLeft: space.xs }}>New</Text>
+            <Text style={{ color: t.accent, fontWeight: '700', marginLeft: space.xs }}>Nuevo</Text>
           </Pressable>
         </ChipRow>
 
-        <Text style={[s.label, { color: t.muted, marginTop: space.lg }]}>Items · set quantity & cost</Text>
+        <Text style={[s.label, { color: t.muted, marginTop: space.lg }]}>Artículos · ajusta cantidad y costo</Text>
       </View>
 
       {products.length === 0 ? (
         <View style={{ alignItems: 'center', marginTop: space.xxl, paddingHorizontal: space.xl }}>
-          <Text style={{ color: t.muted, textAlign: 'center' }}>Add products first, then scan or set quantities to restock.</Text>
+          <Text style={{ color: t.muted, textAlign: 'center' }}>Agrega productos primero; luego escanea o ajusta cantidades para reabastecer.</Text>
         </View>
       ) : (
         <FlatList
@@ -115,13 +115,13 @@ export default function NewPurchase() {
               <View style={[s.row, { backgroundColor: t.panel, borderColor: q > 0 ? t.accent : t.line }]}>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: t.fg, fontWeight: '700' }} numberOfLines={1}>{item.name}</Text>
-                  <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>in stock {item.stock}{q > 0 ? ` → ${item.stock + q}` : ''}</Text>
+                  <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>en stock {item.stock}{q > 0 ? ` → ${item.stock + q}` : ''}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <View style={[s.costWrap, { borderColor: t.line, backgroundColor: t.bg }]}>
                     <Text style={{ color: t.muted, fontSize: 12 }}>{store.currency_code} </Text>
                     <TextInput value={draft.cost[item.id] ?? ''} onChangeText={(v) => draft.setCost(item.id, v)}
-                      keyboardType="decimal-pad" placeholder="cost" placeholderTextColor={t.muted}
+                      keyboardType="decimal-pad" placeholder="costo" placeholderTextColor={t.muted}
                       style={{ color: t.fg, fontWeight: '700', minWidth: 56, padding: 0, textAlign: 'right' }} />
                   </View>
                   <View style={[s.stepper, { borderColor: t.line, backgroundColor: t.surfaceAlt, marginTop: space.sm }]}>

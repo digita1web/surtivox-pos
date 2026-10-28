@@ -14,8 +14,8 @@ import { ShopDetailsFields, ReceiptFields, ReceiptPreview } from './StoreProfile
 
 
 const SLIDES: { icon: keyof typeof Ionicons.glyphMap; title: string; sub: string }[] = [
-  { icon: 'storefront-outline', title: 'Run your store,\nyour way', sub: 'A fast, offline point of sale for your shop — no account and no internet needed.' },
-  { icon: 'barcode-outline', title: 'Scan. Sell. Done.', sub: 'Cobra ventas en segundos. Controla inventario, fiados, devoluciones y reportes.' },
+  { icon: 'storefront-outline', title: 'Tu tienda,\na tu manera', sub: 'Un punto de venta rápido y sin conexión para tu negocio; sin cuenta y sin internet.' },
+  { icon: 'barcode-outline', title: 'Escanea. Vende. Listo.', sub: 'Cobra ventas en segundos. Controla inventario, fiados, devoluciones y reportes.' },
 ];
 
 export function Onboarding({ onCreated }: { onCreated: () => void }) {
@@ -54,7 +54,7 @@ export function Onboarding({ onCreated }: { onCreated: () => void }) {
             <View key={i} style={{ width, flex: 1, paddingTop: insets.top + 40, paddingHorizontal: 28, alignItems: 'center' }}>
               {i === 0 && (
                 <Pressable onPress={() => goTo(pageCount - 1)} style={{ alignSelf: 'flex-end' }} hitSlop={10}>
-                  <Text style={{ color: t.muted, fontWeight: '600' }}>Skip</Text>
+                  <Text style={{ color: t.muted, fontWeight: '600' }}>Omitir</Text>
                 </Pressable>
               )}
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -67,7 +67,7 @@ export function Onboarding({ onCreated }: { onCreated: () => void }) {
                 <Text style={[o.sub, { color: t.muted }]}>{sl.sub}</Text>
               </View>
               <Pressable onPress={() => goTo(i + 1)} style={[o.next, { backgroundColor: t.accent, marginBottom: insets.bottom + 40 }]}>
-                <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>Next</Text>
+                <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>Siguiente</Text>
                 <Ionicons name="arrow-forward" size={18} color={t.accentFg} style={{ marginLeft: 8 }} />
               </Pressable>
             </View>
@@ -126,7 +126,7 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
       await loadDemoShop();
       onCreated();
     } catch (e) {
-      showAlert('Could not load the demo', e instanceof Error ? e.message : String(e));
+      showAlert('No se pudo cargar la demo', e instanceof Error ? e.message : String(e));
       setBusy(false);
     }
   };
@@ -138,7 +138,7 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
       await createStore(profile.name.trim(), currency, { ...profile, name: profile.name.trim() });
       onCreated();
     } catch (e) {
-      showAlert('Could not create shop', e instanceof Error ? e.message : String(e));
+      showAlert('No se pudo crear la tienda', e instanceof Error ? e.message : String(e));
       setBusy(false);
     }
   };
@@ -151,13 +151,13 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
             <View key={i} style={[o.stepBar, { backgroundColor: i <= step ? t.accent : t.line }]} />
           ))}
         </View>
-        <Text style={{ color: t.muted, fontWeight: '700', fontSize: 12, letterSpacing: 0.6, marginTop: 10 }}>STEP {step + 1} OF 2</Text>
+        <Text style={{ color: t.muted, fontWeight: '700', fontSize: 12, letterSpacing: 0.6, marginTop: 10 }}>PASO {step + 1} DE 2</Text>
 
         {step === 0 ? (
           <>
-            <Text style={[o.title, { color: t.fg, fontSize: 26, textAlign: 'left', marginTop: 6 }]}>Tell us about your shop</Text>
+            <Text style={[o.title, { color: t.fg, fontSize: 26, textAlign: 'left', marginTop: 6 }]}>Cuéntanos de tu tienda</Text>
             <Text style={[o.sub, { color: t.muted, textAlign: 'left', marginTop: 6, marginBottom: 16, maxWidth: undefined }]}>
-              This appears on your receipts. Only the name is required — everything else is optional and can be changed later.
+              Esto aparece en tus recibos. Solo el nombre es obligatorio; todo lo demás es opcional y se puede cambiar después.
             </Text>
 
             <ShopDetailsFields value={profile} onChange={patch} />
@@ -176,21 +176,21 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
 
             <Pressable onPress={() => go(1)} disabled={!canNext || busy}
               style={[o.next, { backgroundColor: t.accent, opacity: canNext && !busy ? 1 : 0.5, marginTop: 32 }]}>
-              <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>Continue</Text>
+              <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>Continuar</Text>
               <Ionicons name="arrow-forward" size={18} color={t.accentFg} style={{ marginLeft: 8 }} />
             </Pressable>
 
             {hasHostedSync() && (
               <Pressable onPress={demo} disabled={busy} style={{ marginTop: 18, alignSelf: 'center' }} hitSlop={10}>
-                <Text style={{ color: t.accent, fontWeight: '700' }}>{busy ? 'Loading demo…' : 'Explore a demo store instead'}</Text>
+                <Text style={{ color: t.accent, fontWeight: '700' }}>{busy ? 'Cargando demo…' : 'Explorar una tienda de ejemplo'}</Text>
               </Pressable>
             )}
           </>
         ) : (
           <>
-            <Text style={[o.title, { color: t.fg, fontSize: 26, textAlign: 'left', marginTop: 6 }]}>Design your receipt</Text>
+            <Text style={[o.title, { color: t.fg, fontSize: 26, textAlign: 'left', marginTop: 6 }]}>Diseña tu recibo</Text>
             <Text style={[o.sub, { color: t.muted, textAlign: 'left', marginTop: 6, marginBottom: 16, maxWidth: undefined }]}>
-              Pick a paper size and color and add your own message. The preview updates as you go.
+              Elige el tamaño del papel y el color, y agrega tu propio mensaje. La vista previa se actualiza mientras editas.
             </Text>
 
             <ReceiptPreview value={profile} currency={currency} />
@@ -198,13 +198,13 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
 
             <Pressable onPress={create} disabled={busy}
               style={[o.next, { backgroundColor: t.accent, opacity: busy ? 0.5 : 1, marginTop: 32 }]}>
-              <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>{busy ? 'Creating…' : 'Create my shop'}</Text>
+              <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>{busy ? 'Creando…' : 'Crear mi tienda'}</Text>
             </Pressable>
             <Pressable onPress={() => go(0)} disabled={busy} style={{ marginTop: 14, alignSelf: 'center' }} hitSlop={10}>
-              <Text style={{ color: t.muted, fontWeight: '600' }}>Back</Text>
+              <Text style={{ color: t.muted, fontWeight: '600' }}>Atrás</Text>
             </Pressable>
             <Text style={{ color: t.faint, fontSize: 12, textAlign: 'center', marginTop: 14 }}>
-              You can edit all of this later in More → Shop profile & receipts.
+              Puedes editar todo esto después en Más → Perfil y recibos.
             </Text>
           </>
         )}

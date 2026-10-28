@@ -16,14 +16,14 @@ export default function DataScreen() {
   const [busy, setBusy] = useState<string | null>(null);
 
   const confirmRestore = () => {
-    showAlert('Restore from backup', 'This replaces ALL current data — products, sales, customers and staff — with the backup file. This cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Choose file', style: 'destructive', onPress: () => run('rs', async () => {
+    showAlert('Restaurar desde respaldo', 'Esto reemplaza TODOS los datos actuales —productos, ventas, clientes y personal— con el archivo de respaldo. No se puede deshacer.', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Elegir archivo', style: 'destructive', onPress: () => run('rs', async () => {
         const r = await restoreFullBackup();
         if (!r) return;
         await reload();
         router.replace('/');
-        showAlert('Restore complete', `Restored ${r.rows} records across ${r.tables} tables.`);
+        showAlert('Restauración completa', `Se restauraron ${r.rows} registros en ${r.tables} tablas.`);
       }) },
     ]);
   };
@@ -31,50 +31,50 @@ export default function DataScreen() {
   const run = async (key: string, fn: () => Promise<void>) => {
     if (busy) return;
     setBusy(key);
-    try { await fn(); } catch (e) { showAlert('Something went wrong', e instanceof Error ? e.message : String(e)); }
+    try { await fn(); } catch (e) { showAlert('Algo salió mal', e instanceof Error ? e.message : String(e)); }
     finally { setBusy(null); }
   };
 
   return (
-    <Screen title="Backup & CSV">
-      <Text style={[s.section, { color: t.muted, marginTop: 0 }]}>Export</Text>
+    <Screen title="Respaldo y CSV">
+      <Text style={[s.section, { color: t.muted, marginTop: 0 }]}>Exportar</Text>
       <Group t={t}>
-        <Row t={t} icon="cube-outline" title="Export products" subtitle="Share your catalog as a CSV file"
+        <Row t={t} icon="cube-outline" title="Exportar productos" subtitle="Comparte tu catálogo como archivo CSV"
           busy={busy === 'ep'} onPress={() => run('ep', async () => {
             const n = await exportProducts(store);
-            if (n === 0) showAlert('Nothing to export', 'You have no products yet.');
+            if (n === 0) showAlert('Nada para exportar', 'Aún no tienes productos.');
           })} />
-        <Row t={t} icon="receipt-outline" title="Export sales" subtitle="Share all sales line items as CSV" last
+        <Row t={t} icon="receipt-outline" title="Exportar ventas" subtitle="Comparte todas las líneas de venta en CSV" last
           busy={busy === 'es'} onPress={() => run('es', async () => {
             const n = await exportSales(store);
-            if (n === 0) showAlert('Nothing to export', 'You have no sales yet.');
+            if (n === 0) showAlert('Nada para exportar', 'Aún no tienes ventas.');
           })} />
       </Group>
 
-      <Text style={[s.section, { color: t.muted }]}>Import</Text>
+      <Text style={[s.section, { color: t.muted }]}>Importar</Text>
       <Group t={t}>
-        <Row t={t} icon="download-outline" title="Import products" subtitle="Upload a CSV to add or update products" last
+        <Row t={t} icon="download-outline" title="Importar productos" subtitle="Sube un CSV para agregar o actualizar productos" last
           busy={busy === 'ip'} onPress={() => run('ip', async () => {
             const r = await importProducts(store);
-            if (r) showAlert('Import complete', `${r.created} added · ${r.updated} updated · ${r.skipped} skipped.`);
+            if (r) showAlert('Importación completa', `${r.created} agregados · ${r.updated} actualizados · ${r.skipped} omitidos.`);
           })} />
       </Group>
 
-      <Text style={[s.section, { color: t.muted }]}>Full backup</Text>
+      <Text style={[s.section, { color: t.muted }]}>Respaldo completo</Text>
       <Group t={t}>
-        <Row t={t} icon="cloud-upload-outline" title="Back up everything" subtitle="Save a complete snapshot as a .json file"
+        <Row t={t} icon="cloud-upload-outline" title="Respaldar todo" subtitle="Guarda una copia completa como archivo .json"
           busy={busy === 'fb'} onPress={() => run('fb', async () => {
             const n = await exportFullBackup(store);
-            if (n === 0) showAlert('Nothing to back up', 'Your store has no data yet.');
+            if (n === 0) showAlert('Nada para respaldar', 'Tu tienda aún no tiene datos.');
           })} />
-        <Row t={t} icon="cloud-download-outline" title="Restore from backup" subtitle="Replace all data with a backup file" last
+        <Row t={t} icon="cloud-download-outline" title="Restaurar desde respaldo" subtitle="Reemplaza todos los datos con un archivo de respaldo" last
           busy={busy === 'rs'} onPress={confirmRestore} />
       </Group>
 
       <View style={[s.note, { backgroundColor: t.accentSoft }]}>
         <Ionicons name="information-circle-outline" size={18} color={t.accent} />
         <Text style={{ color: t.fg, marginLeft: space.sm, flex: 1, fontSize: 13 }}>
-          Import matches by barcode: existing products are updated (name, prices, tax), new ones are created with their opening stock. Columns: name, barcode, selling_price, cost_price, tax_percent, stock.
+          La importación cruza por código de barras: los productos existentes se actualizan (nombre, precios, impuesto) y los nuevos se crean con su stock inicial. Columnas: name, barcode, selling_price, cost_price, tax_percent, stock.
         </Text>
       </View>
     </Screen>
