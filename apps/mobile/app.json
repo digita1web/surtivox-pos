@@ -7,11 +7,6 @@
     "scheme": "surtivoxpos",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0B0E12"
-    },
     "newArchEnabled": true,
     "android": {
       "package": "io.surtivox.pos",
@@ -46,7 +41,15 @@
       ],
       "expo-image",
       "expo-sharing",
-      "expo-iap"
+      "expo-iap",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0B0E12"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false

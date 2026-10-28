@@ -16,6 +16,7 @@
 - No tocar `node_modules/`.
 - No renombrar `package.json` ni `pnpm-lock.yaml`.
 - No instalar dependencias sin aprobación.
+- Dependencia autorizada: `expo-splash-screen` (aprobada para el splash nativo).
 - No hacer push.
 
 ## Verificación

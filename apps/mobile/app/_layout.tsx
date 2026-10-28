@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initDatabase } from '../src/db';
 import { useSession, useLocked } from '../src/session';
@@ -9,6 +10,8 @@ import { Onboarding } from '../src/pos/Onboarding';
 import { StaffLock } from '../src/pos/StaffLock';
 import { AlertHost } from '../src/pos/alert';
 import { useTheme } from '../src/theme';
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const t = useTheme();
@@ -24,6 +27,10 @@ export default function RootLayout() {
       .then(() => setReady(true))
       .catch((e) => setError(e instanceof Error ? e.message : String(e)));
   }, []);
+
+  useEffect(() => {
+    if (ready || error) SplashScreen.hideAsync().catch(() => {});
+  }, [ready, error]);
 
   if (error) {
     return (
