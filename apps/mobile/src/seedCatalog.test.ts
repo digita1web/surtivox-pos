@@ -41,16 +41,16 @@ test('seed inserts the full catalog once and skips duplicates', async () => {
   const ids = { newId: () => `id-${++sequence}`, deviceId: 'd1' };
 
   const first = await seedColombianCatalog(seedDb, 's1', ids);
-  assert.equal(SEED_PRODUCTS.length, 60);
-  assert.equal(first.inserted, 60);
+  assert.equal(SEED_PRODUCTS.length, 62);
+  assert.equal(first.inserted, 62);
   assert.equal(first.skipped, 0);
 
   const second = await seedColombianCatalog(seedDb, 's1', ids);
   assert.equal(second.inserted, 0);
-  assert.equal(second.skipped, 60);
+  assert.equal(second.skipped, 62);
 
   const products = db.prepare('SELECT COUNT(*) AS c FROM products WHERE store_id=?').get('s1') as { c: number };
-  assert.equal(products.c, 60);
+  assert.equal(products.c, 62);
 
   const categories = db.prepare('SELECT COUNT(*) AS c FROM categories WHERE store_id=?').get('s1') as { c: number };
   assert.equal(categories.c, new Set(SEED_PRODUCTS.map((p) => p.category)).size);
@@ -59,7 +59,12 @@ test('seed inserts the full catalog once and skips duplicates', async () => {
   const stock = db.prepare('SELECT COALESCE(SUM(quantity_delta),0) AS total FROM stock_movements WHERE store_id=?').get('s1') as { total: number };
   assert.equal(stock.total, expectedStock);
 
-  const rice = db.prepare('SELECT selling_price FROM products WHERE store_id=? AND name=?').get('s1', 'Arroz Diana 500 g') as { selling_price: number };
-  assert.equal(rice.selling_price, 2500);
-  assert.notEqual(rice.selling_price, 250000);
+  const price = (name: string) => (db.prepare('SELECT selling_price FROM products WHERE store_id=? AND name=?').get('s1', name) as { selling_price: number }).selling_price;
+  assert.equal(price('Arroz Diana 500 g'), 2500);
+  assert.notEqual(price('Arroz Diana 500 g'), 250000);
+  assert.equal(price('Papas Margarita Pollo 105 g'), 3500);
+  assert.equal(price('Gaseosa Coca-Cola 400 ml'), 3000);
+  assert.equal(price('Cigarrillos Marlboro Rojo'), 12000);
+  assert.equal(price('Chocolatina Jet'), 2000);
+  assert.equal(price('Agua Cristal 600 ml'), 1500);
 });

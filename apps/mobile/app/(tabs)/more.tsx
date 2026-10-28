@@ -9,6 +9,7 @@ import { useTheme, initials, space, radius, type Theme } from '../../src/theme';
 import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { showAlert } from '../../src/pos/alert';
 import { resetAllData, seedColombianCatalog } from '../../src/repos';
+import { SEED_PRODUCTS } from '../../src/seedCatalog';
 import { resetFirstRunGuide } from '../../src/localFlags';
 import { getReminderCount, resetReminderCount } from '../../src/fiadoReminderStorage';
 
@@ -76,7 +77,7 @@ export default function More() {
   };
 
   const confirmSeed = () => {
-    showAlert('Cargar catálogo de ejemplo', 'Se agregarán 60 productos típicos de tienda de barrio. Los productos existentes no se duplican. ¿Continuar?', [
+    showAlert('Cargar catálogo de ejemplo', `Se agregarán ${SEED_PRODUCTS.length} productos típicos de tienda de barrio. Los productos existentes no se duplican. ¿Continuar?`, [
       { text: 'Cancelar', style: 'cancel' as const },
       { text: 'Cargar catálogo', onPress: () => { void runSeed(); } },
     ]);
@@ -181,7 +182,7 @@ export default function More() {
                 {seeding ? 'Cargando catálogo…' : 'Cargar catálogo de ejemplo'}
               </Text>
               <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 2 }}>
-                60 productos típicos de tienda de barrio.
+                {SEED_PRODUCTS.length} productos típicos de tienda de barrio.
               </Text>
             </View>
             {!seeding && <Ionicons name="chevron-forward" size={18} color={t.faint} />}

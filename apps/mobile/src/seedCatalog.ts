@@ -57,15 +57,16 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   { code: 'INT-033', name: 'Mortadela 250 g', category: 'Carnes frías', price: 4500, unit: 'unit', stock: 10 },
   { code: 'INT-034', name: 'Galletas Saltín 6 pack', category: 'Snacks', price: 3000, unit: 'pack', stock: 10 },
   { code: 'INT-035', name: 'Chocoramo', category: 'Snacks', price: 2800, unit: 'unit', stock: 10 },
-  { code: 'INT-036', name: 'Chocolatina Jet', category: 'Snacks', price: 800, unit: 'unit', stock: 10 },
+  { code: 'INT-036', name: 'Chocolatina Jet', category: 'Snacks', price: 2000, unit: 'unit', stock: 10 },
   { code: 'INT-037', name: 'Bon Bon Bum', category: 'Snacks', price: 500, unit: 'unit', stock: 10 },
   { code: 'INT-038', name: 'Papas Margarita 30 g', category: 'Snacks', price: 3200, unit: 'unit', stock: 10 },
+  { code: 'INT-061', name: 'Papas Margarita Pollo 105 g', category: 'Snacks', price: 3500, unit: 'unit', stock: 10 },
   { code: 'INT-039', name: 'Choclitos', category: 'Snacks', price: 1500, unit: 'unit', stock: 10 },
   { code: 'INT-040', name: 'De Todito', category: 'Snacks', price: 2500, unit: 'unit', stock: 10 },
-  { code: 'INT-041', name: 'Gaseosa Coca-Cola 400 ml', category: 'Bebidas', price: 2500, unit: 'bottle', stock: 10 },
+  { code: 'INT-041', name: 'Gaseosa Coca-Cola 400 ml', category: 'Bebidas', price: 3000, unit: 'bottle', stock: 10 },
   { code: 'INT-042', name: 'Gaseosa Coca-Cola 1.5 L', category: 'Bebidas', price: 6500, unit: 'bottle', stock: 10 },
   { code: 'INT-043', name: 'Gaseosa Postobón 1.5 L', category: 'Bebidas', price: 5500, unit: 'bottle', stock: 10 },
-  { code: 'INT-044', name: 'Agua Cristal 600 ml', category: 'Bebidas', price: 2000, unit: 'bottle', stock: 10 },
+  { code: 'INT-044', name: 'Agua Cristal 600 ml', category: 'Bebidas', price: 1500, unit: 'bottle', stock: 10 },
   { code: 'INT-045', name: 'Jugo Hit 500 ml', category: 'Bebidas', price: 2500, unit: 'bottle', stock: 10 },
   { code: 'INT-046', name: 'Cerveza Águila 330 ml', category: 'Bebidas', price: 3500, unit: 'bottle', stock: 10 },
   { code: 'INT-047', name: 'Cerveza Poker 330 ml', category: 'Bebidas', price: 3000, unit: 'bottle', stock: 10 },
@@ -82,6 +83,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   { code: 'INT-058', name: 'Bombillo LED 9 W', category: 'Hogar', price: 6000, unit: 'unit', stock: 10 },
   { code: 'INT-059', name: 'Concentrado para perro 1 kg', category: 'Mascotas', price: 8000, unit: 'kg', stock: 10 },
   { code: 'INT-060', name: 'Atún para gato 85 g', category: 'Mascotas', price: 2500, unit: 'unit', stock: 10 },
+  { code: 'INT-062', name: 'Cigarrillos Marlboro Rojo', category: 'Cigarrillos', price: 12000, unit: 'unit', stock: 10 },
 ];
 
 export async function seedColombianCatalog(db: SeedDatabase, storeId: string, ids: SeedIds): Promise<SeedResult> {
