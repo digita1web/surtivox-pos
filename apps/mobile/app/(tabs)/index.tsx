@@ -15,7 +15,7 @@ import { useCart } from '../../src/cart';
 import { useCloudEntitlement } from '../../src/subscription';
 import { Thumb } from '../../src/pos/Thumb';
 import { TabHeader, IconButton, scrollProps, useTabListInset } from '../../src/pos/Screen';
-import { FirstRunGuide } from '../../src/pos/FirstRunGuide';
+import { TourGuide } from '../../src/components/TourGuide';
 import { hasSeenFirstRunGuide } from '../../src/localFlags';
 import { useTheme, space, radius, type as ty, type Theme } from '../../src/theme';
 
@@ -151,7 +151,7 @@ export default function Home() {
           </ScrollView>
         )}
       </ScrollView>
-      <FirstRunGuide visible={guideOpen} onClose={() => setGuideOpen(false)} />
+      <TourGuide visible={guideOpen} onClose={() => setGuideOpen(false)} />
     </View>
   );
 }
