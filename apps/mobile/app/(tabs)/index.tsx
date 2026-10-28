@@ -9,12 +9,12 @@ import {
 } from '../../src/repos';
 import { useSession, useRole } from '../../src/session';
 import { can } from '../../src/roles';
-import { formatCopAmount } from '../../src/receiptMoney';
 import { useCheckoutUI } from '../../src/checkoutUI';
 import { useCart } from '../../src/cart';
 import { useCloudEntitlement } from '../../src/subscription';
 import { Thumb } from '../../src/pos/Thumb';
 import { TabHeader, IconButton, scrollProps, useTabListInset } from '../../src/pos/Screen';
+import { useMoney } from '../../src/pos/ui';
 import { TourGuide } from '../../src/components/TourGuide';
 import { hasSeenFirstRunGuide } from '../../src/localFlags';
 import { useTheme, space, radius, type as ty, type Theme } from '../../src/theme';
@@ -25,6 +25,7 @@ export default function Home() {
   const listInset = useTabListInset();
   const store = useSession((s) => s.store)!;
   const cart = useCart();
+  const money = useMoney();
   const openQuick = useCheckoutUI((s) => s.openQuick);
   const salesVersion = useCheckoutUI((s) => s.salesVersion);
   const role = useRole();
@@ -71,7 +72,7 @@ export default function Home() {
             <Ionicons name="chevron-forward" size={18} color={t.accentFg} />
           </View>
           <Text style={{ color: t.accentFg, fontSize: 34, lineHeight: 42, fontWeight: '800', marginTop: 2 }} numberOfLines={1} adjustsFontSizeToFit>
-            {formatCopAmount(asMinor(stats.totalSales))}
+            {money(asMinor(stats.totalSales))}
           </Text>
           <View style={s.todayStats}>
             <View style={s.todayStat}><Ionicons name="receipt-outline" size={16} color={t.accentFg} /><Text style={s.todayStatTxt}>{stats.orders} {stats.orders === 1 ? 'pedido' : 'pedidos'}</Text></View>
@@ -144,7 +145,7 @@ export default function Home() {
                     </Pressable>
                   </View>
                   <Text style={{ color: t.fg, fontWeight: '600', marginTop: space.sm, fontSize: 13.5 }} numberOfLines={1}>{p.name}</Text>
-                  <Text style={{ color: t.accent, fontWeight: '800', marginTop: 2 }}>{formatCopAmount(asMinor(p.selling_price))}</Text>
+                  <Text style={{ color: t.accent, fontWeight: '800', marginTop: 2 }}>{money(asMinor(p.selling_price))}</Text>
                 </View>
               );
             })}

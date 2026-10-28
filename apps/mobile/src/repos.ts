@@ -14,7 +14,7 @@ import {
   type SalesPoint,
 } from '@openpocket/pos-core';
 import { getDb } from './db';
-import { APP_CURRENCY } from './branding';
+import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';
 import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
 import { type Role, hashPin, verifyPin, randomSalt } from './roles';
@@ -101,13 +101,7 @@ export const isLowStock = (p: Pick<Product, 'stock' | 'low_stock_threshold'>) =>
   p.stock > 0 && p.stock <= (p.low_stock_threshold ?? DEFAULT_LOW_STOCK);
 
 async function normalizedStore(store: Store): Promise<Store> {
-  const canonical = APP_CURRENCY;
-  if (store.currency_code === canonical.code && store.currency_decimals === canonical.decimals && store.currency_locale === canonical.locale) return store;
-  await getDb().runAsync(
-    'UPDATE stores SET currency_code=?, currency_locale=?, currency_decimals=?, updated_at=?, version=version+1 WHERE id=?',
-    [canonical.code, canonical.locale, canonical.decimals, Date.now(), store.id],
-  );
-  return { ...store, currency_code: canonical.code, currency_locale: canonical.locale, currency_decimals: canonical.decimals };
+  return store;
 }
 
 /** The shop currently in use on this device (multi-shop aware). */
@@ -171,6 +165,14 @@ export async function updateStoreProfile(storeId: string, p: StoreProfile): Prom
       p.showLogo ? 1 : 0, p.showContact ? 1 : 0, p.showStaff ? 1 : 0, Date.now(), storeId],
   );
   return (await getStore())!;
+}
+
+export async function updateStoreCurrency(storeId: string, code: string): Promise<void> {
+  const config = currencyConfigFor(code);
+  await getDb().runAsync(
+    'UPDATE stores SET currency_code=?, currency_locale=?, currency_decimals=?, updated_at=?, version=version+1 WHERE id=?',
+    [config.code, config.locale, 0, Date.now(), storeId],
+  );
 }
 
 /* ------------------------------ categories ------------------------------ */

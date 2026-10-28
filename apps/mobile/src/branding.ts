@@ -9,6 +9,7 @@ import type { ReceiptPaper } from './repos';
 export const DEFAULT_ACCENT = '#0ca678';
 export const DEFAULT_FOOTER = '¡Gracias por su compra!\n¡Vuelva pronto!';
 export const APP_CURRENCY = { code: 'COP', locale: 'es-CO', decimals: 0 };
+export const CURRENCY_CYCLE = ['COP', 'USD', 'EUR'] as const;
 export const DEFAULT_RECEIPT_TERMS = 'Los artículos pueden devolverse dentro de los 14 días con este recibo. Los productos perecederos no tienen cambio.';
 
 export function localizedReceiptFooter(input: string | null | undefined): string {
@@ -111,8 +112,9 @@ export function currencyDecimalsFor(code: string): number {
   return currencyConfigFor(code).decimals;
 }
 
-export function currencyForStore(_store: { currency_code: string }): { code: string; locale: string; decimals: number } {
-  return APP_CURRENCY;
+export function currencyForStore(store: { currency_code: string }): { code: string; locale: string; decimals: number } {
+  const code = CURRENCIES.some((c) => c.code === store.currency_code) ? store.currency_code : 'COP';
+  return { ...currencyConfigFor(code), decimals: 0 };
 }
 
 export function parseCurrencyInput(input: string, code: string): Minor {

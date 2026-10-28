@@ -58,10 +58,11 @@ test('COP price input keeps exact units', () => {
   assert.equal(parseCurrencyInput('1500', 'COP'), 1500);
 });
 
-test('app resolves every store currency to COP', () => {
+test('app displays the selected store currency with whole units', () => {
   assert.deepEqual(APP_CURRENCY, { code: 'COP', locale: 'es-CO', decimals: 0 });
-  assert.deepEqual(currencyForStore({ currency_code: 'USD' }), APP_CURRENCY);
-  assert.deepEqual(currencyForStore({ currency_code: 'COP' }), APP_CURRENCY);
+  assert.deepEqual(currencyForStore({ currency_code: 'COP' }), { code: 'COP', locale: 'es-CO', decimals: 0 });
+  assert.deepEqual(currencyForStore({ currency_code: 'USD' }), { code: 'USD', locale: 'en-US', decimals: 0 });
+  assert.deepEqual(currencyForStore({ currency_code: 'EUR' }), { code: 'EUR', locale: 'en-IE', decimals: 0 });
 });
 
 test('receipt footer and terms translate English defaults', () => {

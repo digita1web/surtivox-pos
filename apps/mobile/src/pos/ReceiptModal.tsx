@@ -5,9 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../session';
 import { useCheckoutUI } from '../checkoutUI';
 import { useTheme } from '../theme';
-import { Row, PAYMENT_LABEL } from './ui';
+import { Row, PAYMENT_LABEL, useMoney } from './ui';
 import { DEFAULT_BUSINESS_PROFILE, getBusinessProfile, type BusinessProfile } from '../businessProfile';
-import { formatCopAmount } from '../receiptMoney';
 import { printInvoice, shareInvoicePdf, type PrintableReceipt } from '../print';
 
 export function ReceiptModal() {
@@ -16,6 +15,7 @@ export function ReceiptModal() {
   const staff = useSession((s) => s.staff);
   const receipt = useCheckoutUI((s) => s.receipt);
   const clear = useCheckoutUI((s) => s.clearReceipt);
+  const money = useMoney();
   const [business, setBusiness] = useState<BusinessProfile>(DEFAULT_BUSINESS_PROFILE);
 
   useEffect(() => {
@@ -24,7 +24,6 @@ export function ReceiptModal() {
 
   if (!store || !receipt) return null;
 
-  const money = formatCopAmount;
   const contact = [
     business.address,
     business.phone,

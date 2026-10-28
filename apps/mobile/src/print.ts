@@ -1,12 +1,11 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
-import { type Minor } from '@openpocket/pos-core';
+import { format, type Minor } from '@openpocket/pos-core';
 import { type Store } from './session';
 import { profileOf } from './repos';
 import { applyBusinessProfile, getBusinessProfile } from './businessProfile';
-import { formatCopAmount } from './receiptMoney';
-import { safeAccent, onAccent, contactLines, shopInitials, localizedReceiptFooter, localizedReceiptTerms, THERMAL_WIDTH_PT } from './branding';
+import { currencyForStore, safeAccent, onAccent, contactLines, shopInitials, localizedReceiptFooter, localizedReceiptTerms, THERMAL_WIDTH_PT } from './branding';
 
 export interface PrintableReceipt {
   invoiceNo: string;
@@ -50,7 +49,7 @@ export async function loadLogoDataUri(store: Store): Promise<string | null> {
  */
 export function invoiceHtml(store: Store, r: PrintableReceipt, logoDataUri: string | null = null): string {
   const p = profileOf(store);
-  const m = formatCopAmount;
+  const m = (value: Minor) => format(value, currencyForStore(store));
   const accent = safeAccent(p.receiptAccent);
   const accentFg = onAccent(accent);
   const date = new Date(r.soldAt);
