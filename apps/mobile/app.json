@@ -7,18 +7,26 @@
     "scheme": "surtivoxpos",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0E12"
+    },
     "newArchEnabled": true,
     "android": {
       "package": "io.surtivox.pos",
       "versionCode": 2,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundColor": "#0fa678"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B0E12"
       }
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "io.surtivox.pos"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router",

@@ -1,6 +1,6 @@
 import { View, type ColorValue } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/theme';
 import { CartBar } from '../../src/pos/CartBar';
@@ -8,15 +8,23 @@ import { CheckoutSheet } from '../../src/pos/CheckoutSheet';
 import { ReceiptModal } from '../../src/pos/ReceiptModal';
 import { QuickSaleModal } from '../../src/pos/QuickSaleModal';
 
+const NAV_ICONS = {
+  home: require('../../assets/nav/home.png'),
+  products: require('../../assets/nav/products.png'),
+  scan: require('../../assets/nav/scan-sell.png'),
+  sales: require('../../assets/nav/sales.png'),
+  more: require('../../assets/nav/more.png'),
+};
+
 export default function TabsLayout() {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const tabBarHeight = 60 + insets.bottom;
 
-  const tab = (name: keyof typeof Ionicons.glyphMap, focusedName: keyof typeof Ionicons.glyphMap) =>
-    ({ focused, color }: { focused: boolean; color: ColorValue }) => (
-      <Ionicons name={focused ? focusedName : name} size={23} color={color} />
+  const tab = (icon: number) =>
+    ({ color }: { focused: boolean; color: ColorValue }) => (
+      <Image source={icon} style={{ width: 23, height: 23 }} tintColor={color as string} contentFit="contain" />
     );
 
   return (
@@ -37,22 +45,22 @@ export default function TabsLayout() {
           tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 2 },
         }}
       >
-        <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: tab('home-outline', 'home') }} />
-        <Tabs.Screen name="products" options={{ title: 'Productos', tabBarIcon: tab('cube-outline', 'cube') }} />
+        <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: tab(NAV_ICONS.home) }} />
+        <Tabs.Screen name="products" options={{ title: 'Productos', tabBarIcon: tab(NAV_ICONS.products) }} />
         <Tabs.Screen
           name="newsale"
           options={{
             title: '',
             tabBarIcon: () => (
               <View style={{ width: 58, height: 58, borderRadius: 29, backgroundColor: t.accent, alignItems: 'center', justifyContent: 'center', marginTop: -22, borderWidth: 4, borderColor: t.panel, boxShadow: t.shadowStrong }}>
-                <Ionicons name="barcode-outline" size={28} color={t.accentFg} />
+                <Image source={NAV_ICONS.scan} style={{ width: 28, height: 28 }} tintColor={t.accentFg} contentFit="contain" />
               </View>
             ),
           }}
           listeners={{ tabPress: (e) => { e.preventDefault(); router.push('/scan'); } }}
         />
-        <Tabs.Screen name="sales" options={{ title: 'Ventas', tabBarIcon: tab('receipt-outline', 'receipt') }} />
-        <Tabs.Screen name="more" options={{ title: 'Más', tabBarIcon: tab('ellipsis-horizontal', 'ellipsis-horizontal') }} />
+        <Tabs.Screen name="sales" options={{ title: 'Ventas', tabBarIcon: tab(NAV_ICONS.sales) }} />
+        <Tabs.Screen name="more" options={{ title: 'Más', tabBarIcon: tab(NAV_ICONS.more) }} />
       </Tabs>
 
       <CartBar bottom={tabBarHeight + 10} />
