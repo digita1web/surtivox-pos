@@ -15,7 +15,7 @@
     "@openpocket/database": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240909.0",
+    "@cloudflare/workers-types": "^5.20261024.1",
     "wrangler": "^3.80.0"
   }
 }
