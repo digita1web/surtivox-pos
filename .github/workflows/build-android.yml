@@ -41,6 +41,9 @@ jobs:
         working-directory: apps/mobile
         run: npx expo prebuild --platform android
 
+      - name: Pin Gradle 8.13
+        run: sed -i -E 's#gradle-9\.[0-9]+\.[0-9]+-bin\.zip#gradle-8.13-bin.zip#g' apps/mobile/android/gradle/wrapper/gradle-wrapper.properties
+
       - name: Build release APK
         working-directory: apps/mobile/android
         run: ./gradlew assembleRelease --no-daemon
