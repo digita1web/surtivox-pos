@@ -335,6 +335,29 @@ h1 em {
   gap: 12px;
 }
 
+.download-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  max-width: 460px;
+  margin: 13px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.download-hint svg {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+  fill: none;
+  stroke: var(--accent-bright);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
 .release-meta {
   display: flex;
   flex-wrap: wrap;
@@ -1396,6 +1419,36 @@ h1 em {
   color: var(--paper);
 }
 
+.footer-legal {
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px 24px;
+  margin-top: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.footer-legal span {
+  color: var(--faint);
+}
+
+.footer-legal nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.footer-legal a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer-legal a:hover {
+  color: var(--paper);
+}
+
 .mobile-download {
   display: none;
 }
@@ -1439,9 +1492,9 @@ h1 em {
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   body {
-    padding-bottom: 74px;
+    padding-bottom: 96px;
   }
 
   .site-header {
@@ -1468,7 +1521,11 @@ h1 em {
   }
 
   .site-header > .button {
-    margin-left: auto;
+    display: none;
+  }
+
+  .hero-actions .button-ghost {
+    display: none;
   }
 
   .hero {
@@ -1725,10 +1782,18 @@ h1 em {
     margin-left: 0;
   }
 
+  .footer-legal {
+    display: block;
+  }
+
+  .footer-legal nav {
+    margin-top: 10px;
+  }
+
   .mobile-download {
     position: fixed;
     right: 10px;
-    bottom: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     left: 10px;
     z-index: 40;
     display: flex;
@@ -1771,11 +1836,6 @@ h1 em {
 }
 
 @media (max-width: 390px) {
-  .site-header > .button {
-    padding: 8px 10px;
-    font-size: 10px;
-  }
-
   h1 {
     font-size: 3.9rem;
   }
