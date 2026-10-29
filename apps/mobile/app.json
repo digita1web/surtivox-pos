@@ -2,7 +2,7 @@
   "expo": {
     "name": "Surtivox POS",
     "slug": "surtivox-pos",
-    "version": "0.1.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "scheme": "surtivoxpos",
     "userInterfaceStyle": "automatic",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "android": {
       "package": "io.surtivox.pos",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B0E12"
@@ -51,10 +51,20 @@
         }
       ],
       "expo-asset",
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false
-    }
+    },
+    "jsEngine": "hermes"
   }
 }

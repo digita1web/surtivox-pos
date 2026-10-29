@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  dataAgeLabel, lowestComparablePrice, normalizePresentation, presentationsDiffer,
+  dataAgeLabel, lowestComparablePrice, lowestMarketPrice, normalizePresentation, presentationsDiffer,
 } from './marketPriceSummary.ts';
 
 const rows = [
@@ -69,4 +69,10 @@ test('has no lowest comparable price when every presentation is different', () =
   ];
   assert.equal(presentationsDiffer(distinct), true);
   assert.equal(lowestComparablePrice(distinct), null);
+});
+
+test('finds the lowest cached price for the scanner even with one result', () => {
+  assert.deepEqual(lowestMarketPrice(rows), { price_minor: 21950, supermarket_name: 'Olímpica' });
+  assert.deepEqual(lowestMarketPrice([rows[0]!]), { price_minor: 22390, supermarket_name: 'Éxito' });
+  assert.equal(lowestMarketPrice([]), null);
 });

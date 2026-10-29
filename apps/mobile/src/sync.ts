@@ -13,7 +13,7 @@
  * if you ever run many devices with badly unsynced clocks.
  */
 import {
-  SYNC_TABLES, upsertSql, rowValues, changedSinceSql, type SyncTable,
+  SYNC_TABLES, upsertSql, rowValues, changedSinceSql,
 } from '@openpocket/database';
 import * as Crypto from 'expo-crypto';
 import { getDb } from './db';

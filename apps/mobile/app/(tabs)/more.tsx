@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSession, useRole } from '../../src/session';
 import { can, ROLE_LABEL } from '../../src/roles';
 import { useCloudEntitlement } from '../../src/subscription';
-import { useTheme, initials, space, radius, type Theme } from '../../src/theme';
+import { useTheme, initials, space, type Theme } from '../../src/theme';
 import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { showAlert } from '../../src/pos/alert';
 import { resetAllData, seedColombianCatalog, updateAllStoreCurrencies } from '../../src/repos';

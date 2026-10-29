@@ -49,6 +49,7 @@ export default function TabsLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
+          lazy: true,
           tabBarActiveTintColor: t.accent,
           tabBarInactiveTintColor: t.faint,
           tabBarStyle: {

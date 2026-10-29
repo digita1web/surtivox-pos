@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, TextInput, Pressable, Animated, useWindowDimensions,
-  useColorScheme, StyleSheet, KeyboardAvoidingView, ScrollView,
+  View, Text, Pressable, Animated, useWindowDimensions,
+  StyleSheet, KeyboardAvoidingView, ScrollView,
 } from 'react-native';
 import { showAlert } from './alert';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

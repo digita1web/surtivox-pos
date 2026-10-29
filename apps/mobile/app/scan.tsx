@@ -4,7 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { computeCart, asMinor, asBps } from '@openpocket/pos-core';
-import { getStore, findProductByBarcode, type Store, type Product } from '../src/repos';
+import { getStore, findProductByBarcode, getMarketPricesCache, type Store, type Product } from '../src/repos';
+import { marketEanForLookup } from '../src/marketPrices';
+import { lowestMarketPrice, type LowestMarketPrice } from '../src/marketPriceSummary';
+import { formatCopAmount } from '../src/receiptMoney';
 import { currencyOf } from '../src/session';
 import { useCart } from '../src/cart';
 import { usePurchaseDraft } from '../src/purchaseDraft';
@@ -33,6 +36,7 @@ export default function Scan() {
   const [manualCode, setManualCode] = useState('');
   // Remember every product we've touched so restock rows can show name/price/photo.
   const [seen, setSeen] = useState<Record<string, Product>>({});
+  const [marketPrices, setMarketPrices] = useState<Record<string, LowestMarketPrice>>({});
   const lastScan = useRef<{ code: string; at: number }>({ code: '', at: 0 });
   const bannerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -54,6 +58,38 @@ export default function Scan() {
 
   const totals = computeCart(rows.map((r) => ({ unitPrice: asMinor(r.product.selling_price), quantity: r.quantity, taxBps: asBps(r.product.tax_bps) })));
   const count = rows.reduce((n, r) => n + r.quantity, 0);
+
+  useEffect(() => {
+    let active = true;
+    const eans = [...new Set(
+      rows
+        .map((row) => marketEanForLookup(row.product.barcode))
+        .filter((ean): ean is string => ean !== null),
+    )];
+    if (eans.length === 0) {
+      setMarketPrices({});
+      return () => { active = false; };
+    }
+    Promise.all(eans.map(async (ean) => {
+      try {
+        const cached = await getMarketPricesCache(ean);
+        return [ean, lowestMarketPrice(cached.rows)] as const;
+      } catch {
+        return [ean, null] as const;
+      }
+    })).then((entries) => {
+      if (!active) return;
+      const byEan = new Map(entries);
+      const next: Record<string, LowestMarketPrice> = {};
+      for (const row of rows) {
+        const ean = marketEanForLookup(row.product.barcode);
+        const reference = ean ? byEan.get(ean) : null;
+        if (reference) next[row.product.id] = reference;
+      }
+      setMarketPrices(next);
+    });
+    return () => { active = false; };
+  }, [rows]);
 
   const handleCode = useCallback(async (raw: string) => {
     if (!store) return;
@@ -193,12 +229,18 @@ export default function Scan() {
         ListEmptyComponent={<Text style={[ty.body, { color: t.muted, textAlign: 'center', marginTop: space.xxl }]}>Escanea un artículo para empezar.</Text>}
         renderItem={({ item }) => {
           const line = (item.product.selling_price * item.quantity) as number;
+          const reference = marketPrices[item.product.id];
           return (
             <View style={[st.row, { backgroundColor: t.panel, borderColor: t.line }]}>
               <Thumb uri={item.product.image_uri} name={item.product.name} category={item.product.category_name} style={st.thumb} textSize={15} />
               <View style={{ flex: 1, marginLeft: space.md }}>
                 <Text style={[ty.body, { color: t.fg, fontWeight: '700' }]} numberOfLines={1}>{item.product.name}</Text>
                 <Text style={[ty.small, { color: t.muted, marginTop: 2 }]}>{money(asMinor(item.product.selling_price))} c/u</Text>
+                {reference ? (
+                  <Text style={{ color: t.faint, fontSize: 11, marginTop: 2 }} numberOfLines={1}>
+                    Ref. mercado: desde {formatCopAmount(asMinor(reference.price_minor))} ({reference.supermarket_name})
+                  </Text>
+                ) : null}
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={{ color: t.fg, fontWeight: '800', marginBottom: 6 }}>{money(asMinor(line))}</Text>

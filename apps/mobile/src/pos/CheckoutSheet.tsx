@@ -8,7 +8,7 @@ import { useSession, currencyOf } from '../session';
 import { useCheckoutUI } from '../checkoutUI';
 import { settleCash } from '../checkoutMath';
 import { checkoutSale, type PaymentMethod, type Customer } from '../repos';
-import { useTheme, initials } from '../theme';
+import { useTheme } from '../theme';
 import { Thumb } from './Thumb';
 import { Row, useMoney } from './ui';
 import { CustomerPicker } from './CustomerPicker';

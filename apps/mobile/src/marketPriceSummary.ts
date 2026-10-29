@@ -10,6 +10,11 @@ export interface LowestComparablePrice {
   presentation: string;
 }
 
+export interface LowestMarketPrice {
+  price_minor: number;
+  supermarket_name: string;
+}
+
 const UNIT_ALIASES: Record<string, string> = {
   g: 'g',
   gr: 'g',
@@ -79,6 +84,17 @@ export function lowestComparablePrice(
     price_minor: lowest.price_minor,
     supermarket_name: lowest.supermarket_name,
     presentation,
+  };
+}
+
+export function lowestMarketPrice(
+  rows: readonly ComparableMarketPrice[],
+): LowestMarketPrice | null {
+  if (rows.length === 0) return null;
+  const lowest = rows.reduce((best, row) => (row.price_minor < best.price_minor ? row : best));
+  return {
+    price_minor: lowest.price_minor,
+    supermarket_name: lowest.supermarket_name,
   };
 }
 

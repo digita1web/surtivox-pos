@@ -1,6 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { computeCart, asMinor, asBps, type Minor } from '@openpocket/pos-core';
+import { computeCart, asMinor, asBps } from '@openpocket/pos-core';
 import { useCart } from '../cart';
 import { useSession } from '../session';
 import { useCheckoutUI } from '../checkoutUI';
