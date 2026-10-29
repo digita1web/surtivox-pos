@@ -17,7 +17,7 @@ import { getDb } from './db';
 import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';
 import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
-import { createInFlightRequests, fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceResult } from './marketPrices';
+import { createInFlightRequests, fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceProviderError, type MarketPriceResult } from './marketPrices';
 import { type Role, hashPin, verifyPin, randomSalt } from './roles';
 import { defaultDraftName, tracksInventory } from './pos/stockPolicy';
 
@@ -307,6 +307,50 @@ export async function clearProductReview(productId: string): Promise<void> {
   await getDb().runAsync('DELETE FROM product_review WHERE product_id=?', [productId]);
 }
 
+export interface BarcodeLookupRow {
+  barcode: string;
+  status: 'found' | 'not_found';
+  name: string | null;
+  image_url: string | null;
+  source: 'market' | 'off' | null;
+  checked_at: number;
+}
+
+export async function getBarcodeLookup(barcode: string): Promise<BarcodeLookupRow | null> {
+  return (await getDb().getFirstAsync<BarcodeLookupRow>(
+    'SELECT barcode,status,name,image_url,source,checked_at FROM barcode_lookups WHERE barcode=?',
+    [barcode],
+  )) ?? null;
+}
+
+export async function saveBarcodeLookup(input: {
+  barcode: string;
+  status: 'found' | 'not_found';
+  name?: string | null;
+  imageUrl?: string | null;
+  source?: 'market' | 'off' | null;
+  checkedAt?: number;
+}): Promise<void> {
+  await getDb().runAsync(
+    `INSERT INTO barcode_lookups (barcode,status,name,image_url,source,checked_at)
+     VALUES (?,?,?,?,?,?)
+     ON CONFLICT(barcode) DO UPDATE SET
+       status=excluded.status,
+       name=excluded.name,
+       image_url=excluded.image_url,
+       source=excluded.source,
+       checked_at=excluded.checked_at`,
+    [input.barcode, input.status, input.name ?? null, input.imageUrl ?? null, input.source ?? null, input.checkedAt ?? Date.now()],
+  );
+}
+
+export async function updateProductImage(productId: string, imageUri: string): Promise<void> {
+  await getDb().runAsync(
+    'UPDATE products SET image_uri=?, updated_at=?, version=version+1 WHERE id=?',
+    [imageUri, Date.now(), productId],
+  );
+}
+
 export async function updateProductPrices(
   storeId: string,
   productId: string,
@@ -343,6 +387,7 @@ export interface MarketPricesCache {
 
 export interface MarketPricesRefresh extends MarketPricesCache {
   status: 'fresh' | 'cached' | 'stale' | 'offline' | 'error';
+  errors: MarketPriceProviderError[];
   errorKind?: MarketPriceErrorKind;
 }
 
@@ -371,10 +416,11 @@ export async function getMarketPricesCache(ean: string): Promise<MarketPricesCac
   return { rows, fetchedAt };
 }
 
-async function saveMarketPrices(ean: string, results: MarketPriceResult[], fetchedAt: number): Promise<MarketPriceRow[]> {
+async function saveMarketPrices(ean: string, results: MarketPriceResult[], fetchedAt: number, clearExisting = false): Promise<MarketPriceRow[]> {
   const db = getDb();
   const now = Date.now();
   await db.withTransactionAsync(async () => {
+    if (clearExisting) await db.runAsync('DELETE FROM market_prices WHERE ean=?', [ean]);
     for (const result of results) {
       if (result.ean !== ean || !Number.isSafeInteger(result.price_minor) || result.price_minor <= 0) continue;
       const id = newId();
@@ -412,7 +458,7 @@ async function saveMarketPrices(ean: string, results: MarketPriceResult[], fetch
 export async function refreshMarketPrices(ean: string, force = false): Promise<MarketPricesRefresh> {
   const cached = await getMarketPricesCache(ean);
   if (!force && cached.rows.length > 0 && !isMarketPricesStale(cached.fetchedAt)) {
-    return { ...cached, status: 'cached' };
+    return { ...cached, status: 'cached', errors: [] };
   }
   if (!force) {
     const failure = marketPriceFailures.get(ean);
@@ -420,6 +466,7 @@ export async function refreshMarketPrices(ean: string, force = false): Promise<M
       return {
         ...cached,
         status: marketPricesRefreshFailureStatus(cached.rows.length > 0, failure.kind),
+        errors: [],
         errorKind: failure.kind,
       };
     }
@@ -427,15 +474,16 @@ export async function refreshMarketPrices(ean: string, force = false): Promise<M
   return marketPriceRequests.run(ean, async () => {
     try {
       const payload = await fetchMarketPrices(ean);
-      const rows = await saveMarketPrices(ean, payload.results, payload.fetched_at);
+      const rows = await saveMarketPrices(ean, payload.results, payload.fetched_at, (payload.errors ?? []).length === 0);
       marketPriceFailures.delete(ean);
-      return { rows, fetchedAt: payload.fetched_at, status: 'fresh' };
+      return { rows, fetchedAt: payload.fetched_at, status: 'fresh', errors: payload.errors ?? [] };
     } catch (error) {
       const kind: MarketPriceErrorKind = error instanceof MarketPricesError ? error.kind : 'http';
       marketPriceFailures.set(ean, { at: Date.now(), kind });
       return {
         ...cached,
         status: marketPricesRefreshFailureStatus(cached.rows.length > 0, kind),
+        errors: [],
         errorKind: kind,
       };
     }

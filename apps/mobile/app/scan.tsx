@@ -16,6 +16,7 @@ import { useMoney } from '../src/pos/ui';
 import { Thumb } from '../src/pos/Thumb';
 import { useTheme, space, radius, type as ty } from '../src/theme';
 import { tracksInventory } from '../src/pos/stockPolicy';
+import { UnknownBarcodeSheet } from '../src/pos/UnknownBarcodeSheet';
 import { Screen, IconButton, listProps } from '../src/pos/Screen';
 
 interface ScanRow { product: Product; quantity: number }
@@ -35,6 +36,7 @@ export default function Scan() {
   const [banner, setBanner] = useState<{ text: string; ok: boolean } | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
   const [manualCode, setManualCode] = useState('');
+  const [unknownCode, setUnknownCode] = useState<string | null>(null);
   // Remember every product we've touched so restock rows can show name/price/photo.
   const [seen, setSeen] = useState<Record<string, Product>>({});
   const [marketPrices, setMarketPrices] = useState<Record<string, LowestMarketPrice>>({});
@@ -93,13 +95,17 @@ export default function Scan() {
   }, [rows]);
 
   const handleCode = useCallback(async (raw: string) => {
-    if (!store) return;
+    if (!store || unknownCode) return;
     const code = raw.trim();
     if (!code) return;
     const product = await findProductByBarcode(store.id, code);
     if (!product) {
-      Vibration.vibrate(120);
-      router.push({ pathname: '/add-product', params: { barcode: code } });
+      Vibration.vibrate([0, 80, 60, 80]);
+      if (isStock) {
+        router.push({ pathname: '/add-product', params: { barcode: code } });
+      } else {
+        setUnknownCode(code);
+      }
       return;
     }
     setSeen((m) => ({ ...m, [product.id]: product }));
@@ -116,7 +122,7 @@ export default function Scan() {
       Vibration.vibrate(40);
       flash(tracked && product.stock < nextQty ? `${product.name} — sin stock, agregado` : `Agregado ${product.name}`, !tracked || product.stock >= nextQty);
     }
-  }, [store, isStock, cart]);
+  }, [store, isStock, cart, unknownCode]);
 
   const onScan = useCallback((r: BarcodeScanningResult) => {
     const now = Date.now();
@@ -189,7 +195,7 @@ export default function Scan() {
           style={StyleSheet.absoluteFill}
           facing="back"
           enableTorch={torch}
-          onBarcodeScanned={onScan}
+          onBarcodeScanned={unknownCode ? undefined : onScan}
           barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39', 'code93', 'itf14', 'qr'] }}
         />
         <View style={st.camScrim} pointerEvents="none" />
@@ -276,6 +282,17 @@ export default function Scan() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <UnknownBarcodeSheet
+        code={unknownCode}
+        onClose={() => setUnknownCode(null)}
+        onAdded={(product) => {
+          setUnknownCode(null);
+          setSeen((m) => ({ ...m, [product.id]: product }));
+          Vibration.vibrate(40);
+          flash(`Agregado ${product.name}`, true);
+        }}
+      />
     </Screen>
   );
 }

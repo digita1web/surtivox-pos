@@ -15,12 +15,17 @@ export interface MarketPriceResult {
   match_quality: 'exact_ean';
 }
 
+export interface MarketPriceProviderError {
+  provider_id: string;
+  error: string;
+}
+
 export interface MarketPricesResponse {
   ok: boolean;
   ean: string;
   fetched_at: number;
   results: MarketPriceResult[];
-  errors?: { provider_id: string; error: string }[];
+  errors?: MarketPriceProviderError[];
 }
 
 export type MarketPriceErrorKind = 'offline' | 'timeout' | 'http' | 'invalid_response';
@@ -154,6 +159,6 @@ export async function fetchMarketPrices(
     ean,
     fetched_at: fetchedAt,
     results,
-    errors: Array.isArray(payload.errors) ? payload.errors : [],
+    errors: Array.isArray(payload.errors) ? payload.errors as MarketPriceProviderError[] : [],
   };
 }

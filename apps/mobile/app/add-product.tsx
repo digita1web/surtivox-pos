@@ -103,14 +103,15 @@ export default function AddProduct() {
     setMarketEan(bc);
     setLooking(true);
     try {
-      const info = await lookupBarcode(bc);
-      if (!info) { if (!silent) showAlert('No encontrado', 'No hay coincidencias para este código en la base de productos.'); return; }
+      const outcome = await lookupBarcode(bc);
+      if (outcome.status === 'not_found') { if (!silent) showAlert('No encontrado', 'No hay coincidencias para este código en la base de productos.'); return; }
+      if (outcome.status === 'error') { if (!silent) showAlert('No se pudo buscar', 'No se pudo conectar con la base de productos. Revisa tu conexión.'); return; }
+      const info = outcome.info;
       if (info.name) setName((prev) => prev.trim() ? prev : info.name!);
       if (info.imageUrl && !imageUri) {
         const local = await downloadProductImage(info.imageUrl);
         if (local) setImageUri(local);
       }
-      if (!silent && !info.name && !info.imageUrl) showAlert('No encontrado', 'No hay información disponible para este código.');
     } catch {
       if (!silent) showAlert('No se pudo buscar', 'No se pudo conectar con la base de productos. Revisa tu conexión.');
     } finally { setLooking(false); }
