@@ -10,6 +10,8 @@ import { loadAppCurrency } from '../src/appCurrency';
 import { Onboarding } from '../src/pos/Onboarding';
 import { StaffLock } from '../src/pos/StaffLock';
 import { AlertHost } from '../src/pos/alert';
+import { LaunchIntro } from '../src/pos/LaunchIntro';
+import { checkForUpdatesInBackground } from '../src/updates';
 import { useTheme } from '../src/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -18,6 +20,7 @@ export default function RootLayout() {
   const t = useTheme();
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showIntro, setShowIntro] = useState(true);
   const loadSession = useSession((s) => s.load);
   const store = useSession((s) => s.store);
   const locked = useLocked();
@@ -33,31 +36,28 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (ready || error) SplashScreen.hideAsync().catch(() => {});
-  }, [ready, error]);
+    SplashScreen.hideAsync().catch(() => {});
+    void checkForUpdatesInBackground().catch(() => {});
+  }, []);
 
-  if (error) {
-    return (
-      <View style={[styles.center, { backgroundColor: t.bg }]}>
-        <Text style={{ color: t.danger, padding: 24, textAlign: 'center' }}>
-          Error de base de datos:{'\n'}
-          {error}
-        </Text>
-      </View>
-    );
-  }
-  if (!ready) {
-    return (
-      <View style={[styles.center, { backgroundColor: t.bg }]}>
-        <ActivityIndicator color={t.accent} size="large" />
-        <Text style={{ color: t.muted, marginTop: 12 }}>Abriendo tienda…</Text>
-      </View>
-    );
-  }
   return (
     <SafeAreaProvider>
       <StatusBar style="auto" />
-      {!store ? (
+      {showIntro ? (
+        <LaunchIntro isReady={ready || error !== null} onFinish={() => setShowIntro(false)} />
+      ) : error ? (
+        <View style={[styles.center, { backgroundColor: t.bg }]}>
+          <Text style={{ color: t.danger, padding: 24, textAlign: 'center' }}>
+            Error de base de datos:{'\n'}
+            {error}
+          </Text>
+        </View>
+      ) : !ready ? (
+        <View style={[styles.center, { backgroundColor: t.bg }]}>
+          <ActivityIndicator color={t.accent} size="large" />
+          <Text style={{ color: t.muted, marginTop: 12 }}>Abriendo tienda…</Text>
+        </View>
+      ) : !store ? (
         <Onboarding onCreated={loadSession} />
       ) : locked ? (
         <StaffLock />

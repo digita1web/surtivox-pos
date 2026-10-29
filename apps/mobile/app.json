@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "Surtivox POS",
-    "slug": "surtivox-pos",
-    "version": "1.0.1",
+    "slug": "digita1web",
+    "version": "1.0.2",
     "orientation": "portrait",
     "scheme": "surtivoxpos",
     "userInterfaceStyle": "automatic",
@@ -10,11 +10,15 @@
     "newArchEnabled": true,
     "android": {
       "package": "io.surtivox.pos",
-      "versionCode": 3,
+      "versionCode": 4,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B0E12"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "ios": {
       "supportsTablet": true,
@@ -65,6 +69,22 @@
     "experiments": {
       "typedRoutes": false
     },
-    "jsEngine": "hermes"
+    "jsEngine": "hermes",
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/e9fd4450-8f1d-4490-be62-34de756bf454"
+    },
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e9fd4450-8f1d-4490-be62-34de756bf454"
+      }
+    },
+    "owner": "digita1webm"
   }
 }
