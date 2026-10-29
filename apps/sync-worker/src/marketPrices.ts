@@ -29,6 +29,19 @@ interface ProviderOutcome {
   error: string | null;
 }
 
+export interface EdgeCache {
+  match(request: Request): Promise<Response | undefined>;
+  put(request: Request, response: Response): Promise<void>;
+}
+
+function getDefaultEdgeCache(): EdgeCache | undefined {
+  return typeof caches !== 'undefined' ? caches.default : undefined;
+}
+
+function edgeCacheRequest(ean: string): Request {
+  return new Request(`https://surtivox-market.internal/v1/market-prices?ean=${ean}`, { method: 'GET' });
+}
+
 export const MARKET_PROVIDERS: readonly VtexProvider[] = [
   { id: 'vtex:exitocol', name: 'Éxito', account: 'exitocol', baseUrl: 'https://www.exito.com', locale: 'es-CO' },
   { id: 'vtex:jumbocolombiaio', name: 'Jumbo', account: 'jumbocolombiaio', baseUrl: 'https://www.jumbocolombia.com', locale: 'es-CO' },
@@ -167,12 +180,27 @@ export async function handleMarketPrices(
   req: Request,
   fetcher: typeof fetch = fetch,
   now = Date.now(),
+  cache: EdgeCache | undefined = getDefaultEdgeCache(),
 ): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
   if (req.method !== 'GET') return json({ ok: false, error: 'method_not_allowed' }, 405);
   const ean = normalizeEan(new URL(req.url).searchParams.get('ean'));
   if (!ean) return json({ ok: false, error: 'ean_must_be_8_to_14_digits' }, 400);
   if (!rateAllowed(req, now)) return json({ ok: false, error: 'rate_limited' }, 429);
+  const cacheKey = edgeCacheRequest(ean);
+  if (cache) {
+    let cached: Response | undefined;
+    try {
+      cached = await cache.match(cacheKey);
+    } catch {
+      cached = undefined;
+    }
+    if (cached) {
+      const headers = new Headers(cached.headers);
+      headers.set('x-surtivox-cache', 'HIT');
+      return new Response(cached.body, { status: cached.status, headers });
+    }
+  }
   const outcomes = await Promise.all(
     MARKET_PROVIDERS.map((provider) => fetchVtexProvider(provider, ean, fetcher, now)),
   );
@@ -183,9 +211,17 @@ export async function handleMarketPrices(
   if (results.length === 0 && errors.length > 0) {
     return json({ ok: false, error: 'upstream_unavailable', errors }, 502);
   }
-  return json(
+  const response = json(
     { ok: true, ean, fetched_at: now, results, errors },
     200,
-    { 'cache-control': 'public, max-age=600' },
+    { 'cache-control': 'public, max-age=600', 'x-surtivox-cache': 'MISS' },
   );
+  if (cache && errors.length === 0) {
+    try {
+      await cache.put(cacheKey, response.clone());
+    } catch {
+      console.warn('No se pudo guardar la respuesta VTEX en la caché de borde');
+    }
+  }
+  return response;
 }

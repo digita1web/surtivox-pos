@@ -2,10 +2,23 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   MARKET_PROVIDERS, fetchVtexProvider, handleMarketPrices, normalizeEan, normalizeVtexProduct,
+  type EdgeCache,
 } from '../src/marketPrices.ts';
 
 const EAN = '7702511000045';
 const fetchedAt = 1760000000000;
+
+class MemoryEdgeCache implements EdgeCache {
+  private readonly items = new Map<string, Response>();
+
+  async match(request: Request): Promise<Response | undefined> {
+    return this.items.get(request.url)?.clone();
+  }
+
+  async put(request: Request, response: Response): Promise<void> {
+    this.items.set(request.url, response.clone());
+  }
+}
 
 function vtexProduct(ean = EAN, price: number | null = 22390) {
   return {
@@ -116,4 +129,46 @@ test('market route rate limits repeated requests by client', async () => {
     );
   }
   assert.equal(last?.status, 429);
+});
+
+test('successful EAN responses are cached at the edge and reused', async () => {
+  let upstreamCalls = 0;
+  const mock: typeof fetch = async () => {
+    upstreamCalls += 1;
+    return new Response(JSON.stringify(vtexProduct()), { status: 200 });
+  };
+  const cache = new MemoryEdgeCache();
+  const key = `cache-${Date.now()}-${Math.random()}`;
+  const request = () => new Request(`https://worker.test/market-prices?ean=${EAN}`, {
+    headers: { 'cf-connecting-ip': key },
+  });
+  const first = await handleMarketPrices(request(), mock, fetchedAt, cache);
+  assert.equal(first.status, 200);
+  assert.equal(first.headers.get('x-surtivox-cache'), 'MISS');
+  assert.equal(upstreamCalls, 3);
+  const second = await handleMarketPrices(request(), mock, fetchedAt + 1, cache);
+  assert.equal(second.status, 200);
+  assert.equal(second.headers.get('x-surtivox-cache'), 'HIT');
+  assert.equal(upstreamCalls, 3);
+});
+
+test('partial provider failures are not cached and are retried', async () => {
+  let upstreamCalls = 0;
+  const mock: typeof fetch = async (input) => {
+    upstreamCalls += 1;
+    if (String(input).includes('exitocol')) return new Response(JSON.stringify(vtexProduct()), { status: 200 });
+    return new Response('{}', { status: 500 });
+  };
+  const cache = new MemoryEdgeCache();
+  const key = `partial-cache-${Date.now()}-${Math.random()}`;
+  const request = () => new Request(`https://worker.test/market-prices?ean=${EAN}`, {
+    headers: { 'cf-connecting-ip': key },
+  });
+  const first = await handleMarketPrices(request(), mock, fetchedAt, cache);
+  assert.equal(first.status, 200);
+  assert.equal(first.headers.get('x-surtivox-cache'), 'MISS');
+  assert.equal(upstreamCalls, 3);
+  const second = await handleMarketPrices(request(), mock, fetchedAt + 1, cache);
+  assert.equal(second.status, 200);
+  assert.equal(upstreamCalls, 6);
 });

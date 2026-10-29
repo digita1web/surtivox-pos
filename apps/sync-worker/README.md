@@ -30,7 +30,9 @@ device → server → device round-trip.
 `/market-prices` es público, no usa el token de sincronización y solo consulta
 los catálogos públicos de VTEX de Éxito, Jumbo y Olímpica. Valida EAN de 8 a 14
 dígitos, limita a 30 solicitudes por minuto por cliente y conserva únicamente
-coincidencias exactas de EAN con precio positivo.
+coincidencias exactas de EAN con precio positivo. Las respuestas completas por
+EAN se almacenan en la caché de borde durante 10 minutos; las respuestas con
+errores parciales no se cachean para permitir reintentos.
 
 Auth is a per-store **Bearer token**; the app generates one and the shopkeeper
 shares it across their own devices. A token maps to exactly one store; a device
