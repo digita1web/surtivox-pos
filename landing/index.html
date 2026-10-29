@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Surtivox POS — Tu tienda, sin enredos</title>
+  <meta name="description" content="Surtivox POS es un punto de venta offline para tiendas de barrio colombianas. Vende, fía y cuadra la caja aunque se caiga el internet.">
+  <link rel="canonical" href="https://digita1web.github.io/surtivox-pos/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#0B0E12">
+  <meta name="application-name" content="Surtivox POS">
+  <meta name="author" content="Surtivox">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Surtivox POS">
+  <meta property="og:title" content="Surtivox POS — Tu tienda, sin enredos">
+  <meta property="og:description" content="Vende, fía y cuadra la caja aunque se caiga el internet. POS offline para tiendas de barrio colombianas.">
+  <meta property="og:url" content="https://digita1web.github.io/surtivox-pos/">
+  <meta property="og:image" content="https://digita1web.github.io/surtivox-pos/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Surtivox POS, punto de venta offline para tiendas colombianas">
+  <meta property="og:locale" content="es_CO">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Surtivox POS — Tu tienda, sin enredos">
+  <meta name="twitter:description" content="Vende, fía y cuadra la caja aunque se caiga el internet. POS offline para tiendas de barrio colombianas.">
+  <meta name="twitter:image" content="https://digita1web.github.io/surtivox-pos/assets/og-image.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <link rel="stylesheet" href="styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Surtivox POS",
+    "operatingSystem": "Android",
+    "applicationCategory": "BusinessApplication",
+    "description": "Punto de venta offline para tiendas de barrio colombianas. Vende, fía y cuadra la caja sin internet.",
+    "url": "https://digita1web.github.io/surtivox-pos/",
+    "downloadUrl": "https://github.com/digita1web/surtivox-pos/releases/latest/download/app-release.apk",
+    "softwareVersion": "1.0.1",
+    "license": "https://opensource.org/licenses/MIT",
+    "author": { "@type": "Organization", "name": "Surtivox" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "COP" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "¿Surtivox es gratis?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Las funciones offline principales son gratuitas. La nube es opcional." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Necesito internet para vender?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. Ventas, productos, caja y reportes funcionan localmente." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Cómo instalo el APK?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Descarga, permite la instalación desde el navegador y abre el archivo." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Es seguro descargar el APK desde GitHub?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Viene del release oficial del repositorio. Puedes revisar el código fuente y el historial de releases." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Está en Google Play?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. La distribución actual es directa mediante GitHub Releases." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Funciona en iPhone?",
+        "acceptedAnswer": { "@type": "Answer", "text": "La descarga publicada es para Android. La app es multiplataforma, pero el APK no sirve para iOS." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Dónde se guardan mis datos?",
+        "acceptedAnswer": { "@type": "Answer", "text": "En SQLite, dentro del teléfono. El respaldo en la nube es opcional." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Puedo usar varias tiendas?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Sí. Cada tienda mantiene productos, personal, recibos y libros separados." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Cómo actualizo?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Descargando el APK más reciente. Los datos locales se conservan." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Cómo reporto un error?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Desde GitHub Issues." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Qué pasa si cambio de teléfono?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Puedes usar el respaldo o la sincronización opcional." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Por qué APK y no Play Store?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Porque permite distribución directa, control de versiones y pruebas rápidas sin pasar por la tienda." }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <header class="site-header">
+    <a class="brand" href="#inicio" aria-label="Surtivox POS, inicio">
+      <img src="assets/icon-180.png" width="40" height="40" alt="">
+      <span>Surtivox <small>POS</small></span>
+    </a>
+    <nav class="main-nav" aria-label="Navegación principal">
+      <a href="#producto">Producto</a>
+      <a href="#como-instalar">Cómo instalar</a>
+      <a href="#preguntas">Preguntas</a>
+      <a href="https://github.com/digita1web/surtivox-pos" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <a class="button button-small" href="https://github.com/digita1web/surtivox-pos/releases/latest/download/app-release.apk">Descargar APK</a>
+  </header>
+
+  <main id="contenido">
+    <section class="hero" id="inicio">
+      <div class="hero-copy">
+        <p class="eyebrow">POS offline para tiendas colombianas</p>
+        <h1>Tu tienda,<br><em>sin enredos.</em></h1>
+        <p class="hero-lead">Vende, fía y cuadra la caja aunque se caiga el internet.</p>
+        <p class="hero-body">Surtivox POS es un punto de venta offline hecho para tiendas de barrio colombianas.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="https://github.com/digita1web/surtivox-pos/releases/latest/download/app-release.apk">Descargar APK para Android</a>
+          <a class="button button-ghost" href="#como-funciona">Ver cómo funciona</a>
+        </div>
+        <div class="release-meta" aria-live="polite">
+          <span>Versión <strong data-release-version>1.0.1</strong></span>
+          <span class="meta-divider" aria-hidden="true"></span>
+          <span>Android</span>
+          <span class="meta-divider" aria-hidden="true"></span>
+          <span data-release-size>Descarga directa desde GitHub</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-label="Vista de ejemplo de Surtivox POS">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="receipt receipt-back" aria-hidden="true">
+          <div class="receipt-top">SURTIVOX POS</div>
+          <div class="receipt-line"></div>
+          <div class="receipt-line short"></div>
+          <div class="receipt-line"></div>
+          <div class="receipt-line tiny"></div>
+          <div class="receipt-bars"></div>
+          <div class="receipt-line short"></div>
+        </div>
+        <div class="receipt receipt-front" aria-hidden="true">
+          <p class="receipt-caption">VISTA DE EJEMPLO</p>
+          <p class="receipt-title">CAJA DE HOY</p>
+          <div class="receipt-rule"></div>
+          <div class="receipt-item"><span>Arroz 1 kg</span><span>$ 4.800</span></div>
+          <div class="receipt-item"><span>Leche 1 L</span><span>$ 3.200</span></div>
+          <div class="receipt-item"><span>Huevos x 12</span><span>$ 6.000</span></div>
+          <div class="receipt-rule"></div>
+          <div class="receipt-total"><span>TOTAL</span><span>$ 14.000</span></div>
+          <div class="receipt-rule"></div>
+          <p class="receipt-thanks">¡Gracias por su compra!</p>
+          <div class="receipt-bars" aria-hidden="true"></div>
+        </div>
+        <div class="phone">
+          <div class="phone-speaker" aria-hidden="true"></div>
+          <div class="phone-screen">
+            <img src="assets/screen-home.webp" width="720" height="1600" alt="Pantalla de inicio de Surtivox POS con ventas del día" fetchpriority="high">
+          </div>
+        </div>
+        <div class="toast toast-offline"><span class="status-dot" aria-hidden="true"></span> Sin internet</div>
+        <div class="toast toast-currency">COP <span>Pesos colombianos</span></div>
+      </div>
+    </section>
+
+    <section class="trust-bar" aria-label="Características principales">
+      <div class="trust-inner">
+        <span><i aria-hidden="true"></i>Sin cuenta para empezar</span>
+        <span><i aria-hidden="true"></i>Funciona sin internet</span>
+        <span><i aria-hidden="true"></i>Precios en COP</span>
+        <span><i aria-hidden="true"></i>Código abierto MIT</span>
+        <span><i aria-hidden="true"></i>Tus datos se quedan en tu teléfono</span>
+      </div>
+    </section>
+
+    <section class="section section-steps" id="como-funciona">
+      <div class="section-heading">
+        <p class="eyebrow">Del mostrador al cierre</p>
+        <h2>Así se siente vender</h2>
+      </div>
+      <div class="steps">
+        <article class="step">
+          <span class="step-number">01</span>
+          <div class="step-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 7V4h16v3M5 7h14v13H5zM9 11v5M15 11v5"/><path d="M2 7h20"/></svg>
+          </div>
+          <h3>Agrega o escanea</h3>
+          <p>Escanea el código o busca el producto.</p>
+        </article>
+        <article class="step">
+          <span class="step-number">02</span>
+          <div class="step-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+          </div>
+          <h3>Cobra como quieras</h3>
+          <p>Efectivo, Nequi, Daviplata, transferencia o fiado.</p>
+        </article>
+        <article class="step">
+          <span class="step-number">03</span>
+          <div class="step-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 20h18M6 16V9M12 16V5M18 16v-4"/></svg>
+          </div>
+          <h3>Cierra el día</h3>
+          <p>Consulta ventas, ganancias y productos agotados.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section-features" id="producto">
+      <div class="section-heading section-heading-split">
+        <div>
+          <p class="eyebrow">Todo en un solo lugar</p>
+          <h2>Menos cuaderno.<br>Más mostrador.</h2>
+        </div>
+        <p class="section-note">Las herramientas que de verdad usa una tienda de barrio, sin menús interminables ni configuración eterna.</p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature feature-wide feature-offline">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01"/><path d="M3 4l18 18"/></svg>
+          </div>
+          <div>
+            <h3>Venta offline.</h3>
+            <p>Vende sin conexión. Tus ventas quedan guardadas en el teléfono.</p>
+          </div>
+          <span class="feature-tag">Siempre disponible</span>
+        </article>
+
+        <article class="feature feature-scanner">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 7V4h3M17 4h3v3M20 17v3h-3M7 20H4v-3M7 8v8M10 8v8M13 8v8M16 8v8"/></svg>
+          </div>
+          <h3>Escáner de códigos.</h3>
+          <p>Escanea para agregar o vender un producto.</p>
+        </article>
+
+        <article class="feature feature-market">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/><path d="m4 6 4-3 4 4 5-5"/></svg>
+          </div>
+          <h3>Precios de referencia de supermercados.</h3>
+          <p>Compara precios publicados por Éxito, Jumbo y Olímpica desde la caché local.</p>
+        </article>
+
+        <article class="feature feature-wide feature-fiado">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="M17 17l2 2 3-3"/></svg>
+          </div>
+          <div>
+            <h3>Fiado y abonos.</h3>
+            <p>Lleva la cuenta de lo que te deben y registra abonos.</p>
+          </div>
+          <span class="feature-tag feature-tag-warm">Para tu barrio</span>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 9V5h12v4M5 9h14v10H5zM8 14h8"/><path d="M9 19v2M15 19v2"/></svg>
+          </div>
+          <h3>Recibos térmicos y PDF.</h3>
+          <p>Imprime o comparte recibos con los datos de tu negocio.</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 5-7"/></svg>
+          </div>
+          <h3>Reportes y ganancias.</h3>
+          <p>Consulta ventas, devoluciones y productos más vendidos.</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 8 12 3l8 5v11l-8 3-8-3zM4 8l8 5 8-5M12 13v9"/></svg>
+          </div>
+          <h3>Inventario y alertas.</h3>
+          <p>Controla stock, fotos, categorías y productos agotados.</p>
+        </article>
+
+        <article class="feature feature-wide feature-shops">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 9 12 3l9 6v11H3zM3 9h18M9 20v-6h6v6"/></svg>
+          </div>
+          <div>
+            <h3>Varias tiendas.</h3>
+            <p>Maneja tiendas separadas en un mismo dispositivo.</p>
+          </div>
+          <span class="feature-tag">Un solo teléfono</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section-barrio">
+      <div class="barrio-panel">
+        <div class="barrio-copy">
+          <p class="eyebrow eyebrow-light">Hecho para tienda de barrio</p>
+          <h2>Conoce a tu cliente.<br>Conoce tu caja.</h2>
+          <p>Una tienda colombiana no funciona como una oficina. Surtivox habla tu idioma y trabaja al ritmo del mostrador.</p>
+          <ul class="check-list">
+            <li>Precios en pesos colombianos.</li>
+            <li>Billetes de 1.000 a 100.000.</li>
+            <li>Nequi y Daviplata.</li>
+            <li>Fiado.</li>
+            <li>Productos por unidad, libra, bulto o caja.</li>
+            <li>Funcionamiento sin señal.</li>
+          </ul>
+        </div>
+        <div class="barrio-receipt" aria-hidden="true">
+          <div class="barrio-receipt-head">
+            <span>MI TIENDA</span>
+            <span>HOY</span>
+          </div>
+          <div class="barrio-receipt-rule"></div>
+          <div class="barrio-receipt-row"><span>Ventas</span><strong>$ 248.500</strong></div>
+          <div class="barrio-receipt-row"><span>Fiado</span><strong>$ 18.000</strong></div>
+          <div class="barrio-receipt-row"><span>Efectivo</span><strong>$ 156.500</strong></div>
+          <div class="barrio-receipt-rule"></div>
+          <div class="barrio-receipt-total"><span>GANANCIA</span><strong>$ 52.900</strong></div>
+          <div class="barrio-receipt-rule"></div>
+          <div class="barrio-receipt-note">SIN INTERNET · DATOS LOCALES</div>
+          <div class="receipt-bars"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-screens">
+      <div class="section-heading section-heading-split">
+        <div>
+          <p class="eyebrow">La app, de verdad</p>
+          <h2>Hecha para usarse,<br>no para admirarse.</h2>
+        </div>
+        <p class="section-note">Pantallas limpias, botones grandes y la información importante donde la necesitas.</p>
+      </div>
+      <div class="screens">
+        <figure class="screen-item">
+          <div class="phone phone-small">
+            <div class="phone-speaker" aria-hidden="true"></div>
+            <div class="phone-screen"><img src="assets/screen-home.webp" width="720" height="1600" alt="Inicio de Surtivox POS" loading="lazy"></div>
+          </div>
+          <figcaption>Inicio</figcaption>
+        </figure>
+        <figure class="screen-item screen-item-raised">
+          <div class="phone phone-small">
+            <div class="phone-speaker" aria-hidden="true"></div>
+            <div class="phone-screen"><img src="assets/screen-checkout.webp" width="720" height="1600" alt="Cobro en Surtivox POS" loading="lazy"></div>
+          </div>
+          <figcaption>Cobro</figcaption>
+        </figure>
+        <figure class="screen-item">
+          <div class="phone phone-small">
+            <div class="phone-speaker" aria-hidden="true"></div>
+            <div class="phone-screen"><img src="assets/screen-reports.webp" width="720" height="1600" alt="Reportes de Surtivox POS" loading="lazy"></div>
+          </div>
+          <figcaption>Reportes</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section section-install" id="como-instalar">
+      <div class="install-card">
+        <div class="install-copy">
+          <p class="eyebrow">Sin tienda de aplicaciones</p>
+          <h2>Instálalo en tres pasos.</h2>
+          <div class="install-steps">
+            <div class="install-step"><span>1</span><p>Descarga el APK.</p></div>
+            <div class="install-step"><span>2</span><p>Android te pedirá permitir instalación desde esta fuente.</p></div>
+            <div class="install-step"><span>3</span><p>Abre Surtivox y configura tu negocio.</p></div>
+          </div>
+          <a class="button button-primary" href="https://github.com/digita1web/surtivox-pos/releases/latest/download/app-release.apk">Descargar APK para Android</a>
+          <p class="install-note">Es una descarga directa desde GitHub Releases. No requiere Play Store.</p>
+        </div>
+        <div class="install-ticket" aria-hidden="true">
+          <div class="install-ticket-top">SURTIVOX POS</div>
+          <div class="install-ticket-rule"></div>
+          <p>APK PARA ANDROID</p>
+          <p class="install-ticket-version">VERSIÓN <span data-release-version>1.0.1</span></p>
+          <div class="install-ticket-bars"></div>
+          <p class="install-ticket-small">DESCARGA DIRECTA</p>
+          <p class="install-ticket-arrow">↓</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-faq" id="preguntas">
+      <div class="section-heading section-heading-split">
+        <div>
+          <p class="eyebrow">Antes de instalarlo</p>
+          <h2>Preguntas frecuentes</h2>
+        </div>
+        <p class="section-note">Lo que suelen preguntar antes de probar Surtivox en una tienda real.</p>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>¿Surtivox es gratis?</summary>
+          <p>Las funciones offline principales son gratuitas. La nube es opcional.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Necesito internet para vender?</summary>
+          <p>No. Ventas, productos, caja y reportes funcionan localmente.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Cómo instalo el APK?</summary>
+          <p>Descarga, permite la instalación desde el navegador y abre el archivo.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Es seguro descargar el APK desde GitHub?</summary>
+          <p>Viene del release oficial del repositorio. Puedes revisar el código fuente y el historial de releases.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Está en Google Play?</summary>
+          <p>No. La distribución actual es directa mediante GitHub Releases.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Funciona en iPhone?</summary>
+          <p>La descarga publicada es para Android. La app es multiplataforma, pero el APK no sirve para iOS.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Dónde se guardan mis datos?</summary>
+          <p>En SQLite, dentro del teléfono. El respaldo en la nube es opcional.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Puedo usar varias tiendas?</summary>
+          <p>Sí. Cada tienda mantiene productos, personal, recibos y libros separados.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Cómo actualizo?</summary>
+          <p>Descargando el APK más reciente. Los datos locales se conservan.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Cómo reporto un error?</summary>
+          <p>Desde GitHub Issues.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Qué pasa si cambio de teléfono?</summary>
+          <p>Puedes usar el respaldo o la sincronización opcional.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Por qué APK y no Play Store?</summary>
+          <p>Porque permite distribución directa, control de versiones y pruebas rápidas sin pasar por la tienda.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="section section-final" id="descargar">
+      <div class="final-card">
+        <p class="eyebrow eyebrow-light">Menos cuentas. Más ventas.</p>
+        <h2>¿Listo para dejar de hacer cuentas en un cuaderno?</h2>
+        <p class="final-copy">Descarga Surtivox, configura tu tienda y empieza a vender. Sin cuenta, sin internet y sin enredos.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="https://github.com/digita1web/surtivox-pos/releases/latest/download/app-release.apk">Descargar Surtivox APK</a>
+          <a class="button button-outline" href="https://github.com/digita1web/surtivox-pos/releases" target="_blank" rel="noopener">Ver releases</a>
+        </div>
+        <div class="final-links">
+          <a href="https://github.com/digita1web/surtivox-pos" target="_blank" rel="noopener">Ver código fuente</a>
+          <span aria-hidden="true">·</span>
+          <a href="https://github.com/digita1web/surtivox-pos/issues" target="_blank" rel="noopener">Reportar un error</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand">
+      <img src="assets/icon-180.png" width="32" height="32" alt="">
+      <span>Surtivox POS</span>
+    </div>
+    <p>Hecho para tiendas de barrio colombianas.</p>
+    <div class="footer-links">
+      <a href="https://github.com/digita1web/surtivox-pos" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/digita1web/surtivox-pos/releases" target="_blank" rel="noopener">Releases</a>
+      <a href="https://github.com/digita1web/surtivox-pos/issues" target="_blank" rel="noopener">Issues</a>
+      <a href="https://github.com/digita1web/surtivox-pos/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a>
+    </div>
+  </footer>
+
+  <div class="mobile-download">
+    <div>
+      <strong>Surtivox POS</strong>
+      <span>Versión <span data-release-version>1.0.1</span> · Android</span>
+    </div>
+    <a class="button button-primary" href="https://github.com/digita1web/surtivox-pos/releases/latest/download/app-release.apk">Descargar</a>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

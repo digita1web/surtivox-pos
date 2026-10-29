@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://digita1web.github.io/surtivox-pos/sitemap.xml
