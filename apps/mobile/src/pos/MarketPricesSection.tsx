@@ -5,6 +5,7 @@ import { asMinor } from '@openpocket/pos-core';
 import { formatCopAmount } from '../receiptMoney';
 import { getMarketPricesCache, refreshMarketPrices, type MarketPriceRow } from '../repos';
 import { isValidEan } from '../marketPrices';
+import { dataAgeLabel, lowestComparablePrice, presentationsDiffer } from '../marketPriceSummary';
 import { useTheme, space, radius } from '../theme';
 
 type Status = 'loading' | 'ready' | 'empty' | 'offline' | 'error';
@@ -41,7 +42,9 @@ export function MarketPricesSection({ ean }: { ean: string }) {
         if (cached.rows.length === 0) return;
         setStatus('ready');
       })
-      .catch(() => {});
+      .catch((error) => {
+        if (__DEV__) console.warn('[Precios de referencia] No se pudo leer la caché local.', error);
+      });
     refreshMarketPrices(ean)
       .then((result) => {
         if (!active) return;
@@ -52,7 +55,8 @@ export function MarketPricesSection({ ean }: { ean: string }) {
         else if (result.status === 'error' && result.rows.length === 0) setStatus('error');
         else setStatus(result.rows.length > 0 ? 'ready' : 'empty');
       })
-      .catch(() => {
+      .catch((error) => {
+        if (__DEV__) console.warn('[Precios de referencia] No se pudo actualizar la consulta.', error);
         if (active) setStatus((current) => (current === 'loading' ? 'error' : current));
       });
     return () => { active = false; };
@@ -71,17 +75,24 @@ export function MarketPricesSection({ ean }: { ean: string }) {
       if (result.status === 'offline' && result.rows.length === 0) setStatus('offline');
       else if (result.status === 'error' && result.rows.length === 0) setStatus('error');
       else setStatus(result.rows.length > 0 ? 'ready' : 'empty');
+    } catch (error) {
+      if (__DEV__) console.warn('[Precios de referencia] La actualización manual falló.', error);
+      setStatus((current) => (current === 'loading' ? 'error' : current));
     } finally {
       setRefreshing(false);
     }
   };
+
+  const lowest = lowestComparablePrice(rows);
+  const mixedPresentations = presentationsDiffer(rows);
+  const age = dataAgeLabel(fetchedAt);
 
   return (
     <View style={[s.wrap, { borderColor: t.line, backgroundColor: t.panel }]}>
       <View style={s.head}>
         <View style={{ flex: 1 }}>
           <Text style={[s.title, { color: t.fg }]}>Precios de referencia del mercado</Text>
-          <Text style={{ color: t.muted, fontSize: 12, marginTop: 3 }}>Información publicada por supermercados. No modifica tus precios ni tu inventario.</Text>
+          <Text style={{ color: t.muted, fontSize: 12, marginTop: 3 }}>Información publicada por supermercados. Los precios pueden variar según ubicación y disponibilidad. No modifica tus precios ni tu inventario.</Text>
         </View>
         <Pressable onPress={update} disabled={refreshing} hitSlop={10} accessibilityLabel="Actualizar precios de referencia" style={{ padding: 6, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
           {refreshing ? <ActivityIndicator size="small" color={t.accent} /> : <Ionicons name="refresh-outline" size={18} color={t.accent} />}
@@ -110,13 +121,27 @@ export function MarketPricesSection({ ean }: { ean: string }) {
 
       {rows.length > 0 && fetchedAt ? (
         <Text style={{ color: t.faint, fontSize: 11, marginTop: space.sm }}>
-          Consultado por Surtivox: {formatWhen(fetchedAt)}
+          Consultado por Surtivox: {formatWhen(fetchedAt)}{age ? ` · ${age}` : ''}
         </Text>
       ) : null}
 
       {stale && rows.length > 0 ? (
         <Text style={{ color: t.warn, fontSize: 11, marginTop: space.sm }}>
           Datos guardados sin actualizar. Pueden estar desactualizados.
+        </Text>
+      ) : null}
+
+      {lowest ? (
+        <View style={[s.summary, { borderColor: t.accent, backgroundColor: t.accentSoft }]}>
+          <Text style={{ color: t.accent, fontSize: 11, fontWeight: '800', textTransform: 'uppercase' }}>Precio más bajo comparable</Text>
+          <Text style={{ color: t.fg, fontSize: 20, fontWeight: '800', marginTop: 3 }}>{formatCopAmount(asMinor(lowest.price_minor))}</Text>
+          <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>{lowest.supermarket_name} · {lowest.presentation}</Text>
+        </View>
+      ) : null}
+
+      {mixedPresentations ? (
+        <Text style={{ color: t.warn, fontSize: 11, marginTop: space.sm }}>
+          Las presentaciones difieren. Compara productos equivalentes antes de sacar conclusiones.
         </Text>
       ) : null}
 
@@ -149,5 +174,6 @@ const s = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm },
   title: { fontSize: 15, fontWeight: '800' },
   center: { alignItems: 'center', paddingVertical: space.lg },
+  summary: { borderWidth: 1, borderRadius: radius.md, padding: space.md, marginTop: space.md },
   row: { borderTopWidth: 1, paddingTop: space.md, marginTop: space.md },
 });

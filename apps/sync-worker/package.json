@@ -10,7 +10,9 @@
     "db:create": "wrangler d1 create openpocket-production",
     "db:schema": "wrangler d1 execute openpocket-production --remote --file=./schema.sql",
     "db:schema:local": "wrangler d1 execute openpocket-production --local --file=./schema.sql",
-    "test": "node --test \"test/**/*.test.ts\""
+    "test": "node --test \"test/**/*.test.ts\"",
+    "dev:market": "wrangler dev --config wrangler.market.toml",
+    "deploy:market": "wrangler deploy --config wrangler.market.toml"
   },
   "dependencies": {
     "@openpocket/database": "workspace:*"

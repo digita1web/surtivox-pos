@@ -67,6 +67,19 @@ pnpm dev            # miniflare + local D1 at http://127.0.0.1:8787
 curl http://127.0.0.1:8787/health
 ```
 
+## Surtivox market-only Worker
+
+The reference-price endpoint can be deployed independently from the OpenPocket
+sync Worker and without a D1 database:
+
+```bash
+pnpm dev:market
+pnpm deploy:market
+```
+
+This uses `wrangler.market.toml` and `src/marketWorker.ts`, exposes only
+`/health` and `/market-prices`, and reuses the same VTEX normalization code.
+
 ## Notes / ceilings
 
 - Sync cursors are row timestamps with a 30s overlap, so brief clock skew

@@ -15,6 +15,7 @@ import { useTheme, space, radius } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
 import { Chip, PrimaryButton } from '../src/pos/kit';
 import { MarketPricesSection } from '../src/pos/MarketPricesSection';
+import { isValidEan, marketEanForLookup } from '../src/marketPrices';
 import { useMoney } from '../src/pos/ui';
 import { APP_CURRENCY, parseCurrencyInput } from '../src/branding';
 
@@ -44,6 +45,7 @@ export default function AddProduct() {
   const [store, setStore] = useState<Store | null>(null);
   const [name, setName] = useState('');
   const [barcode, setBarcode] = useState(params.barcode ?? '');
+  const [marketEan, setMarketEan] = useState<string | null>(null);
   const [price, setPrice] = useState('');
   const [cost, setCost] = useState('');
   const [taxPct, setTaxPct] = useState('0');
@@ -78,6 +80,7 @@ export default function AddProduct() {
       setOriginal(p);
       const d = APP_CURRENCY.decimals;
       setName(p.name); setBarcode(p.barcode ?? ''); setImageUri(p.image_uri);
+      setMarketEan(marketEanForLookup(p.barcode));
       setPrice(String(toMajorNumber(asMinor(p.selling_price), d)));
       setCost(p.cost_price ? String(toMajorNumber(asMinor(p.cost_price), d)) : '');
       setTaxPct(String(p.tax_bps / 100)); setSku(p.sku ?? ''); setUnit(p.unit ?? 'unit');
@@ -93,10 +96,11 @@ export default function AddProduct() {
   const lookup = async (code: string, silent = false) => {
     const bc = code.trim();
     if (looking) return;
-    if (!/^\d{8,14}$/.test(bc)) {
+    if (!isValidEan(bc)) {
       if (!silent) showAlert('Ingresa un código de barras', 'Escribe o escanea un código de 8 a 14 dígitos y toca Buscar para completar el nombre y la foto.');
       return;
     }
+    setMarketEan(bc);
     setLooking(true);
     try {
       const info = await lookupBarcode(bc);
@@ -119,6 +123,7 @@ export default function AddProduct() {
   const onScanned = async (code: string) => {
     const bc = code.trim();
     setBarcode(bc);
+    setMarketEan(null);
     if (store && !editId) {
       const existing = await findProductByBarcode(store.id, bc);
       if (existing) {
@@ -138,6 +143,7 @@ export default function AddProduct() {
       const code = `INT-${Math.floor(1000 + Math.random() * 9000)}`;
       if (!(await findProductByBarcode(store.id, code))) {
         setBarcode(code);
+        setMarketEan(null);
         return;
       }
     }
@@ -297,7 +303,12 @@ export default function AddProduct() {
 
       <Text style={[st.label, { color: t.muted }]}>Código de barras</Text>
       <View style={{ flexDirection: 'row', gap: space.sm }}>
-        <TextInput value={barcode} onChangeText={setBarcode} placeholder="escanea o escribe (opcional)" placeholderTextColor={t.muted}
+        <TextInput value={barcode}
+          onChangeText={(value) => { setBarcode(value); setMarketEan(null); }}
+          onEndEditing={() => { if (marketEanForLookup(barcode)) void lookup(barcode, true); }}
+          onSubmitEditing={() => { void lookup(barcode); }}
+          returnKeyType="search"
+          placeholder="escanea o escribe (opcional)" placeholderTextColor={t.muted}
           style={[st.input, { flex: 1, color: t.fg, borderColor: t.line, backgroundColor: t.panel }]} />
         <Pressable onPress={() => { Keyboard.dismiss(); setScanning(true); }}
           accessibilityLabel="Escanear código con la cámara" style={[st.scan, { backgroundColor: t.accent }]}>
@@ -315,7 +326,13 @@ export default function AddProduct() {
       </Pressable>
       <Text style={{ color: t.faint, fontSize: 11, marginTop: 6 }}>Toca la cámara para escanear o escribe un código; se completa el nombre y la foto desde Open Food Facts.</Text>
 
-      {editId && /^\d{8,14}$/.test(barcode.trim()) ? <MarketPricesSection ean={barcode.trim()} /> : null}
+      {barcode.trim() && !isValidEan(barcode) && (editId || /^INT-/i.test(barcode.trim())) ? (
+        <Text style={{ color: t.warn, fontSize: 12, marginTop: 6 }}>
+          Este producto no tiene un código EAN válido para consultar precios de referencia.
+        </Text>
+      ) : null}
+
+      {marketEan ? <MarketPricesSection ean={marketEan} /> : null}
 
       {field('Precio de venta', price, setPrice, { kb: 'decimal-pad', ph: '0', req: true })}
       {sellingPreview && <Text style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>Se mostrará como {sellingPreview}</Text>}

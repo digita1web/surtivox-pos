@@ -40,11 +40,31 @@ export class MarketPricesError extends Error {
 export const MARKET_PRICES_TTL_MS = 24 * 60 * 60 * 1000;
 export const MARKET_PRICES_URL = (
   process.env.EXPO_PUBLIC_MARKET_PRICES_URL
-    || 'https://openpocket-sync.kashif-milo.workers.dev/market-prices'
+    || 'https://surtivox-market.surtivox.workers.dev/market-prices'
 ).replace(/\/+$/, '');
 
 export function isValidEan(input: string | null | undefined): boolean {
   return /^\d{8,14}$/.test((input ?? '').trim());
+}
+
+export function marketEanForLookup(input: string | null | undefined): string | null {
+  const value = (input ?? '').trim();
+  return isValidEan(value) ? value : null;
+}
+
+export function createInFlightRequests<T>() {
+  const requests = new Map<string, Promise<T>>();
+  return {
+    run(key: string, task: () => Promise<T>): Promise<T> {
+      const current = requests.get(key);
+      if (current) return current;
+      const request = task().finally(() => {
+        requests.delete(key);
+      });
+      requests.set(key, request);
+      return request;
+    },
+  };
 }
 
 export function isMarketPricesStale(fetchedAt: number | null | undefined, now = Date.now(), ttlMs = MARKET_PRICES_TTL_MS): boolean {

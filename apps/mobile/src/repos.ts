@@ -17,7 +17,7 @@ import { getDb } from './db';
 import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';
 import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
-import { fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceResult } from './marketPrices';
+import { createInFlightRequests, fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceResult } from './marketPrices';
 import { type Role, hashPin, verifyPin, randomSalt } from './roles';
 
 export type ReceiptPaper = 'a4' | 'thermal80' | 'thermal58';
@@ -297,7 +297,7 @@ export interface MarketPricesRefresh extends MarketPricesCache {
   errorKind?: MarketPriceErrorKind;
 }
 
-const marketPriceRequests = new Map<string, Promise<MarketPricesRefresh>>();
+const marketPriceRequests = createInFlightRequests<MarketPricesRefresh>();
 const marketPriceFailures = new Map<string, { at: number; kind: MarketPriceErrorKind }>();
 const MARKET_PRICE_FAILURE_BACKOFF_MS = 60_000;
 
@@ -375,9 +375,7 @@ export async function refreshMarketPrices(ean: string, force = false): Promise<M
       };
     }
   }
-  const pending = marketPriceRequests.get(ean);
-  if (pending) return pending;
-  const request = (async (): Promise<MarketPricesRefresh> => {
+  return marketPriceRequests.run(ean, async () => {
     try {
       const payload = await fetchMarketPrices(ean);
       const rows = await saveMarketPrices(ean, payload.results, payload.fetched_at);
@@ -391,12 +389,8 @@ export async function refreshMarketPrices(ean: string, force = false): Promise<M
         status: marketPricesRefreshFailureStatus(cached.rows.length > 0, kind),
         errorKind: kind,
       };
-    } finally {
-      marketPriceRequests.delete(ean);
     }
-  })();
-  marketPriceRequests.set(ean, request);
-  return request;
+  });
 }
 
 export interface CheckoutLine {
