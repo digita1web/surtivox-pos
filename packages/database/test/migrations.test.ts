@@ -24,7 +24,7 @@ function tableNames(db: DatabaseSync): string[] {
 test('runMigrations applies all schema migrations in order', async () => {
   const db = new DatabaseSync(':memory:');
   const applied = await runMigrations(adapter(db), MIGRATIONS);
-  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops']);
+  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops', '0008_market_prices']);
 
   const tables = tableNames(db);
   for (const t of [
@@ -44,6 +44,7 @@ test('runMigrations applies all schema migrations in order', async () => {
     'purchase_items',
     'staff',
     'app_state',
+    'market_prices',
     '_migrations',
   ]) {
     assert.ok(tables.includes(t), `expected table ${t}, got ${tables.join(', ')}`);

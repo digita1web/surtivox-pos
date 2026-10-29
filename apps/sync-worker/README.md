@@ -22,9 +22,15 @@ device → server → device round-trip.
 | Method | Path | Auth | Purpose |
 |--------|------|------|---------|
 | GET  | `/health` | – | liveness |
+| GET  | `/market-prices?ean=<8-14 digits>` | – | public VTEX reference prices |
 | POST | `/sync/register` | Bearer token | bind a token to a store (idempotent) |
 | POST | `/sync/push` | Bearer token | upsert uploaded rows for the token's store |
 | GET  | `/sync/pull?since=<ms>` | Bearer token | rows changed after the cursor |
+
+`/market-prices` es público, no usa el token de sincronización y solo consulta
+los catálogos públicos de VTEX de Éxito, Jumbo y Olímpica. Valida EAN de 8 a 14
+dígitos, limita a 30 solicitudes por minuto por cliente y conserva únicamente
+coincidencias exactas de EAN con precio positivo.
 
 Auth is a per-store **Bearer token**; the app generates one and the shopkeeper
 shares it across their own devices. A token maps to exactly one store; a device

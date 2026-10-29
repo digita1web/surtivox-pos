@@ -17,6 +17,7 @@ import { getDb } from './db';
 import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';
 import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
+import { fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceResult } from './marketPrices';
 import { type Role, hashPin, verifyPin, randomSalt } from './roles';
 
 export type ReceiptPaper = 'a4' | 'thermal80' | 'thermal58';
@@ -266,6 +267,136 @@ export async function updateProductPrices(
     'UPDATE products SET selling_price=?, cost_price=?, updated_at=?, version=version+1 WHERE id=? AND store_id=?',
     [updates.selling_price, updates.cost_price, Date.now(), productId, storeId],
   );
+}
+
+export interface MarketPriceRow {
+  id: string;
+  ean: string;
+  provider_id: string;
+  supermarket_name: string;
+  location: string | null;
+  context_key: string;
+  price_minor: number;
+  currency_code: string;
+  product_name: string;
+  presentation: string | null;
+  product_url: string | null;
+  source: string;
+  source_updated_at: number | null;
+  fetched_at: number;
+  match_quality: 'exact_ean';
+}
+
+export interface MarketPricesCache {
+  rows: MarketPriceRow[];
+  fetchedAt: number | null;
+}
+
+export interface MarketPricesRefresh extends MarketPricesCache {
+  status: 'fresh' | 'cached' | 'stale' | 'offline' | 'error';
+  errorKind?: MarketPriceErrorKind;
+}
+
+const marketPriceRequests = new Map<string, Promise<MarketPricesRefresh>>();
+const marketPriceFailures = new Map<string, { at: number; kind: MarketPriceErrorKind }>();
+const MARKET_PRICE_FAILURE_BACKOFF_MS = 60_000;
+
+export async function listMarketPrices(ean: string): Promise<MarketPriceRow[]> {
+  return getDb().getAllAsync<MarketPriceRow>(
+    `SELECT id, ean, provider_id, supermarket_name, location, context_key, price_minor,
+            currency_code, product_name, presentation, product_url, source,
+            source_updated_at, fetched_at, match_quality
+     FROM market_prices
+     WHERE ean=?
+     ORDER BY price_minor, supermarket_name`,
+    [ean],
+  );
+}
+
+export async function getMarketPricesCache(ean: string): Promise<MarketPricesCache> {
+  const rows = await listMarketPrices(ean);
+  const fetchedAt = rows.reduce<number | null>(
+    (latest, row) => (latest === null || row.fetched_at > latest ? row.fetched_at : latest),
+    null,
+  );
+  return { rows, fetchedAt };
+}
+
+async function saveMarketPrices(ean: string, results: MarketPriceResult[], fetchedAt: number): Promise<MarketPriceRow[]> {
+  const db = getDb();
+  const now = Date.now();
+  await db.withTransactionAsync(async () => {
+    for (const result of results) {
+      if (result.ean !== ean || !Number.isSafeInteger(result.price_minor) || result.price_minor <= 0) continue;
+      const id = newId();
+      const resultFetchedAt = Number.isFinite(result.fetched_at) && result.fetched_at > 0 ? result.fetched_at : fetchedAt;
+      await db.runAsync(
+        `INSERT INTO market_prices
+          (id, ean, provider_id, supermarket_name, location, context_key, price_minor, currency_code,
+           product_name, presentation, product_url, source, source_updated_at, fetched_at, match_quality, created_at, updated_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+         ON CONFLICT(ean, provider_id, context_key) DO UPDATE SET
+           supermarket_name=excluded.supermarket_name,
+           location=excluded.location,
+           price_minor=excluded.price_minor,
+           currency_code=excluded.currency_code,
+           product_name=excluded.product_name,
+           presentation=excluded.presentation,
+           product_url=excluded.product_url,
+           source=excluded.source,
+           source_updated_at=excluded.source_updated_at,
+           fetched_at=excluded.fetched_at,
+           match_quality=excluded.match_quality,
+           updated_at=excluded.updated_at`,
+        [
+          id, ean, result.provider_id, result.supermarket_name, result.location, result.context_key,
+          result.price_minor, result.currency_code, result.product_name, result.presentation,
+          result.product_url, result.source, result.source_updated_at, resultFetchedAt,
+          result.match_quality, now, now,
+        ],
+      );
+    }
+  });
+  return listMarketPrices(ean);
+}
+
+export async function refreshMarketPrices(ean: string, force = false): Promise<MarketPricesRefresh> {
+  const cached = await getMarketPricesCache(ean);
+  if (!force && cached.rows.length > 0 && !isMarketPricesStale(cached.fetchedAt)) {
+    return { ...cached, status: 'cached' };
+  }
+  if (!force) {
+    const failure = marketPriceFailures.get(ean);
+    if (failure && Date.now() - failure.at < MARKET_PRICE_FAILURE_BACKOFF_MS) {
+      return {
+        ...cached,
+        status: marketPricesRefreshFailureStatus(cached.rows.length > 0, failure.kind),
+        errorKind: failure.kind,
+      };
+    }
+  }
+  const pending = marketPriceRequests.get(ean);
+  if (pending) return pending;
+  const request = (async (): Promise<MarketPricesRefresh> => {
+    try {
+      const payload = await fetchMarketPrices(ean);
+      const rows = await saveMarketPrices(ean, payload.results, payload.fetched_at);
+      marketPriceFailures.delete(ean);
+      return { rows, fetchedAt: payload.fetched_at, status: 'fresh' };
+    } catch (error) {
+      const kind: MarketPriceErrorKind = error instanceof MarketPricesError ? error.kind : 'http';
+      marketPriceFailures.set(ean, { at: Date.now(), kind });
+      return {
+        ...cached,
+        status: marketPricesRefreshFailureStatus(cached.rows.length > 0, kind),
+        errorKind: kind,
+      };
+    } finally {
+      marketPriceRequests.delete(ean);
+    }
+  })();
+  marketPriceRequests.set(ean, request);
+  return request;
 }
 
 export interface CheckoutLine {
@@ -1018,7 +1149,7 @@ export async function deleteProduct(id: string): Promise<void> {
 }
 
 const RESET_TABLES = [
-  'return_items', 'returns', 'payments', 'sale_items', 'sales',
+  'market_prices', 'return_items', 'returns', 'payments', 'sale_items', 'sales',
   'customer_ledger', 'customers', 'purchase_items', 'purchases',
   'suppliers', 'stock_movements', 'products', 'categories', 'staff', 'stores',
 ];

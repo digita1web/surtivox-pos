@@ -14,6 +14,7 @@ import { ScanModal } from '../src/pos/ScanModal';
 import { useTheme, space, radius } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
 import { Chip, PrimaryButton } from '../src/pos/kit';
+import { MarketPricesSection } from '../src/pos/MarketPricesSection';
 import { useMoney } from '../src/pos/ui';
 import { APP_CURRENCY, parseCurrencyInput } from '../src/branding';
 
@@ -313,6 +314,8 @@ export default function AddProduct() {
         <Text style={{ color: t.accent, fontWeight: '700', marginLeft: 6, fontSize: 13 }}>Generar código</Text>
       </Pressable>
       <Text style={{ color: t.faint, fontSize: 11, marginTop: 6 }}>Toca la cámara para escanear o escribe un código; se completa el nombre y la foto desde Open Food Facts.</Text>
+
+      {editId && /^\d{8,14}$/.test(barcode.trim()) ? <MarketPricesSection ean={barcode.trim()} /> : null}
 
       {field('Precio de venta', price, setPrice, { kb: 'decimal-pad', ph: '0', req: true })}
       {sellingPreview && <Text style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>Se mostrará como {sellingPreview}</Text>}

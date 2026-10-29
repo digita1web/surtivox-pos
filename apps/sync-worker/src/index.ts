@@ -1,6 +1,7 @@
 import {
   SYNC_TABLES, upsertSql, rowValues, pullSql, rowStoreId, type SyncTable,
 } from '@openpocket/database';
+import { handleMarketPrices } from './marketPrices.ts';
 
 export interface Env {
   DB: D1Database;
@@ -38,12 +39,16 @@ export default {
       return json({ ok: true, service: 'openpocket-sync', tables: SYNC_TABLES.length });
     }
 
+    if (url.pathname === '/market-prices') {
+      return handleMarketPrices(req);
+    }
+
     const token = bearer(req);
 
     // Bind a token to a store the first time a device connects. Idempotent for
     // the same (token, store); refuses to point an existing token elsewhere.
     if (url.pathname === '/sync/register' && req.method === 'POST') {
-      const body = await req.json<{ storeId?: string }>().catch(() => ({}));
+      const body = await req.json<{ storeId?: string }>().catch(() => ({} as { storeId?: string }));
       const storeId = body.storeId;
       if (!token || !storeId) return json({ error: 'token and storeId are required' }, 400);
       const existing = await storeForToken(env, token);
@@ -62,7 +67,7 @@ export default {
     // rows are rejected. Mutable rows resolve by last-writer-wins (in the SQL);
     // append rows are inserted only if absent.
     if (url.pathname === '/sync/push' && req.method === 'POST') {
-      const body = await req.json<{ tables?: Record<string, Row[]> }>().catch(() => ({}));
+      const body = await req.json<{ tables?: Record<string, Row[]> }>().catch(() => ({} as { tables?: Record<string, Row[]> }));
       const tables = body.tables ?? {};
       let applied = 0;
       for (const t of SYNC_TABLES) {
