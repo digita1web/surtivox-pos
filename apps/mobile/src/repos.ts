@@ -214,6 +214,27 @@ export async function listProducts(storeId: string): Promise<Product[]> {
   );
 }
 
+export async function listProductsToReview(storeId: string): Promise<Product[]> {
+  return getDb().getAllAsync<Product>(
+    `${PRODUCT_SELECT}
+     JOIN product_review pr ON pr.product_id = p.id
+     WHERE p.store_id = ? AND p.active = 1 AND p.deleted_at IS NULL
+     ORDER BY pr.created_at DESC, p.name`,
+    [storeId],
+  );
+}
+
+export async function countProductsToReview(storeId: string): Promise<number> {
+  const row = await getDb().getFirstAsync<{ c: number }>(
+    `SELECT COUNT(*) AS c
+     FROM product_review pr
+     JOIN products p ON p.id = pr.product_id
+     WHERE p.store_id = ? AND p.active = 1 AND p.deleted_at IS NULL`,
+    [storeId],
+  );
+  return row?.c ?? 0;
+}
+
 /** Look up a product by scanned barcode. Null if no active product matches. */
 export async function findProductByBarcode(storeId: string, barcode: string): Promise<Product | null> {
   return (
