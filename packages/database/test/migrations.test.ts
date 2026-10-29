@@ -24,7 +24,7 @@ function tableNames(db: DatabaseSync): string[] {
 test('runMigrations applies all schema migrations in order', async () => {
   const db = new DatabaseSync(':memory:');
   const applied = await runMigrations(adapter(db), MIGRATIONS);
-  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops', '0008_market_prices']);
+  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops', '0008_market_prices', '0009_barcode_lookups']);
 
   const tables = tableNames(db);
   for (const t of [
@@ -45,6 +45,8 @@ test('runMigrations applies all schema migrations in order', async () => {
     'staff',
     'app_state',
     'market_prices',
+    'barcode_lookups',
+    'product_review',
     '_migrations',
   ]) {
     assert.ok(tables.includes(t), `expected table ${t}, got ${tables.join(', ')}`);
@@ -103,4 +105,21 @@ test('0006 adds shop profile + receipt settings with safe defaults', async () =>
   for (const c of ['logo_uri', 'email', 'website', 'tax_id', 'tagline', 'receipt_footer', 'receipt_terms', 'receipt_accent']) {
     assert.equal(s[c], null, c);
   }
+});
+
+test('0009 adds local barcode lookup and product review tables', async () => {
+  const db = new DatabaseSync(':memory:');
+  await runMigrations(adapter(db), MIGRATIONS);
+
+  db.prepare('INSERT INTO barcode_lookups (barcode,status,name,source,checked_at) VALUES (?,?,?,?,?)')
+    .run('7702511000045', 'found', 'Arroz Diana 500 g', 'market', 1000);
+  db.prepare('INSERT INTO barcode_lookups (barcode,status,checked_at) VALUES (?,?,?)')
+    .run('291104080027', 'not_found', 1000);
+  assert.equal((db.prepare('SELECT COUNT(*) AS c FROM barcode_lookups').get() as { c: number }).c, 2);
+
+  assert.throws(() => db.prepare('INSERT INTO barcode_lookups (barcode,status,checked_at) VALUES (?,?,?)').run('x', 'invalid', 1));
+  assert.throws(() => db.prepare('INSERT INTO barcode_lookups (barcode,status,source,checked_at) VALUES (?,?,?,?)').run('y', 'found', 'unknown', 1));
+
+  db.prepare('INSERT INTO product_review (product_id,created_at) VALUES (?,?)').run('p1', 1000);
+  assert.equal((db.prepare('SELECT COUNT(*) AS c FROM product_review').get() as { c: number }).c, 1);
 });

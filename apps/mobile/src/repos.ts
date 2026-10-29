@@ -1143,7 +1143,7 @@ export async function deleteProduct(id: string): Promise<void> {
 }
 
 const RESET_TABLES = [
-  'market_prices', 'return_items', 'returns', 'payments', 'sale_items', 'sales',
+  'barcode_lookups', 'product_review', 'market_prices', 'return_items', 'returns', 'payments', 'sale_items', 'sales',
   'customer_ledger', 'customers', 'purchase_items', 'purchases',
   'suppliers', 'stock_movements', 'products', 'categories', 'staff', 'stores',
 ];
