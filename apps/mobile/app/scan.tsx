@@ -15,6 +15,7 @@ import { useCheckoutUI } from '../src/checkoutUI';
 import { useMoney } from '../src/pos/ui';
 import { Thumb } from '../src/pos/Thumb';
 import { useTheme, space, radius, type as ty } from '../src/theme';
+import { tracksInventory } from '../src/pos/stockPolicy';
 import { Screen, IconButton, listProps } from '../src/pos/Screen';
 
 interface ScanRow { product: Product; quantity: number }
@@ -110,9 +111,10 @@ export default function Scan() {
       flash(`Agregado ${product.name}`, true);
     } else {
       const nextQty = (cart.items[product.id]?.quantity ?? 0) + 1;
+      const tracked = tracksInventory(product);
       cart.add(product);
       Vibration.vibrate(40);
-      flash(product.stock >= nextQty ? `Agregado ${product.name}` : `${product.name} — sin stock, agregado`, product.stock >= nextQty);
+      flash(tracked && product.stock < nextQty ? `${product.name} — sin stock, agregado` : `Agregado ${product.name}`, !tracked || product.stock >= nextQty);
     }
   }, [store, isStock, cart]);
 

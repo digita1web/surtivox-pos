@@ -7,6 +7,7 @@ import { useSession } from '../../src/session';
 import { useRole } from '../../src/session';
 import { can } from '../../src/roles';
 import { ProductCard } from '../../src/pos/ProductCard';
+import { tracksInventory } from '../../src/pos/stockPolicy';
 import { ScanModal } from '../../src/pos/ScanModal';
 import { TabHeader, IconButton, listProps, useTabListInset } from '../../src/pos/Screen';
 import { SearchField, Chip, ChipRow, ChipDivider, EmptyState } from '../../src/pos/kit';
@@ -45,15 +46,15 @@ export default function Products() {
   }, [products]);
 
   const counts = useMemo(() => ({
-    low: products.filter(isLowStock).length,
-    out: products.filter((p) => p.stock <= 0).length,
+    low: products.filter((p) => tracksInventory(p) && isLowStock(p)).length,
+    out: products.filter((p) => tracksInventory(p) && p.stock <= 0).length,
   }), [products]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return products.filter((p) => {
-      if (stockFilter === 'low' && !isLowStock(p)) return false;
-      if (stockFilter === 'out' && p.stock > 0) return false;
+      if (stockFilter === 'low' && (!tracksInventory(p) || !isLowStock(p))) return false;
+      if (stockFilter === 'out' && (!tracksInventory(p) || p.stock > 0)) return false;
       if (category && p.category_id !== category) return false;
       if (!q) return true;
       return p.name.toLowerCase().includes(q) || (p.barcode ?? '').includes(q) || (p.sku ?? '').toLowerCase().includes(q)

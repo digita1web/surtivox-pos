@@ -8,6 +8,7 @@ import { useTheme, radius, space } from '../theme';
 import { useMoney } from './ui';
 import { Thumb } from './Thumb';
 import { isLowStock, type Product } from '../repos';
+import { tracksInventory } from './stockPolicy';
 import { useRole } from '../session';
 import { can } from '../roles';
 
@@ -37,8 +38,9 @@ function ProductCardBase({ product }: { product: Product }) {
   const router = useRouter();
   const canEdit = can(useRole(), 'products') && !product.isQuick;
   const qty = cart.items[product.id]?.quantity ?? 0;
-  const out = product.stock <= 0;
-  const low = !out && isLowStock(product);
+  const tracked = tracksInventory(product);
+  const out = tracked && product.stock <= 0;
+  const low = tracked && !out && isLowStock(product);
   const unit = product.unit && product.unit !== 'unit' ? (UNIT_SHORT[product.unit] ?? product.unit) : 'en stock';
 
   return (
@@ -55,7 +57,7 @@ function ProductCardBase({ product }: { product: Product }) {
         <Text style={[s.name, { color: t.fg }]} numberOfLines={1}>{product.name}</Text>
         <View style={s.priceRow}>
           <Text style={[s.price, { color: t.fg }]} numberOfLines={1}>{money(asMinor(product.selling_price))}</Text>
-          <Text style={[s.stock, { color: t.muted }]} numberOfLines={1}>{product.stock} {unit}</Text>
+          <Text style={[s.stock, { color: t.muted }]} numberOfLines={1}>{tracked ? `${product.stock} ${unit}` : 'Sin control de stock'}</Text>
         </View>
       </Pressable>
 

@@ -19,6 +19,7 @@ import { newId, DEVICE_ID } from './id';
 import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
 import { createInFlightRequests, fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceResult } from './marketPrices';
 import { type Role, hashPin, verifyPin, randomSalt } from './roles';
+import { defaultDraftName, tracksInventory } from './pos/stockPolicy';
 
 export type ReceiptPaper = 'a4' | 'thermal80' | 'thermal58';
 
@@ -80,6 +81,7 @@ export interface Product {
   cost_price: number;
   tax_bps: number;
   stock: number;
+  track_inventory?: number;
   sku?: string | null;
   unit?: string | null;
   category_id?: string | null;
@@ -92,14 +94,14 @@ export type PaymentMethod = 'cash' | 'card' | 'wallet' | 'bank' | 'credit';
 
 const PRODUCT_SELECT = `
   SELECT p.id, p.name, p.barcode, p.image_uri, p.selling_price, p.cost_price, p.tax_bps,
-         p.sku, p.unit, p.category_id, p.low_stock_threshold, c.name AS category_name,
+         p.track_inventory, p.sku, p.unit, p.category_id, p.low_stock_threshold, c.name AS category_name,
          COALESCE((SELECT SUM(sm.quantity_delta) FROM stock_movements sm WHERE sm.product_id = p.id), 0) AS stock
   FROM products p LEFT JOIN categories c ON c.id = p.category_id`;
 
 /** Stock level at or below which a product counts as "low" (per-product, default 5). */
 export const DEFAULT_LOW_STOCK = 5;
-export const isLowStock = (p: Pick<Product, 'stock' | 'low_stock_threshold'>) =>
-  p.stock > 0 && p.stock <= (p.low_stock_threshold ?? DEFAULT_LOW_STOCK);
+export const isLowStock = (p: Pick<Product, 'stock' | 'low_stock_threshold' | 'track_inventory'>) =>
+  tracksInventory(p) && p.stock > 0 && p.stock <= (p.low_stock_threshold ?? DEFAULT_LOW_STOCK);
 
 async function normalizedStore(store: Store): Promise<Store> {
   return store;
@@ -237,7 +239,7 @@ export async function createProduct(input: {
   unit?: string | null;
   categoryId?: string | null;
   lowStockThreshold?: number | null;
-}): Promise<void> {
+}): Promise<string> {
   const db = getDb();
   const id = newId();
   const now = Date.now();
@@ -256,6 +258,53 @@ export async function createProduct(input: {
       );
     }
   });
+  return id;
+}
+
+export async function createDraftProduct(input: {
+  storeId: string;
+  barcode: string;
+  name?: string | null;
+  sellingPrice: Minor;
+}): Promise<Product> {
+  const barcode = input.barcode.trim();
+  if (!barcode) throw new Error('El código de barras es obligatorio');
+  if (input.sellingPrice <= 0) throw new Error('El precio debe ser mayor que 0');
+
+  const db = getDb();
+  const id = newId();
+  const now = Date.now();
+  let existing: Product | null = null;
+
+  await db.withTransactionAsync(async () => {
+    existing = await db.getFirstAsync<Product>(
+      `${PRODUCT_SELECT}
+       WHERE p.store_id = ? AND p.barcode = ? AND p.active = 1 AND p.deleted_at IS NULL
+       LIMIT 1`,
+      [input.storeId, barcode],
+    );
+    if (existing) return;
+
+    const name = input.name?.trim() || defaultDraftName(barcode);
+    await db.runAsync(
+      `INSERT INTO products (id,store_id,category_id,name,sku,barcode,image_uri,cost_price,selling_price,unit,track_inventory,low_stock_threshold,tax_bps,active,created_at,updated_at,device_id,version)
+       VALUES (?,?,NULL,?,NULL,?,NULL,0,?,'unit',0,NULL,0,1,?,?,?,1)`,
+      [id, input.storeId, name, barcode, input.sellingPrice, now, now, DEVICE_ID],
+    );
+    await db.runAsync(
+      'INSERT INTO product_review (product_id,created_at) VALUES (?,?) ON CONFLICT(product_id) DO NOTHING',
+      [id, now],
+    );
+  });
+
+  if (existing) return existing;
+  const created = await getProduct(id);
+  if (!created) throw new Error('No se pudo crear el producto');
+  return created;
+}
+
+export async function clearProductReview(productId: string): Promise<void> {
+  await getDb().runAsync('DELETE FROM product_review WHERE product_id=?', [productId]);
 }
 
 export async function updateProductPrices(
@@ -470,7 +519,7 @@ export async function checkoutSale(
          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
         [newId(), saleId, productId, l.product.name, null, l.product.cost_price, l.product.selling_price, l.quantity, line.discount, line.tax, line.lineTotal, now, DEVICE_ID],
       );
-      if (productId) {
+      if (productId && (l.product.track_inventory ?? 1) === 1) {
         await db.runAsync(
           `INSERT INTO stock_movements (id,store_id,product_id,type,quantity_delta,reference_type,reference_id,created_at,device_id)
            VALUES (?,?,?,'sale',?, 'sale', ?, ?, ?)`,
@@ -568,8 +617,10 @@ export async function voidSale(storeId: string, saleId: string): Promise<void> {
     [saleId],
   );
   if ((returns?.total ?? 0) > 0) throw new Error('Esta venta tiene devoluciones; no se puede anular');
-  const items = await db.getAllAsync<{ product_id: string | null; quantity: number }>(
-    'SELECT product_id, quantity FROM sale_items WHERE sale_id=?',
+  const items = await db.getAllAsync<{ product_id: string | null; quantity: number; track_inventory: number | null }>(
+    `SELECT si.product_id, si.quantity, p.track_inventory
+     FROM sale_items si LEFT JOIN products p ON p.id = si.product_id
+     WHERE si.sale_id=?`,
     [saleId],
   );
   const ledger = await db.getFirstAsync<{ c: number }>(
@@ -583,7 +634,7 @@ export async function voidSale(storeId: string, saleId: string): Promise<void> {
       [now, saleId, storeId],
     );
     for (const item of items) {
-      if (!item.product_id) continue;
+      if (!item.product_id || item.track_inventory === 0) continue;
       await db.runAsync(
         `INSERT INTO stock_movements (id,store_id,product_id,type,quantity_delta,reference_type,reference_id,note,created_at,device_id)
          VALUES (?,?,?,'sale_return',?,'sale_void',?,?,?,?)`,
@@ -905,6 +956,7 @@ export interface SaleHeader {
 export interface SaleItemRow {
   id: string; product_id: string | null; name: string;
   unit_price: number; unit_cost: number; quantity: number; tax: number; line_total: number;
+  track_inventory?: number | null;
   returned: number; // units already returned across prior returns
 }
 export interface SaleDetail { header: SaleHeader; items: SaleItemRow[]; refundedTotal: number }
@@ -921,8 +973,10 @@ export async function getSale(saleId: string): Promise<SaleDetail | null> {
   const items = await db.getAllAsync<SaleItemRow>(
     `SELECT si.id, si.product_id, si.product_name_snapshot AS name,
             si.unit_price, si.unit_cost, si.quantity, si.tax, si.line_total,
+            p.track_inventory,
             COALESCE((SELECT SUM(ri.quantity) FROM return_items ri WHERE ri.sale_item_id = si.id), 0) AS returned
-     FROM sale_items si WHERE si.sale_id = ?`, [saleId],
+     FROM sale_items si LEFT JOIN products p ON p.id = si.product_id
+     WHERE si.sale_id = ?`, [saleId],
   );
   const r = await db.getFirstAsync<{ total: number }>(
     `SELECT COALESCE(SUM(grand_total),0) AS total FROM returns WHERE sale_id = ?`, [saleId],
@@ -986,7 +1040,7 @@ export async function processReturn(
          VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
         [newId(), returnId, item.id, item.product_id, item.name, item.unit_cost, item.unit_price, pick.quantity, refundTax, refundLine, now, DEVICE_ID],
       );
-      if (item.product_id) {
+      if (item.product_id && item.track_inventory !== 0) {
         await db.runAsync(
           `INSERT INTO stock_movements (id,store_id,product_id,type,quantity_delta,reference_type,reference_id,created_at,device_id)
            VALUES (?,?,?,'sale_return',?, 'return', ?, ?, ?)`,
@@ -1136,10 +1190,13 @@ export async function getProduct(id: string): Promise<Product | null> {
  * tombstone syncs like any other change. */
 export async function deleteProduct(id: string): Promise<void> {
   const now = Date.now();
-  await getDb().runAsync(
-    `UPDATE products SET active=0, deleted_at=?, updated_at=?, version=version+1 WHERE id=?`,
-    [now, now, id],
-  );
+  await getDb().withTransactionAsync(async () => {
+    await getDb().runAsync('DELETE FROM product_review WHERE product_id=?', [id]);
+    await getDb().runAsync(
+      `UPDATE products SET active=0, deleted_at=?, updated_at=?, version=version+1 WHERE id=?`,
+      [now, now, id],
+    );
+  });
 }
 
 const RESET_TABLES = [

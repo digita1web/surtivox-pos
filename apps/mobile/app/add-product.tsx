@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { toMajorNumber, asMinor } from '@openpocket/pos-core';
 import {
-  getStore, createProduct, getProduct, updateProductFields, updateProductPrices, deleteProduct, listCategories, ensureCategory,
+  getStore, createProduct, getProduct, updateProductFields, updateProductPrices, deleteProduct, clearProductReview, listCategories, ensureCategory,
   findProductByBarcode, DEFAULT_LOW_STOCK, type Store, type Category, type Product,
 } from '../src/repos';
 import { pickFromGallery, takePhoto } from '../src/pos/images';
@@ -224,6 +224,7 @@ export default function AddProduct() {
         } else {
           await updateProductFields({ id: editId, ...common });
         }
+        await clearProductReview(editId);
       } else {
         await createProduct({ storeId: store.id, ...common, openingStock });
       }
