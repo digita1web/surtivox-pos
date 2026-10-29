@@ -55,6 +55,14 @@ jobs:
       - name: Pin Gradle 8.13
         run: sed -i -E 's#gradle-9\.[0-9]+\.[0-9]+-bin\.zip#gradle-8.13-bin.zip#g' apps/mobile/android/gradle/wrapper/gradle-wrapper.properties
 
+      - name: Increase Gradle memory
+        run: |
+          if grep -q '^org.gradle.jvmargs=' apps/mobile/android/gradle.properties; then
+            sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g/' apps/mobile/android/gradle.properties
+          else
+            echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g" >> apps/mobile/android/gradle.properties
+          fi
+
       - name: Build release APK
         working-directory: apps/mobile/android
         run: ./gradlew assembleRelease --no-daemon
