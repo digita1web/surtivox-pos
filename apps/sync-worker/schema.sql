@@ -1,4 +1,4 @@
--- OpenPocket cloud mirror (Cloudflare D1 = SQLite). Mirrors the on-device
+-- Surtivox cloud mirror (Cloudflare D1 = SQLite). Mirrors the on-device
 -- schema so rows sync 1:1. Multi-store: every row is scoped by store_id (or by
 -- its parent). Idempotent: safe to run more than once.
 

@@ -1,8 +1,6 @@
-# openpocket-sync
+# surtivox-sync
 
-Cloudflare **Worker + D1** backend for OpenPocket POS cloud sync. Kept entirely
-separate from the Milo resources on the same account (everything is named
-`openpocket-*`).
+Cloudflare **Worker + D1** backend for Surtivox POS cloud sync.
 
 The local SQLite database on each phone stays the source of truth. This service
 is a reconcile point:
@@ -54,7 +52,7 @@ pnpm db:create                      # prints a database_id
 pnpm db:schema
 
 # 3. deploy the Worker
-pnpm deploy                         # prints https://openpocket-sync.<you>.workers.dev
+pnpm deploy                         # prints https://surtivox-sync.<you>.workers.dev
 ```
 
 Then in the app: **More → Cloud sync**, paste the Worker URL, tap **Generate**
@@ -71,7 +69,7 @@ curl http://127.0.0.1:8787/health
 
 ## Surtivox market-only Worker
 
-The reference-price endpoint can be deployed independently from the OpenPocket
+The reference-price endpoint can be deployed independently from the Surtivox
 sync Worker and without a D1 database:
 
 ```bash

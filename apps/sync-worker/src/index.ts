@@ -36,7 +36,7 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
 
     if (url.pathname === '/' || url.pathname === '/health') {
-      return json({ ok: true, service: 'openpocket-sync', tables: SYNC_TABLES.length });
+      return json({ ok: true, service: 'surtivox-sync', tables: SYNC_TABLES.length });
     }
 
     if (url.pathname === '/market-prices') {

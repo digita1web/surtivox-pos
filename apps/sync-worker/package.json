@@ -1,15 +1,15 @@
 {
-  "name": "openpocket-sync",
+  "name": "surtivox-sync",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Cloudflare Worker + D1 sync backend for OpenPocket POS",
+  "description": "Cloudflare Worker + D1 sync backend for Surtivox POS",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "db:create": "wrangler d1 create openpocket-production",
-    "db:schema": "wrangler d1 execute openpocket-production --remote --file=./schema.sql",
-    "db:schema:local": "wrangler d1 execute openpocket-production --local --file=./schema.sql",
+    "db:create": "wrangler d1 create surtivox-production",
+    "db:schema": "wrangler d1 execute surtivox-production --remote --file=./schema.sql",
+    "db:schema:local": "wrangler d1 execute surtivox-production --local --file=./schema.sql",
     "test": "node --test \"test/**/*.test.ts\"",
     "dev:market": "wrangler dev --config wrangler.market.toml",
     "deploy:market": "wrangler deploy --config wrangler.market.toml"

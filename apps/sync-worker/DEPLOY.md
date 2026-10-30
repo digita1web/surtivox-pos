@@ -1,4 +1,4 @@
-# Deploy the OpenPocket sync backend
+# Deploy the Surtivox sync backend
 
 One hosted Cloudflare Worker + D1 database serves **every** shop. Each shop is
 isolated by its own sync token (the "shop code"), so you deploy this once and
@@ -30,7 +30,7 @@ replacing `REPLACE_WITH_D1_DATABASE_ID`:
 ```toml
 [[d1_databases]]
 binding = "DB"
-database_name = "openpocket-production"
+database_name = "surtivox-production"
 database_id = "the-id-that-was-printed"
 ```
 
@@ -39,7 +39,7 @@ database_id = "the-id-that-was-printed"
 pnpm db:schema
 
 # 5. Deploy the Worker. This prints your live URL, e.g.
-#    https://openpocket-sync.<your-subdomain>.workers.dev
+#    https://surtivox-sync.<your-subdomain>.workers.dev
 pnpm deploy
 ```
 
@@ -48,7 +48,7 @@ pnpm deploy
 URL into `DEFAULT_SYNC_URL`:
 
 ```ts
-export const DEFAULT_SYNC_URL = 'https://openpocket-sync.<your-subdomain>.workers.dev';
+export const DEFAULT_SYNC_URL = 'https://surtivox-sync.<your-subdomain>.workers.dev';
 ```
 
 That's it. The app's **Cloud backup** screen now shows one-tap "Turn on cloud
@@ -57,8 +57,8 @@ backup" — no URL or token for users to type. Rebuild the app to pick up the UR
 ## Verify
 
 ```bash
-curl https://openpocket-sync.<your-subdomain>.workers.dev/health
-# -> {"ok":true,"service":"openpocket-sync","tables":N}
+curl https://surtivox-sync.<your-subdomain>.workers.dev/health
+# -> {"ok":true,"service":"surtivox-sync","tables":N}
 ```
 
 ## Before the public launch (not needed for your own device test)
