@@ -119,6 +119,7 @@ export default function More() {
     { icon: 'receipt-outline', label: 'Historial de ventas', route: '/sales', show: true },
     { icon: 'people-circle-outline', label: 'Personal y roles', route: '/staff', show: can(role, 'staff') },
     { icon: 'swap-vertical-outline', label: 'Respaldo y CSV', route: '/data', show: can(role, 'backup') },
+    { icon: 'document-text-outline', label: 'Licencias de código abierto', route: '/licenses', show: true },
   ];
   const manage = allItems.filter((m) => m.show);
 
