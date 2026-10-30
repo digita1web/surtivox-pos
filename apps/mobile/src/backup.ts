@@ -48,7 +48,7 @@ export async function exportSales(store: Store): Promise<number> {
 // Every user table except the migration ledger (that belongs to the install,
 // not the data, and forcing it could re-run migrations against existing tables).
 const TABLES_SQL = `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('_migrations','sync_state') ORDER BY name`;
-const BACKUP_MAGIC = 'openpocketpos';
+const BACKUP_MAGIC = 'surtivoxpos';
 
 /** Snapshot the whole database to a JSON file and open the share sheet. */
 export async function exportFullBackup(store: Store): Promise<number> {
@@ -62,7 +62,7 @@ export async function exportFullBackup(store: Store): Promise<number> {
     rows += list.length;
   }
   const payload = { app: BACKUP_MAGIC, schema: 1, exported_at: Date.now(), store: store.name, tables: data };
-  const filename = `openpocket-backup-${stamp()}.json`;
+  const filename = `surtivox-backup-${stamp()}.json`;
   const uri = FileSystem.cacheDirectory + filename;
   await FileSystem.writeAsStringAsync(uri, JSON.stringify(payload), { encoding: FileSystem.EncodingType.UTF8 });
   if (await Sharing.isAvailableAsync()) {

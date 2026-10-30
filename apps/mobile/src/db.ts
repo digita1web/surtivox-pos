@@ -6,7 +6,7 @@ let _db: SQLite.SQLiteDatabase | null = null;
 /** Open the on-device database and run pending migrations. Call once at boot. */
 export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (_db) return _db;
-  const db = await SQLite.openDatabaseAsync('openpocket.db');
+  const db = await SQLite.openDatabaseAsync('surtivox.db');
   await db.execAsync('PRAGMA journal_mode = WAL;');
   await db.execAsync('PRAGMA foreign_keys = ON;');
   const exec: SqlExecutor = {

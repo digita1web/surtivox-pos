@@ -44,7 +44,7 @@ export async function lookupBarcode(
     const res = await fetch(
       `https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,brands,image_front_url,image_url`,
       {
-        headers: { 'User-Agent': 'OpenPocketPOS/1.0 (offline POS)' },
+        headers: { 'User-Agent': 'SurtivoxPOS/1.0 (offline POS)' },
         signal: controller.signal,
       },
     );
