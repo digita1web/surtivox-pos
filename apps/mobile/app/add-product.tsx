@@ -14,7 +14,7 @@ import { ScanModal } from '../src/pos/ScanModal';
 import { useTheme, space, radius } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
 import { Chip, PrimaryButton } from '../src/pos/kit';
-import { MarketPricesSection } from '../src/pos/MarketPricesSection';
+import { MarketPricesCompact } from '../src/pos/MarketPricesCompact';
 import { isValidEan, marketEanForLookup } from '../src/marketPrices';
 import { useMoney } from '../src/pos/ui';
 import { APP_CURRENCY, parseCurrencyInput } from '../src/branding';
@@ -334,7 +334,7 @@ export default function AddProduct() {
         </Text>
       ) : null}
 
-      {marketEan ? <MarketPricesSection ean={marketEan} /> : null}
+      {marketEan ? <MarketPricesCompact ean={marketEan} /> : null}
 
       {field('Precio de venta', price, setPrice, { kb: 'decimal-pad', ph: '0', req: true })}
       {sellingPreview && <Text style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>Se mostrará como {sellingPreview}</Text>}

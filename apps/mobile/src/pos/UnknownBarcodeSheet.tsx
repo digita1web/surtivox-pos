@@ -249,6 +249,7 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
                   key={`${suggestion.label}:${suggestion.price}`}
                   onPress={() => { setPrice(formatPriceInput(String(suggestion.price))); setErr(null); }}
                   style={[s.chip, { borderColor: t.line, backgroundColor: t.bg }]}
+                  hitSlop={12}
                   accessibilityLabel={`Usar ${suggestion.label} ${money(asMinor(suggestion.price))}`}
                 >
                   <Text style={{ color: t.fg, fontSize: 11, fontWeight: '700' }}>
@@ -340,7 +341,7 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
 
 const s = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
-  sheet: { borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingHorizontal: 16, paddingTop: 8, maxHeight: '96%' },
+  sheet: { borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingHorizontal: 16, paddingTop: 8 },
   grabber: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 6 },
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 2 },
   priceBox: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: radius.md, paddingHorizontal: 12, paddingVertical: 4, marginTop: 6 },
