@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to OpenPocket POS are documented in this file. The format is
+All notable changes to Surtivox POS are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -10,7 +10,7 @@ project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - Camera barcode scanning on the Add Product screen, with duplicate detection
   (warns if the barcode is already in the catalog) and silent Open Food Facts
   auto-fill of name and photo.
-- Marketing website at [openpocket.wraplet.app](https://openpocket.wraplet.app),
+- Marketing website at [Surtivox POS](https://digita1web.github.io/surtivox-pos/),
   with a Privacy Policy, Terms of Service and a Contact section.
 - CI, CodeQL code-scanning and OpenSSF Scorecard workflows; Dependabot for
   dependency and GitHub Actions updates.

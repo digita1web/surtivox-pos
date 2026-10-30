@@ -3,7 +3,7 @@
     "id": "rebrand-ui",
     "nombre": "Rebrand UI",
     "estado": "pending",
-    "criterio_aceptacion": "grep -ri \"openpocket\" apps/mobile/app apps/mobile/src | grep -v test → 0 resultados en strings visibles."
+    "criterio_aceptacion": "La UI visible de apps/mobile/app y apps/mobile/src no muestra la marca anterior."
   },
   {
     "id": "prediccion-pedidos",

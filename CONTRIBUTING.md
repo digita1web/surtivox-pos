@@ -1,4 +1,4 @@
-# Contributing to OpenPocket POS
+# Contributing to Surtivox POS
 
 Thanks for helping build a POS that small merchants can actually own.
 
