@@ -5,16 +5,21 @@ import { asMinor } from '@surtivox/pos-core';
 import { formatCopAmount } from '../receiptMoney';
 import { normalizePresentation } from '../marketPriceSummary';
 import { useTheme, space, radius } from '../theme';
-import { useMarketPrices } from './useMarketPrices';
+import { useMarketPrices, type MarketPricesHook } from './useMarketPrices';
 
 interface MarketPricesCompactProps {
   ean: string;
 }
 
 export function MarketPricesCompact({ ean }: MarketPricesCompactProps) {
+  const prices = useMarketPrices(ean);
+  return <MarketPricesCompactView prices={prices} />;
+}
+
+export function MarketPricesCompactView({ prices }: { prices: MarketPricesHook }) {
   const t = useTheme();
   const [expanded, setExpanded] = useState(false);
-  const { rows, status, stale, refreshing, refresh, lowest, mixedPresentations, ageLabel, old } = useMarketPrices(ean);
+  const { rows, status, stale, refreshing, refresh, lowest, mixedPresentations, ageLabel, old } = prices;
 
   const lowestRow = useMemo(() => {
     if (!lowest) return undefined;

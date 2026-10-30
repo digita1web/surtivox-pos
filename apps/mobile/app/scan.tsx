@@ -33,7 +33,7 @@ export default function Scan() {
   const [permission, requestPermission] = useCameraPermissions();
   const [store, setStore] = useState<Store | null>(null);
   const [torch, setTorch] = useState(false);
-  const [banner, setBanner] = useState<{ text: string; ok: boolean } | null>(null);
+  const [banner, setBanner] = useState<{ text: string; ok: boolean; undo?: () => void } | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
   const [manualCode, setManualCode] = useState('');
   const [unknownCode, setUnknownCode] = useState<string | null>(null);
@@ -46,10 +46,10 @@ export default function Scan() {
   useEffect(() => { getStore().then(setStore); }, []);
   useEffect(() => { if (permission && !permission.granted) requestPermission(); }, [permission]);
 
-  const flash = (text: string, ok: boolean) => {
-    setBanner({ text, ok });
+  const flash = (text: string, ok: boolean, ms = 1600, undo?: () => void) => {
+    setBanner({ text, ok, undo });
     if (bannerTimer.current) clearTimeout(bannerTimer.current);
-    bannerTimer.current = setTimeout(() => setBanner(null), 1600);
+    bannerTimer.current = setTimeout(() => setBanner(null), ms);
   };
 
   // Rows to show under "Recently added", newest edits first isn't tracked, so
@@ -207,9 +207,14 @@ export default function Scan() {
           {(['tl', 'tr', 'bl', 'br'] as const).map((c) => <View key={c} style={[st.corner, cornerStyle(c, t.accent)]} />)}
         </View>
         {banner && (
-          <View style={[st.banner, { backgroundColor: banner.ok ? 'rgba(12,166,120,0.96)' : 'rgba(220,38,38,0.96)' }]} pointerEvents="none">
+          <View style={[st.banner, { backgroundColor: banner.ok ? 'rgba(12,166,120,0.96)' : 'rgba(220,38,38,0.96)' }]} pointerEvents={banner.undo ? 'auto' : 'none'}>
             <Ionicons name={banner.ok ? 'checkmark-circle' : 'alert-circle'} size={16} color="#fff" />
             <Text style={{ color: '#fff', fontWeight: '700', marginLeft: 6 }}>{banner.text}</Text>
+            {banner.undo ? (
+              <Pressable onPress={() => { banner.undo?.(); setBanner(null); }} hitSlop={8} accessibilityLabel="Deshacer último producto">
+                <Text style={{ color: '#fff', fontWeight: '800', marginLeft: 10, textDecorationLine: 'underline' }}>Deshacer</Text>
+              </Pressable>
+            ) : null}
           </View>
         )}
         <Pressable onPress={() => setManualOpen(true)} style={st.manualBtn}>
@@ -286,11 +291,14 @@ export default function Scan() {
       <UnknownBarcodeSheet
         code={unknownCode}
         onClose={() => setUnknownCode(null)}
-        onAdded={(product) => {
+        onAdded={(product, _quantity, previousQty) => {
           setUnknownCode(null);
           setSeen((m) => ({ ...m, [product.id]: product }));
           Vibration.vibrate(40);
-          flash(`Agregado ${product.name}`, true);
+          flash(`Agregado ${product.name}`, true, 4000, () => {
+            if (previousQty === 0) cart.remove(product.id);
+            else cart.setQty(product.id, previousQty);
+          });
         }}
       />
     </Screen>
