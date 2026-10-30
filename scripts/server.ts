@@ -215,4 +215,4 @@ const server = createServer(async (req, res) => {
 await runMigrations(exec, MIGRATIONS);
 seedIfEmpty();
 const PORT = 5178;
-server.listen(PORT, () => console.log(`OpenPocket POS test server → http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Surtivox POS test server → http://localhost:${PORT}`));

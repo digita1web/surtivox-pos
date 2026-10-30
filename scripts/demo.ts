@@ -43,7 +43,7 @@ async function main() {
   run(
     `INSERT INTO stores (id,name,currency_code,currency_locale,currency_decimals,created_at,updated_at,device_id,version)
      VALUES (?,?,?,?,?,?,?,?,1)`,
-    [storeId, 'Kashif Mini Mart', currency.code, currency.locale, currency.decimals, now, now, DEVICE],
+    [storeId, 'Tienda Demo Surtivox', currency.code, currency.locale, currency.decimals, now, now, DEVICE],
   );
 
   const catId = randomUUID();
@@ -118,7 +118,7 @@ async function main() {
   const profit = lineProfit({ unitPrice: sellingPrice, unitCost: costPrice, quantity: qty, taxBps: 500 });
 
   console.log('\n──────── RECEIPT ────────');
-  console.log('Kashif Mini Mart          INV-0001');
+  console.log('Tienda Demo Surtivox      INV-0001');
   console.log(`Cola 500ml   ${qty} x ${format(sellingPrice, currency)}`);
   console.log(`Subtotal              ${format(totals.subtotal, currency)}`);
   console.log(`Tax (5%)              ${format(totals.taxTotal, currency)}`);

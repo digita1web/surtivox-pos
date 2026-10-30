@@ -1,5 +1,5 @@
 <#
-  OpenPocket POS - 60 second feature tour for screen recording.
+  Surtivox POS - 60 second feature tour for screen recording.
 
   Drives the Android emulator over adb with ~1 second on each feature:
   dashboard, products, filters, categories, cart, checkout, receipt, sales,
@@ -16,11 +16,11 @@ param(
   [switch]$Record,
   [string]$Shots = '',            # folder: save a screenshot after every step (to verify the tour)
   [double]$Dwell = 1.0,
-  [string]$Out = "$env:USERPROFILE\Desktop\openpocket-demo.mp4"
+  [string]$Out = "$env:USERPROFILE\Desktop\surtivox-demo.mp4"
 )
 
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
-$pkg = 'io.openpocket.pos'
+$pkg = 'io.surtivox.pos'
 
 function Tap([int]$x, [int]$y) { & $adb shell input tap $x $y | Out-Null }
 function Swipe([int]$x1, [int]$y1, [int]$x2, [int]$y2, [int]$ms = 350) { & $adb shell input swipe $x1 $y1 $x2 $y2 $ms | Out-Null }
@@ -47,7 +47,7 @@ $Back = @(95, 136)
 & $adb shell pm grant $pkg android.permission.CAMERA 2>$null
 & $adb reverse tcp:8081 tcp:8081 | Out-Null
 & $adb shell am force-stop $pkg
-& $adb shell am start -a android.intent.action.VIEW -d 'openpocketpos://expo-development-client/?url=http%3A%2F%2F10.0.2.2%3A8081' $pkg | Out-Null
+& $adb shell am start -a android.intent.action.VIEW -d 'surtivoxpos://expo-development-client/?url=http%3A%2F%2F10.0.2.2%3A8081' $pkg | Out-Null
 Write-Host 'Launching app...'
 Wait 22
 Tap 388 792; Wait 1                                   # "Alex - Owner"
