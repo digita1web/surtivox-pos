@@ -9,3 +9,7 @@ export function tracksInventory(product: InventoryTracked): boolean {
 export function defaultDraftName(barcode: string): string {
   return `Producto ${barcode.trim().slice(-4)}`;
 }
+
+export function draftCost(costPrice?: number | null): number {
+  return costPrice ?? 0;
+}

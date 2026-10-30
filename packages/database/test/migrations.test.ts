@@ -24,7 +24,7 @@ function tableNames(db: DatabaseSync): string[] {
 test('runMigrations applies all schema migrations in order', async () => {
   const db = new DatabaseSync(':memory:');
   const applied = await runMigrations(adapter(db), MIGRATIONS);
-  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops', '0008_market_prices', '0009_barcode_lookups']);
+  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops', '0008_market_prices', '0009_barcode_lookups', '0010_local_settings']);
 
   const tables = tableNames(db);
   for (const t of [
@@ -47,6 +47,7 @@ test('runMigrations applies all schema migrations in order', async () => {
     'market_prices',
     'barcode_lookups',
     'product_review',
+    'local_settings',
     '_migrations',
   ]) {
     assert.ok(tables.includes(t), `expected table ${t}, got ${tables.join(', ')}`);
@@ -122,4 +123,12 @@ test('0009 adds local barcode lookup and product review tables', async () => {
 
   db.prepare('INSERT INTO product_review (product_id,created_at) VALUES (?,?)').run('p1', 1000);
   assert.equal((db.prepare('SELECT COUNT(*) AS c FROM product_review').get() as { c: number }).c, 1);
+});
+
+test('0010 adds local settings outside sync tables', async () => {
+  const db = new DatabaseSync(':memory:');
+  await runMigrations(adapter(db), MIGRATIONS);
+  db.prepare('INSERT INTO local_settings (key,value) VALUES (?,?)').run('last_markup_bps', '2500');
+  assert.equal((db.prepare('SELECT value FROM local_settings WHERE key=?').get('last_markup_bps') as { value: string }).value, '2500');
+  assert.throws(() => db.prepare('INSERT INTO local_settings (key,value) VALUES (?,?)').run('last_markup_bps', '3000'));
 });

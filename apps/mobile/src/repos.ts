@@ -19,7 +19,7 @@ import { newId, DEVICE_ID } from './id';
 import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
 import { createInFlightRequests, fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceProviderError, type MarketPriceResult } from './marketPrices';
 import { type Role, hashPin, verifyPin, randomSalt } from './roles';
-import { defaultDraftName, tracksInventory } from './pos/stockPolicy';
+import { defaultDraftName, draftCost, tracksInventory } from './pos/stockPolicy';
 
 export type ReceiptPaper = 'a4' | 'thermal80' | 'thermal58';
 
@@ -287,6 +287,7 @@ export async function createDraftProduct(input: {
   barcode: string;
   name?: string | null;
   sellingPrice: Minor;
+  costPrice?: Minor;
 }): Promise<Product> {
   const barcode = input.barcode.trim();
   if (!barcode) throw new Error('El código de barras es obligatorio');
@@ -307,10 +308,11 @@ export async function createDraftProduct(input: {
     if (existing) return;
 
     const name = input.name?.trim() || defaultDraftName(barcode);
+    const costPrice = draftCost(input.costPrice);
     await db.runAsync(
       `INSERT INTO products (id,store_id,category_id,name,sku,barcode,image_uri,cost_price,selling_price,unit,track_inventory,low_stock_threshold,tax_bps,active,created_at,updated_at,device_id,version)
-       VALUES (?,?,NULL,?,NULL,?,NULL,0,?,'unit',0,NULL,0,1,?,?,?,1)`,
-      [id, input.storeId, name, barcode, input.sellingPrice, now, now, DEVICE_ID],
+       VALUES (?,?,NULL,?,NULL,?,NULL,?,?,'unit',0,NULL,0,1,?,?,?,1)`,
+      [id, input.storeId, name, barcode, costPrice, input.sellingPrice, now, now, DEVICE_ID],
     );
     await db.runAsync(
       'INSERT INTO product_review (product_id,created_at) VALUES (?,?) ON CONFLICT(product_id) DO NOTHING',
@@ -362,6 +364,22 @@ export async function saveBarcodeLookup(input: {
        source=excluded.source,
        checked_at=excluded.checked_at`,
     [input.barcode, input.status, input.name ?? null, input.imageUrl ?? null, input.source ?? null, input.checkedAt ?? Date.now()],
+  );
+}
+
+export async function getLocalSetting(key: string): Promise<string | null> {
+  const row = await getDb().getFirstAsync<{ value: string }>(
+    'SELECT value FROM local_settings WHERE key=?',
+    [key],
+  );
+  return row?.value ?? null;
+}
+
+export async function setLocalSetting(key: string, value: string): Promise<void> {
+  await getDb().runAsync(
+    `INSERT INTO local_settings (key,value) VALUES (?,?)
+     ON CONFLICT(key) DO UPDATE SET value=excluded.value`,
+    [key, value],
   );
 }
 
@@ -1269,7 +1287,7 @@ export async function deleteProduct(id: string): Promise<void> {
 }
 
 const RESET_TABLES = [
-  'barcode_lookups', 'product_review', 'market_prices', 'return_items', 'returns', 'payments', 'sale_items', 'sales',
+  'barcode_lookups', 'product_review', 'market_prices', 'local_settings', 'return_items', 'returns', 'payments', 'sale_items', 'sales',
   'customer_ledger', 'customers', 'purchase_items', 'purchases',
   'suppliers', 'stock_movements', 'products', 'categories', 'staff', 'stores',
 ];
