@@ -3,7 +3,7 @@
  * the printed/PDF receipt derive exactly the same content from a Store, and so
  * it can be unit-tested under node.
  */
-import { fromMajorString, type Minor } from '@openpocket/pos-core';
+import { fromMajorString, type Minor } from '@surtivox/pos-core';
 import type { ReceiptPaper } from './repos';
 
 export const DEFAULT_ACCENT = '#0ca678';

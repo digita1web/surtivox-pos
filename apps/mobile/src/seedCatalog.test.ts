@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { MIGRATIONS } from '@openpocket/database';
+import { MIGRATIONS } from '@surtivox/database';
 import { SEED_PRODUCTS, seedColombianCatalog, type SeedDatabase } from './seedCatalog.ts';
 
 function testDb(): DatabaseSync {

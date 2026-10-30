@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { View, Text, Pressable, FlatList, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { asMinor, type Minor } from '@openpocket/pos-core';
+import { asMinor, type Minor } from '@surtivox/pos-core';
 import { listCustomers, outstandingCredit, type Customer, type OutstandingTotal } from '../src/repos';
 import { useSession } from '../src/session';
 import { useMoney } from '../src/pos/ui';

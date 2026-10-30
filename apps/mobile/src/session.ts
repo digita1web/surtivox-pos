@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CurrencyConfig } from '@openpocket/pos-core';
+import type { CurrencyConfig } from '@surtivox/pos-core';
 import { getStore, listStores, setCurrentStore, staffCount, type Store, type Staff } from './repos';
 import { appCurrencyConfig } from './appCurrency';
 import type { Role } from './roles';

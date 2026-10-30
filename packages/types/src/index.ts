@@ -1,5 +1,5 @@
 /**
- * @openpocket/types — shared domain primitives.
+ * @surtivox/types — shared domain primitives.
  * Pure TypeScript, no runtime deps, no React Native. Safe to import anywhere.
  */
 

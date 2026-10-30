@@ -5,7 +5,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Screen, scrollProps } from '../src/pos/Screen';
 import { Chip, ChipRow } from '../src/pos/kit';
 import { Ionicons } from '@expo/vector-icons';
-import { asMinor } from '@openpocket/pos-core';
+import { asMinor } from '@surtivox/pos-core';
 import {
   reportSummary, paymentBreakdown, bestSellers, lowStockProducts, outstandingCredit,
   type ReportSummary, type PaymentSlice, type BestSeller, type LowStockItem, type OutstandingTotal,

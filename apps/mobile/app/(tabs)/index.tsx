@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { asMinor } from '@openpocket/pos-core';
+import { asMinor } from '@surtivox/pos-core';
 import {
   todayStats, recentlySold, listProducts, lowStockProducts,
   type TodayStats, type Product, type LowStockItem,

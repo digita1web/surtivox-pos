@@ -1,4 +1,4 @@
-import { asMinor, fromMajorString, type CurrencyConfig, type Minor } from '@openpocket/pos-core';
+import { asMinor, fromMajorString, type CurrencyConfig, type Minor } from '@surtivox/pos-core';
 
 export interface CashSettlement {
   received: Minor;

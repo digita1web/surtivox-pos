@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { asBps, asMinor } from '@openpocket/types';
+import { asBps, asMinor } from '@surtivox/types';
 import {
   computeCart,
   computeLine,

@@ -1,6 +1,6 @@
 /**
  * Repositories: the ONLY place that talks SQL. All money math is delegated to
- * @openpocket/pos-core; screens never compute totals themselves.
+ * @surtivox/pos-core; screens never compute totals themselves.
  */
 import {
   computeCart,
@@ -12,7 +12,7 @@ import {
   type CartLineInput,
   type Minor,
   type SalesPoint,
-} from '@openpocket/pos-core';
+} from '@surtivox/pos-core';
 import { getDb } from './db';
 import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';

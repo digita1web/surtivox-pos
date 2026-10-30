@@ -1,5 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import { MIGRATIONS, runMigrations, type SqlExecutor } from '@openpocket/database';
+import { MIGRATIONS, runMigrations, type SqlExecutor } from '@surtivox/database';
 
 let _db: SQLite.SQLiteDatabase | null = null;
 

@@ -8,7 +8,7 @@
 import { View, Text, TextInput, Pressable, Switch, Image, StyleSheet } from 'react-native';
 import { showAlert } from './alert';
 import { Ionicons } from '@expo/vector-icons';
-import { asMinor, format, type CurrencyConfig } from '@openpocket/pos-core';
+import { asMinor, format, type CurrencyConfig } from '@surtivox/pos-core';
 import type { StoreProfile, ReceiptPaper } from '../repos';
 import { pickLogo } from './images';
 import { useTheme, type Theme } from '../theme';

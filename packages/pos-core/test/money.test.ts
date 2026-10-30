@@ -11,7 +11,7 @@ import {
   sum,
   toMajorNumber,
 } from '../src/money.ts';
-import { asBps, asMinor } from '@openpocket/types';
+import { asBps, asMinor } from '@surtivox/types';
 
 test('add/subtract/sum are exact', () => {
   assert.equal(add(asMinor(150), asMinor(75)), 225);

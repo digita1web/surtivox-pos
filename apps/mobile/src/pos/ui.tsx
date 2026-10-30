@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { format, type Minor } from '@openpocket/pos-core';
+import { format, type Minor } from '@surtivox/pos-core';
 import { useAppCurrency } from '../appCurrency';
 import { currencyConfigForDisplay } from '../branding';
 import { useTheme } from '../theme';

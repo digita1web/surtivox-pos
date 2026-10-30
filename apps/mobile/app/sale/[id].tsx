@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { showAlert } from '../../src/pos/alert';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { roundHalfAwayFromZero, asMinor, type Minor } from '@openpocket/pos-core';
+import { roundHalfAwayFromZero, asMinor, type Minor } from '@surtivox/pos-core';
 import { getSale, processReturn, type SaleDetail, type RefundMethod } from '../../src/repos';
 import { useSession, useRole } from '../../src/session';
 import { can } from '../../src/roles';

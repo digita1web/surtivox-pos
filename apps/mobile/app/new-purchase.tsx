@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from 'react-na
 import { showAlert } from '../src/pos/alert';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { fromMajorString, asMinor } from '@openpocket/pos-core';
+import { fromMajorString, asMinor } from '@surtivox/pos-core';
 import { listProducts, listSuppliers, createPurchase, type Product, type Supplier, type PurchaseLine } from '../src/repos';
 import { useSession, currencyOf } from '../src/session';
 import { usePurchaseDraft } from '../src/purchaseDraft';

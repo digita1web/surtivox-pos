@@ -1,6 +1,6 @@
 /**
- * Local POS test server. Uses the REAL @openpocket/pos-core pricing engine and
- * @openpocket/database migrations against a file-backed node:sqlite database
+ * Local POS test server. Uses the REAL @surtivox/pos-core pricing engine and
+ * @surtivox/database migrations against a file-backed node:sqlite database
  * (so data survives restart — the offline-first guarantee). No mocks.
  *
  *   node scripts/server.ts

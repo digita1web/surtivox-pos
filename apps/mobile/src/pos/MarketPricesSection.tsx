@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { asMinor } from '@openpocket/pos-core';
+import { asMinor } from '@surtivox/pos-core';
 import { formatCopAmount } from '../receiptMoney';
 import { getMarketPricesCache, refreshMarketPrices, type MarketPriceRow } from '../repos';
 import { isValidEan } from '../marketPrices';

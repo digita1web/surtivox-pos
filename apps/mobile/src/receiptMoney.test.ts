@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { asMinor } from '@openpocket/pos-core';
+import { asMinor } from '@surtivox/pos-core';
 import { formatCopAmount } from './receiptMoney.ts';
 
 test('receipt COP keeps 3000 unchanged and formats it as $ 3.000', () => {

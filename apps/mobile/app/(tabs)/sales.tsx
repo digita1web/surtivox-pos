@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { View, Text, Pressable, FlatList, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { asMinor } from '@openpocket/pos-core';
+import { asMinor } from '@surtivox/pos-core';
 import { listSales, voidSale, type SaleSummary } from '../../src/repos';
 import { useSession, useRole } from '../../src/session';
 import { can } from '../../src/roles';

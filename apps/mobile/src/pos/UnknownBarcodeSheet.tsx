@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { asMinor, toMajorNumber } from '@openpocket/pos-core';
+import { asMinor, toMajorNumber } from '@surtivox/pos-core';
 import { APP_CURRENCY, parseCurrencyInput } from '../branding';
 import { useCart } from '../cart';
 import { newId } from '../id';

@@ -120,7 +120,7 @@ function setQty(id, q) {
 }
 
 // Mirror of pos-core line math for live display only; the server recomputes
-// authoritatively with @openpocket/pos-core at checkout.
+// authoritatively with @surtivox/pos-core at checkout.
 function preview() {
   let subtotal = 0, tax = 0, grand = 0;
   for (const { product, quantity } of S.cart.values()) {

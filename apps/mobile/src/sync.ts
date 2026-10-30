@@ -11,7 +11,7 @@
  */
 import {
   SYNC_TABLES, upsertSql, rowValues, changedSinceSql,
-} from '@openpocket/database';
+} from '@surtivox/database';
 import * as Crypto from 'expo-crypto';
 import { getDb } from './db';
 import { getStore } from './repos';

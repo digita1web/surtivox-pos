@@ -6,7 +6,7 @@
  * forces a fractional minor unit. It is the single, tested rounding point
  * for the whole app — do not round anywhere else.
  */
-import { asBps, asMinor, type Bps, type CurrencyConfig, type Minor } from '@openpocket/types';
+import { asBps, asMinor, type Bps, type CurrencyConfig, type Minor } from '@surtivox/types';
 
 const isSafeInt = (n: number): boolean => Number.isSafeInteger(n);
 

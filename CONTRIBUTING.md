@@ -17,7 +17,7 @@ Thanks for helping build a POS that small merchants can actually own.
   array or a persistence layer that doesn't exist. If something is mocked or
   deferred, mark it clearly.
 - **Money is integer minor units.** Never introduce floating-point money.
-  Route all money math through `@openpocket/pos-core`.
+  Route all money math through `@surtivox/pos-core`.
 - **Business logic stays out of components.** Put it in a domain package with
   tests.
 - **Schema changes need a migration.** Never edit an applied migration, never

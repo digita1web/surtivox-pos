@@ -3,7 +3,7 @@
  * product's current cost. Revenue is net of discount and excludes tax
  * (tax is not the merchant's margin).
  */
-import type { Minor } from '@openpocket/types';
+import type { Minor } from '@surtivox/types';
 import { computeLine, type LineDiscount } from './pricing.ts';
 import { multiplyByQuantity, subtract } from './money.ts';
 

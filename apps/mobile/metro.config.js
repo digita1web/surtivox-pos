@@ -1,5 +1,5 @@
 // Metro config for a pnpm monorepo: watch the repo root so the workspace
-// packages (@openpocket/*) are transformed, and resolve modules from both the
+// packages (@surtivox/*) are transformed, and resolve modules from both the
 // app and the root node_modules.
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');

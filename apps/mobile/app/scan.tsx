@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, Modal, FlatList, StyleSheet, Vibratio
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { computeCart, asMinor, asBps } from '@openpocket/pos-core';
+import { computeCart, asMinor, asBps } from '@surtivox/pos-core';
 import { getStore, findProductByBarcode, getMarketPricesCache, type Store, type Product } from '../src/repos';
 import { marketEanForLookup } from '../src/marketPrices';
 import { lowestMarketPrice, type LowestMarketPrice } from '../src/marketPriceSummary';

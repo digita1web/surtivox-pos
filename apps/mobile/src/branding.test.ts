@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { asMinor } from '@openpocket/pos-core';
+import { asMinor } from '@surtivox/pos-core';
 import { safeAccent, onAccent, contactLines, shopInitials, normalizeUrl, DEFAULT_ACCENT, defaultCurrencyFor, localeForCurrency, currencyConfigFor, CURRENCIES, currencyDecimalsFor, parseCurrencyInput, currencyForStore, currencyConfigForDisplay, APP_CURRENCY, DEFAULT_FOOTER, DEFAULT_RECEIPT_TERMS, localizedReceiptFooter, localizedReceiptTerms } from './branding.ts';
 
 test('safeAccent only accepts #rrggbb and falls back otherwise', () => {

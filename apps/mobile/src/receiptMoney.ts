@@ -1,4 +1,4 @@
-import type { Minor } from '@openpocket/pos-core';
+import type { Minor } from '@surtivox/pos-core';
 
 export function formatCopAmount(amount: Minor): string {
   if (!Number.isSafeInteger(amount)) throw new RangeError('La cantidad COP debe ser un entero');

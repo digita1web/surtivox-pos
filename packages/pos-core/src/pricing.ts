@@ -9,7 +9,7 @@
  *   tax       = taxable × taxBps
  *   lineTotal = taxable + tax
  */
-import type { Bps, Minor } from '@openpocket/types';
+import type { Bps, Minor } from '@surtivox/types';
 import {
   add,
   applyRate,

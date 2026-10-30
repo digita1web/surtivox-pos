@@ -12,9 +12,9 @@
   "dependencies": {
     "@expo/metro-runtime": "~57.0.17",
     "@expo/vector-icons": "^15.1.1",
-    "@openpocket/database": "workspace:*",
-    "@openpocket/pos-core": "workspace:*",
-    "@openpocket/types": "workspace:*",
+    "@surtivox/database": "workspace:*",
+    "@surtivox/pos-core": "workspace:*",
+    "@surtivox/types": "workspace:*",
     "expo": "~57.0.31",
     "expo-asset": "~57.0.20",
     "expo-build-properties": "~57.0.22",

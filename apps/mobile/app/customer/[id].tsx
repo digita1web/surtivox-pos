@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, Modal, FlatList, KeyboardAvoidingView
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { fromMajorString, asMinor, type Minor } from '@openpocket/pos-core';
+import { fromMajorString, asMinor, type Minor } from '@surtivox/pos-core';
 import { getCustomer, customerLedger, recordCustomerPayment, type Customer, type LedgerEntry } from '../../src/repos';
 import { useSession, currencyOf } from '../../src/session';
 import { useMoney } from '../../src/pos/ui';

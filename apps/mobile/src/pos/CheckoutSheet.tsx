@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, Modal, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { computeCart, suggestCashAmounts, cashSuggestionSteps, asMinor, asBps, type Minor } from '@openpocket/pos-core';
+import { computeCart, suggestCashAmounts, cashSuggestionSteps, asMinor, asBps, type Minor } from '@surtivox/pos-core';
 import { useCart } from '../cart';
 import { useSession, currencyOf } from '../session';
 import { useCheckoutUI } from '../checkoutUI';

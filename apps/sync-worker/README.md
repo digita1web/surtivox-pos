@@ -10,9 +10,9 @@ is a reconcile point:
 
 Mutable rows resolve by **last-writer-wins** (`updated_at`, then `version`);
 event/ledger rows are **insert-if-absent** (idempotent). The reconcile logic is
-shared with the app via `@openpocket/database` (`SYNC_TABLES`, `upsertSql`,
+shared with the app via `@surtivox/database` (`SYNC_TABLES`, `upsertSql`,
 `pullSql`, …) and is covered by tests in `packages/database/test/` (run
-`pnpm --filter @openpocket/database test`), including a full
+`pnpm --filter @surtivox/database test`), including a full
 device → server → device round-trip.
 
 ## Endpoints

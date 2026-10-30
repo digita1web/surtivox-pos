@@ -1,7 +1,7 @@
 # Database
 
 SQLite via `expo-sqlite`. All migrations are forward-only, versioned, and
-applied by the runner in `@openpocket/database`. **Never edit or renumber an
+applied by the runner in `@surtivox/database`. **Never edit or renumber an
 existing migration** — add a new one.
 
 ## Conventions
@@ -19,7 +19,7 @@ existing migration** — add a new one.
 ## Migration runner
 
 ```ts
-import { runMigrations, MIGRATIONS } from '@openpocket/database';
+import { runMigrations, MIGRATIONS } from '@surtivox/database';
 // db is an adapter around expo-sqlite exposing { exec, select }
 await runMigrations(db, MIGRATIONS);
 ```

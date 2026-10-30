@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Modal, Keyb
 import { showAlert } from '../src/pos/alert';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { toMajorNumber, asMinor } from '@openpocket/pos-core';
+import { toMajorNumber, asMinor } from '@surtivox/pos-core';
 import {
   getStore, createProduct, getProduct, updateProductFields, updateProductPrices, deleteProduct, clearProductReview, listCategories, ensureCategory,
   findProductByBarcode, DEFAULT_LOW_STOCK, type Store, type Category, type Product,

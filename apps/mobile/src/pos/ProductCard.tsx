@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { asMinor } from '@openpocket/pos-core';
+import { asMinor } from '@surtivox/pos-core';
 import { useCart } from '../cart';
 import { useTheme, radius, space } from '../theme';
 import { useMoney } from './ui';

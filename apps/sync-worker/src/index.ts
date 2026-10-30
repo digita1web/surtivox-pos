@@ -1,6 +1,6 @@
 import {
   SYNC_TABLES, upsertSql, rowValues, pullSql, rowStoreId, type SyncTable,
-} from '@openpocket/database';
+} from '@surtivox/database';
 import { handleMarketPrices } from './marketPrices.ts';
 
 export interface Env {
