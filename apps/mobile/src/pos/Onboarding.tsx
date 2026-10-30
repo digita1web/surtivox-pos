@@ -8,7 +8,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { createStore, type StoreProfile } from '../repos';
 import { setAppCurrency } from '../appCurrency';
-import { loadDemoShop, hasHostedSync } from '../sync';
 import { useTheme, type Theme } from '../theme';
 import { DEFAULT_ACCENT, CURRENCIES, defaultCurrencyFor, currencyConfigFor } from '../branding';
 import { ShopDetailsFields, ReceiptFields, ReceiptPreview } from './StoreProfileForm';
@@ -118,20 +117,6 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
 
   const go = (s: 0 | 1) => { setStep(s); scroll.current?.scrollTo({ y: 0, animated: false }); };
 
-  // Pull the public demo store so anyone can try the app instantly. It comes
-  // down as a local sandbox copy (edits stay on this device).
-  const demo = async () => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      await loadDemoShop();
-      onCreated();
-    } catch (e) {
-      showAlert('No se pudo cargar la demo', e instanceof Error ? e.message : String(e));
-      setBusy(false);
-    }
-  };
-
   const create = async () => {
     if (!canNext || busy) return;
     setBusy(true);
@@ -182,11 +167,6 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
               <Ionicons name="arrow-forward" size={18} color={t.accentFg} style={{ marginLeft: 8 }} />
             </Pressable>
 
-            {hasHostedSync() && (
-              <Pressable onPress={demo} disabled={busy} style={{ marginTop: 18, alignSelf: 'center' }} hitSlop={10}>
-                <Text style={{ color: t.accent, fontWeight: '700' }}>{busy ? 'Cargando demo…' : 'Explorar una tienda de ejemplo'}</Text>
-              </Pressable>
-            )}
           </>
         ) : (
           <>

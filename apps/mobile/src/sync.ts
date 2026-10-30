@@ -1,16 +1,13 @@
 /**
- * Cloud sync client. The local SQLite DB stays the source of truth; sync is a
- * background reconcile against the OpenPocket Cloudflare Worker (+ D1).
+ * Cliente de sincronización con un backend opcional. La base SQLite local es la
+ * fuente de verdad; si se configura un servidor, la app reconcilia cambios en
+ * segundo plano.
  *
- *  - PUSH: send local rows changed since the last push cursor.
- *  - PULL: fetch this store's rows changed since the last pull cursor and upsert
- *    them locally (last-writer-wins for mutable rows, insert-if-absent for
- *    append rows — the same SQL the server uses).
+ * - PUSH: envía cambios locales desde el último cursor.
+ * - PULL: descarga los cambios de la tienda y los aplica localmente.
  *
- * Cursors are row timestamps with a safety overlap, so brief clock skew between
- * a shop's phones can only ever re-send a row (idempotent), never drop one.
- * ponytail: timestamp cursor + overlap. Swap to a server sequence column only
- * if you ever run many devices with badly unsynced clocks.
+ * Los cursores conservan un solapamiento de seguridad para tolerar desfases
+ * breves entre relojes sin perder filas.
  */
 import {
   SYNC_TABLES, upsertSql, rowValues, changedSinceSql,
@@ -22,13 +19,10 @@ import { getStore } from './repos';
 const OVERLAP_MS = 30_000;
 
 /**
- * The hosted sync backend. After you deploy the Worker (see
- * apps/sync-worker/DEPLOY.md), paste its URL here — e.g.
- * 'https://openpocket-sync.<your-subdomain>.workers.dev' — and users get
- * one-tap cloud backup with no URL or token to type. Empty string keeps only
- * the manual / self-host flow (enter your own server URL + token).
+ * URL del Worker de sincronización configurado para esta compilación.
+ * Vacío deja solo el flujo manual con URL y token.
  */
-export const DEFAULT_SYNC_URL = 'https://openpocket-sync.kashif-milo.workers.dev';
+export const DEFAULT_SYNC_URL = '';
 
 /** True when this build ships a hosted backend, so the one-tap flow is offered. */
 export function hasHostedSync(): boolean { return DEFAULT_SYNC_URL.trim().length > 0; }
@@ -195,21 +189,6 @@ export async function linkDeviceByCode(code: string): Promise<number> {
 export async function getShopCode(): Promise<string | null> {
   const s = await getSyncState();
   return s.token ? formatCode(s.token) : null;
-}
-
-/** The public "try it" demo store (Maple Street Market) in the hosted backend. */
-export const DEMO_SHOP_CODE = 'XRVK2V3VQP7GFS69';
-
-/**
- * Pull the public demo store onto this device as a LOCAL sandbox copy, then
- * disconnect sync so a tester's edits stay local and never touch the shared
- * demo. Returns the number of records pulled.
- */
-export async function loadDemoShop(): Promise<number> {
-  if (!hasHostedSync()) throw new Error('La tienda de ejemplo necesita un backend configurado.');
-  const n = await restoreFromCloud(DEFAULT_SYNC_URL, DEMO_SHOP_CODE);
-  await disconnectSync();
-  return n;
 }
 
 /**
