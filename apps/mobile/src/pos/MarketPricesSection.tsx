@@ -1,14 +1,10 @@
-import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { asMinor } from '@surtivox/pos-core';
 import { formatCopAmount } from '../receiptMoney';
-import { getMarketPricesCache, refreshMarketPrices, type MarketPriceRow } from '../repos';
 import { isValidEan } from '../marketPrices';
-import { dataAgeLabel, lowestComparablePrice, presentationsDiffer } from '../marketPriceSummary';
 import { useTheme, space, radius } from '../theme';
-
-type Status = 'loading' | 'ready' | 'empty' | 'offline' | 'error';
+import { useMarketPrices } from './useMarketPrices';
 
 function formatWhen(value: number | null): string | null {
   if (!value) return null;
@@ -21,80 +17,18 @@ function formatWhen(value: number | null): string | null {
 
 export function MarketPricesSection({ ean }: { ean: string }) {
   const t = useTheme();
-  const [rows, setRows] = useState<MarketPriceRow[]>([]);
-  const [fetchedAt, setFetchedAt] = useState<number | null>(null);
-  const [status, setStatus] = useState<Status>('loading');
-  const [stale, setStale] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => {
-    if (!isValidEan(ean)) return;
-    let active = true;
-    setRows([]);
-    setFetchedAt(null);
-    setStatus('loading');
-    setStale(false);
-    getMarketPricesCache(ean)
-      .then((cached) => {
-        if (!active) return;
-        setRows(cached.rows);
-        setFetchedAt(cached.fetchedAt);
-        if (cached.rows.length === 0) return;
-        setStatus('ready');
-      })
-      .catch((error) => {
-        if (__DEV__) console.warn('[Precios de referencia] No se pudo leer la caché local.', error);
-      });
-    refreshMarketPrices(ean)
-      .then((result) => {
-        if (!active) return;
-        setRows(result.rows);
-        setFetchedAt(result.fetchedAt);
-        setStale(result.status === 'stale');
-        if (result.status === 'offline' && result.rows.length === 0) setStatus('offline');
-        else if (result.status === 'error' && result.rows.length === 0) setStatus('error');
-        else setStatus(result.rows.length > 0 ? 'ready' : 'empty');
-      })
-      .catch((error) => {
-        if (__DEV__) console.warn('[Precios de referencia] No se pudo actualizar la consulta.', error);
-        if (active) setStatus((current) => (current === 'loading' ? 'error' : current));
-      });
-    return () => { active = false; };
-  }, [ean]);
+  const { rows, fetchedAt, status, stale, refreshing, refresh, lowest, mixedPresentations, ageLabel: age } = useMarketPrices(ean);
 
   if (!isValidEan(ean)) return null;
-
-  const update = async () => {
-    if (refreshing) return;
-    setRefreshing(true);
-    try {
-      const result = await refreshMarketPrices(ean, true);
-      setRows(result.rows);
-      setFetchedAt(result.fetchedAt);
-      setStale(result.status === 'stale');
-      if (result.status === 'offline' && result.rows.length === 0) setStatus('offline');
-      else if (result.status === 'error' && result.rows.length === 0) setStatus('error');
-      else setStatus(result.rows.length > 0 ? 'ready' : 'empty');
-    } catch (error) {
-      if (__DEV__) console.warn('[Precios de referencia] La actualización manual falló.', error);
-      setStatus((current) => (current === 'loading' ? 'error' : current));
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  const lowest = lowestComparablePrice(rows);
-  const mixedPresentations = presentationsDiffer(rows);
-  const age = dataAgeLabel(fetchedAt);
 
   return (
     <View style={[s.wrap, { borderColor: t.line, backgroundColor: t.panel }]}>
       <View style={s.head}>
         <View style={{ flex: 1 }}>
           <Text style={[s.title, { color: t.fg }]}>Precios de referencia del mercado</Text>
-          <Text style={{ color: t.muted, fontSize: 12, marginTop: 3 }}>Información publicada por supermercados. Los precios pueden variar según ubicación y disponibilidad. No modifica tus precios ni tu inventario.</Text>
+          <Text style={{ color: t.muted, fontSize: 11, marginTop: 3 }}>Precios de supermercados, solo de referencia. No cambian los tuyos.</Text>
         </View>
-        <Pressable onPress={update} disabled={refreshing} hitSlop={10} accessibilityLabel="Actualizar precios de referencia" style={{ padding: 6, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Pressable onPress={() => void refresh()} disabled={refreshing} hitSlop={10} accessibilityLabel="Actualizar precios de referencia" style={{ padding: 6, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
           {refreshing ? <ActivityIndicator size="small" color={t.accent} /> : <Ionicons name="refresh-outline" size={18} color={t.accent} />}
           <Text style={{ color: t.accent, fontSize: 12, fontWeight: '700' }}>Actualizar</Text>
         </Pressable>
