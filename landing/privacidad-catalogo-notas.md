@@ -13,6 +13,12 @@ Se leyó el flujo real en:
 
 La búsqueda web se agotó por límite de consultas después de las primeras búsquedas. Las normas colombianas se contrastaron directamente en las páginas oficiales de Función Pública. Treinta quedó sin verificación.
 
+## Resuelto en esta iteración
+
+- El aviso de consentimiento ya incluye la presentación del producto.
+- La etiqueta visible del catálogo ya no usa “anónimo”; ahora dice “Ayudar a mejorar el catálogo” y la línea “Sin tu nombre ni datos de tu tienda”.
+- La tabla `contribution_limits` se limpia con una tarea diaria para conservar solo los últimos 7 días. El despliegue del Worker queda pendiente.
+
 ## Fuentes consultadas
 
 | Fuente | Enlace | Qué se tomó |
@@ -34,7 +40,7 @@ La búsqueda web se agotó por límite de consultas después de las primeras bú
 - La ubicación exacta de los servidores de Cloudflare que procesarán la D1 y el Worker. El borrador parte del contexto del producto: Cloudflare está fuera de Colombia.
 - Si la operación debe clasificarse como transferencia o transmisión internacional y qué contrato o mecanismo exige la normativa. Es una decisión jurídica pendiente.
 - La obligación de registrar la base de datos, designar un oficial o área de protección de datos y los datos completos del responsable. No se inventaron.
-- El plazo de conservación. El esquema actual no tiene caducidad automática.
+- El plazo de conservación de votos, hashes y nombres publicados. La limpieza de límites diarios ya quedó definida en 7 días; el resto del esquema no tiene caducidad automática.
 - Si se implementará la eliminación de aportes ya publicados o solo la exclusión de nuevas contribuciones.
 - El texto y alcance de una licencia definitiva para el aporte. Open Food Facts y Open Products Facts usan ODbL para sus bases, pero Surtivox no adopta esa licencia en este borrador.
 - La política de Treinta. No se encontró una página oficial verificable en esta sesión.
@@ -43,13 +49,13 @@ La búsqueda web se agotó por límite de consultas después de las primeras bú
 
 ## Decisiones pendientes para el dueño
 
-1. **Plazo de retención** de votos, hashes, límites diarios y nombres publicados.
+1. **Plazo de retención** de votos, hashes y nombres publicados. La limpieza de límites diarios ya está definida en 7 días.
 2. **Borrado de aportes ya publicados**: decidir si se ofrece, cómo se atiende y qué efecto tiene sobre el consenso.
 3. **Responsable del tratamiento**: nombre o razón social, domicilio, dirección, teléfono y correo; designar persona o área para derechos.
 4. **Registro y oficialía**: determinar si hay obligación de registrar la base o designar un oficial/área de protección de datos.
 5. **Transferencia internacional**: revisar la ubicación, el contrato con Cloudflare y la base legal aplicable.
 6. **Licencia del aporte**: validar el permiso no exclusivo propuesto o decidir una licencia abierta.
-7. **Aviso de la app**: decidir si se añade “presentación” a la frase actual, que solo menciona código y nombre.
-8. **Uso de “anónimo”**: validar la explicación de dato seudónimo en la app, la landing y esta política.
+7. **Aviso de la app**: resuelto; ya incluye la presentación. Queda verificar su redacción final antes de publicar.
+8. **Uso de “anónimo”**: resuelto en la etiqueta visible de la app; la explicación de dato seudónimo sigue pendiente de revisión legal.
 9. **Revisión por un abogado colombiano** antes de publicar.
 10. **Publicación**: no enlazar este borrador ni sustituir `landing/privacidad.html` hasta completar las decisiones anteriores.

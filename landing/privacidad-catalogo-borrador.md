@@ -4,7 +4,7 @@ Este documento es un borrador de trabajo para revisión del responsable del proy
 
 | Versión | Fecha de preparación | Estado | Fecha de vigencia |
 | --- | --- | --- | --- |
-| 0.1 | 1 de noviembre de 2026 | Borrador | Pendiente de aprobación |
+| 0.2 | 1 de noviembre de 2026 | Borrador | Pendiente de aprobación |
 
 ## 1. Qué es el catálogo comunitario
 
@@ -37,9 +37,7 @@ Se usa para comparar nombres propuestos por distintas instalaciones y publicar u
 
 La contribución es opcional. La normativa colombiana exige una autorización previa e informada; el silencio no equivale a autorización (Ley 1581 de 2012, artículo 9; Decreto 1377 de 2013, artículo 7). La app muestra este aviso antes de la primera contribución:
 
-> “¿Quieres ayudar a completar el catálogo? Se compartirá solo el código y el nombre del producto, sin precios ni datos de tu tienda.”
-
-La app también puede recibir la presentación del producto, aunque el aviso actual no la menciona. Antes de publicar esta política debe decidirse si el aviso se ajusta para incluirla o si la presentación deja de enviarse.
+> “¿Quieres ayudar a completar el catálogo? Se compartirá solo el código, el nombre y la presentación del producto, sin precios ni datos de tu tienda.”
 
 Si el tendero elige “Ahora no”, no se envían contribuciones y no se vuelve a preguntar automáticamente. Puede activar la ayuda después desde Ajustes.
 
@@ -53,16 +51,16 @@ Cuando un nombre alcanza el umbral, el catálogo compartido muestra:
 
 No muestra el identificador de instalación, el hash, el nombre del tendero ni el nombre de su tienda. Tampoco muestra un historial público de quién votó por cada nombre.
 
-## 5. Qué significa “anónimo” aquí
+## 5. Una contribución seudónima
 
-La etiqueta de la app usa la palabra “anónimo”. Para evitar confusiones, este borrador lo explica así:
+La app no promete anonimato total. La contribución se describe así:
 
 - No se publica el nombre de la persona ni el de la tienda.
 - El servidor no guarda el identificador aleatorio de instalación tal como lo recibe. Calcula un hash SHA-256 con una sal secreta y guarda únicamente ese hash en su base interna de votos y límites.
 - El hash no se muestra en el catálogo público.
 - Aun así, un hash de instalación es un dato seudónimo, no una garantía de anonimato absoluto. Si alguien obtuviera el identificador original y la sal, o pudiera cruzar información adicional, podría intentar relacionar una contribución con una instalación. Surtivox no publica esos elementos, pero no debe prometer un anonimato irreversible.
 
-Por eso, en este documento se habla de contribución seudónima y no se usa “anónimo” sin esta aclaración.
+Por eso, en este documento se habla de contribución seudónima y no se presenta como una contribución totalmente anónima.
 
 ## 6. Quién procesa los datos
 
@@ -74,13 +72,13 @@ El tratamiento fuera de Colombia debe revisarse con un abogado para determinar l
 
 ## 7. Cuánto tiempo se conservan
 
-**Pendiente de decisión del dueño.** El sistema no tiene actualmente un plazo automático de eliminación para los votos, los hashes de instalación, los límites diarios ni los nombres publicados.
+**Pendiente de decisión del dueño** para los votos, los hashes de instalación y los nombres publicados. La tabla de límites diarios se limpia automáticamente con una tarea diaria y conserva solo los últimos 7 días.
 
 Antes de publicar esta política debe definirse:
 
 - Cuánto tiempo se conservan los votos y los hashes.
 - Cuánto tiempo se conservan los nombres publicados.
-- Qué ocurre con los registros de límites diarios.
+- La limpieza de límites diarios ya está definida en 7 días.
 - Si se conserva algún registro mínimo para atender solicitudes legales o reclamos.
 
 No debe inventarse un plazo en este borrador.
@@ -89,7 +87,7 @@ No debe inventarse un plazo en este borrador.
 
 El tendero puede desactivar la ayuda en:
 
-**Más → Privacidad → “Ayudar a mejorar el catálogo (anónimo)”**
+**Más → Privacidad → “Ayudar a mejorar el catálogo”**
 
 Al desactivarla:
 
@@ -123,10 +121,10 @@ El alcance definitivo de esta autorización y la conveniencia de usar una licenc
 
 ## 12. Vigencia y control de versiones
 
-- Versión: 0.1.
+- Versión: 0.2.
 - Fecha de preparación: 1 de noviembre de 2026.
 - Fecha de vigencia: pendiente de aprobación; este documento no está publicado.
-- Cambios: versión inicial para revisión. Cualquier cambio sustancial debe quedar registrado en una nueva versión y revisarse antes de publicarse.
+- Cambios: se añadió la presentación al aviso, se retiró la etiqueta “anónimo” de la app y se documentó la limpieza de límites diarios a 7 días. Cualquier cambio sustancial debe quedar registrado en una nueva versión y revisarse antes de publicarse.
 
 ## 13. Revisión pendiente
 

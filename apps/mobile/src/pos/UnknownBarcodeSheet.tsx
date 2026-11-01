@@ -147,7 +147,7 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
       if (!code) return;
       showAlert(
         '¿Quieres ayudar a completar el catálogo?',
-        'Se compartirá solo el código y el nombre del producto, sin precios ni datos de tu tienda.',
+        'Se compartirá solo el código, el nombre y la presentación del producto, sin precios ni datos de tu tienda.',
         [
           {
             text: 'Ahora no',

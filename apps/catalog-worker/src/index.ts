@@ -7,6 +7,7 @@ import {
   validateItem,
   type CatalogVote,
 } from './validation.ts';
+import { limitCutoffDay } from './retention.ts';
 
 interface D1RunResult {
   success: boolean;
@@ -172,6 +173,15 @@ async function catalogContribute(env: Env, request: Request, now: number): Promi
   return json({ accepted, rejected });
 }
 
+interface ScheduledEvent {
+  scheduledTime: number;
+  cron: string;
+}
+
+async function purgeExpiredLimits(db: D1Database, now: number): Promise<void> {
+  await db.prepare('DELETE FROM contribution_limits WHERE day < ?').bind(limitCutoffDay(now)).run();
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -179,5 +189,9 @@ export default {
     if (url.pathname === '/catalog/lookup' && request.method === 'GET') return catalogLookup(env.DB, request);
     if (url.pathname === '/catalog/contribute' && request.method === 'POST') return catalogContribute(env, request, Date.now());
     return json({ error: 'not_found' }, 404);
+  },
+
+  async scheduled(_event: ScheduledEvent, env: Env): Promise<void> {
+    await purgeExpiredLimits(env.DB, Date.now());
   },
 };

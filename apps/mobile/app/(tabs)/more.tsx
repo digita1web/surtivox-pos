@@ -209,9 +209,9 @@ export default function More() {
       <Text style={[s.section, { color: t.muted }]}>PRIVACIDAD</Text>
       <View style={[s.catalogCard, { backgroundColor: t.panel, borderColor: t.line }]}>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: t.fg, fontWeight: '800' }}>Ayudar a mejorar el catálogo (anónimo)</Text>
+          <Text style={{ color: t.fg, fontWeight: '800' }}>Ayudar a mejorar el catálogo</Text>
           <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 2 }}>
-            Solo se comparte el código y el nombre del producto, sin precios ni datos de tu tienda.
+            Sin tu nombre ni datos de tu tienda.
           </Text>
           <Pressable onPress={() => { void Linking.openURL('https://digita1web.github.io/surtivox-pos/privacidad.html').catch(() => {}); }} hitSlop={8} style={{ marginTop: 6, alignSelf: 'flex-start' }}>
             <Text style={{ color: t.accent, fontSize: 12, fontWeight: '700' }}>Política de privacidad</Text>
