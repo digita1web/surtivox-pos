@@ -20,7 +20,7 @@ import {
   isGenericCatalogName,
 } from './catalogCore';
 
-export const CATALOG_URL = '';
+export const CATALOG_URL = 'https://surtivox-catalogo.surtivox.workers.dev';
 
 const LOOKUP_TIMEOUT_MS = 2500;
 const FLUSH_TIMEOUT_MS = 8000;

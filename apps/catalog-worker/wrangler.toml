@@ -1,4 +1,4 @@
-name = "surtivox-catalog"
+name = "surtivox-catalogo"
 main = "src/index.ts"
 compatibility_date = "2024-09-23"
 workers_dev = true
@@ -9,7 +9,7 @@ CATALOG_MIN_CONTRIBUTORS = "2"
 [[d1_databases]]
 binding = "DB"
 database_name = "surtivox-catalog"
-database_id = "b6740661-3359-4780-aff9-6cd5624992a7"
+database_id = "REPLACE_WITH_DATABASE_ID"
 
 [observability]
 enabled = true
