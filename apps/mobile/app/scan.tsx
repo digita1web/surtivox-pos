@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, Modal, FlatList, StyleSheet, Vibration } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
+import { type BarcodeScanningResult } from 'expo-camera';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { computeCart, asMinor, asBps } from '@surtivox/pos-core';
 import { getStore, findProductByBarcode, getMarketPricesCache, type Store, type Product } from '../src/repos';
@@ -17,6 +17,7 @@ import { Thumb } from '../src/pos/Thumb';
 import { useTheme, space, radius, type as ty } from '../src/theme';
 import { tracksInventory } from '../src/pos/stockPolicy';
 import { UnknownBarcodeSheet } from '../src/pos/UnknownBarcodeSheet';
+import { ScannerCamera } from '../src/pos/ScannerCamera';
 import { Screen, IconButton, listProps } from '../src/pos/Screen';
 
 interface ScanRow { product: Product; quantity: number }
@@ -30,7 +31,6 @@ export default function Scan() {
   const cart = useCart();
   const draft = usePurchaseDraft();
   const openCheckout = useCheckoutUI((s) => s.openCheckout);
-  const [permission, requestPermission] = useCameraPermissions();
   const [store, setStore] = useState<Store | null>(null);
   const [torch, setTorch] = useState(false);
   const [banner, setBanner] = useState<{ text: string; ok: boolean; undo?: () => void } | null>(null);
@@ -44,7 +44,6 @@ export default function Scan() {
   const bannerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { getStore().then(setStore); }, []);
-  useEffect(() => { if (permission && !permission.granted) requestPermission(); }, [permission]);
 
   const flash = (text: string, ok: boolean, ms = 1600, undo?: () => void) => {
     setBanner({ text, ok, undo });
@@ -150,23 +149,6 @@ export default function Scan() {
   };
 
   const title = isStock ? 'Reabastecer' : 'Escanear';
-  if (!permission) return <Screen title={title} scroll={false}><View /></Screen>;
-  if (!permission.granted) {
-    return (
-      <Screen title={title} scroll={false}>
-        <View style={st.center}>
-          <View style={[st.permIcon, { backgroundColor: t.accentSoft }]}><Ionicons name="camera-outline" size={30} color={t.accent} /></View>
-          <Text style={[ty.h2, { color: t.fg, marginTop: space.lg }]}>Se necesita acceso a la cámara</Text>
-          <Text style={[ty.body, { color: t.muted, textAlign: 'center', marginTop: space.sm, marginBottom: space.xl }]}>Permite el acceso a la cámara para escanear códigos de barras.</Text>
-          <Pressable onPress={requestPermission} style={[st.grant, { backgroundColor: t.accent }]}>
-            <Text style={{ color: t.accentFg, fontWeight: '800' }}>Permitir acceso a la cámara</Text>
-          </Pressable>
-          <Pressable onPress={() => router.back()} style={{ marginTop: space.lg }}><Text style={{ color: t.muted }}>Cancelar</Text></Pressable>
-        </View>
-      </Screen>
-    );
-  }
-
   const checkoutBar = (
     <Pressable onPress={finish} disabled={!isStock && count === 0}
       style={[st.checkout, { backgroundColor: t.accent, opacity: !isStock && count === 0 ? 0.5 : 1 }]}>
@@ -191,12 +173,11 @@ export default function Scan() {
     >
       {/* camera card */}
       <View style={[st.camCard, { borderColor: t.line }]}>
-        <CameraView
-          style={StyleSheet.absoluteFill}
-          facing="back"
-          enableTorch={torch}
-          onBarcodeScanned={unknownCode ? undefined : onScan}
-          barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39', 'code93', 'itf14', 'qr'] }}
+        <ScannerCamera
+          paused={unknownCode !== null}
+          torch={torch}
+          onTorchChange={setTorch}
+          onScan={onScan}
         />
         <View style={st.camScrim} pointerEvents="none" />
         <View style={st.camLabel} pointerEvents="none">
@@ -316,9 +297,6 @@ function cornerStyle(c: 'tl' | 'tr' | 'bl' | 'br', color: string) {
 
 const st = StyleSheet.create({
   camScrim: { position: 'absolute', top: 0, left: 0, right: 0, height: 78, backgroundColor: 'rgba(0,0,0,0.38)' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xxl },
-  permIcon: { width: 68, height: 68, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  grant: { borderRadius: radius.md, paddingVertical: 14, paddingHorizontal: space.xxl },
   camCard: { height: 260, marginHorizontal: space.lg, marginTop: space.lg, borderRadius: radius.xl, borderWidth: 1, overflow: 'hidden', backgroundColor: '#000' },
   list: { flex: 1 },
   camLabel: { position: 'absolute', top: 16, left: 16, right: 16 },
