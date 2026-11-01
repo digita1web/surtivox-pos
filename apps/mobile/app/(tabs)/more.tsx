@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Image, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, Image, Switch, Linking, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,7 +8,8 @@ import { useCloudEntitlement } from '../../src/subscription';
 import { useTheme, initials, space, type Theme } from '../../src/theme';
 import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { showAlert } from '../../src/pos/alert';
-import { resetAllData, seedColombianCatalog, updateAllStoreCurrencies } from '../../src/repos';
+import { getLocalSetting, resetAllData, seedColombianCatalog, setLocalSetting, updateAllStoreCurrencies } from '../../src/repos';
+import { clearCatalogQueue } from '../../src/catalog';
 import { CURRENCY_CYCLE } from '../../src/branding';
 import { resetAppCurrency, setAppCurrency, useAppCurrency } from '../../src/appCurrency';
 import { SEED_PRODUCTS } from '../../src/seedCatalog';
@@ -30,10 +31,12 @@ export default function More() {
   const [resetting, setResetting] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [currencyBusy, setCurrencyBusy] = useState(false);
+  const [catalogOptIn, setCatalogOptIn] = useState(false);
   const appCode = useAppCurrency((s) => s.code);
   useFocusEffect(useCallback(() => {
     cloud.refresh();
     getReminderCount().then(setReminderCount);
+    getLocalSetting('catalog_opt_in').then((value) => setCatalogOptIn(value === '1')).catch(() => {});
   }, [cloud.refresh]));
 
   const runReset = async () => {
@@ -203,6 +206,30 @@ export default function More() {
         </>
       )}
 
+      <Text style={[s.section, { color: t.muted }]}>PRIVACIDAD</Text>
+      <View style={[s.catalogCard, { backgroundColor: t.panel, borderColor: t.line }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: t.fg, fontWeight: '800' }}>Ayudar a mejorar el catálogo (anónimo)</Text>
+          <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 2 }}>
+            Solo se comparte el código y el nombre del producto, sin precios ni datos de tu tienda.
+          </Text>
+          <Pressable onPress={() => { void Linking.openURL('https://digita1web.github.io/surtivox-pos/privacidad.html').catch(() => {}); }} hitSlop={8} style={{ marginTop: 6, alignSelf: 'flex-start' }}>
+            <Text style={{ color: t.accent, fontSize: 12, fontWeight: '700' }}>Política de privacidad</Text>
+          </Pressable>
+        </View>
+        <Switch
+          value={catalogOptIn}
+          onValueChange={(next) => {
+            setCatalogOptIn(next);
+            void setLocalSetting('catalog_opt_in', next ? '1' : '0').catch(() => {});
+            if (!next) void clearCatalogQueue().catch(() => {});
+          }}
+          trackColor={{ false: t.line, true: t.accentSoft }}
+          thumbColor={catalogOptIn ? t.accent : t.muted}
+          accessibilityLabel="Ayudar a mejorar el catálogo"
+        />
+      </View>
+
       <Text style={[s.section, { color: t.muted }]}>GESTIÓN</Text>
       <Group t={t}>
         {manage.map((m, i) => (
@@ -297,6 +324,7 @@ const s = StyleSheet.create({
   section: { fontSize: 12, fontWeight: '800', letterSpacing: 0.6, marginTop: 24, marginBottom: 8, marginLeft: 4 },
   group: { borderWidth: 1, borderRadius: 16, overflow: 'hidden' },
   currencyBtn: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 16, padding: 14, marginTop: 10 },
+  catalogCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, borderWidth: 1, borderRadius: 16, padding: 14 },
   seedBtn: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 16, padding: 14 },
   seedIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   dangerBtn: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 16, padding: 14 },

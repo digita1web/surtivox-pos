@@ -33,6 +33,9 @@ import { useMoney } from './ui';
 import { useMarketPrices } from './useMarketPrices';
 import { MarketPricesCompactView } from './MarketPricesCompact';
 import { implicitMarkupBps, markupsForLast } from './marginMemory';
+import { CATALOG_URL, enqueueContribution, flushOutbox } from '../catalog';
+import { isGenericCatalogName } from '../catalogCore';
+import { showAlert } from './alert';
 
 interface UnknownBarcodeSheetProps {
   code: string | null;
@@ -129,6 +132,44 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
     })
     : null;
   const hintColor = margin?.tone === 'danger' ? t.danger : margin?.tone === 'warn' ? t.warn : t.muted;
+  const offerContribution = async (productName: string) => {
+    if (!nameTouched.current || !CATALOG_URL.trim()) return;
+    if (!productName.trim() || isGenericCatalogName(productName)) return;
+    try {
+      const optIn = await getLocalSetting('catalog_opt_in');
+      if (optIn === '0') return;
+      if (optIn === '1') {
+        if (await enqueueContribution({ code: code ?? '', name: productName, presentation: null })) {
+          void flushOutbox();
+        }
+        return;
+      }
+      if (!code) return;
+      showAlert(
+        '¿Quieres ayudar a completar el catálogo?',
+        'Se compartirá solo el código y el nombre del producto, sin precios ni datos de tu tienda.',
+        [
+          {
+            text: 'Ahora no',
+            style: 'cancel',
+            onPress: () => { void setLocalSetting('catalog_opt_in', '0').catch(() => {}); },
+          },
+          {
+            text: 'Sí, ayudar',
+            onPress: () => {
+              void setLocalSetting('catalog_opt_in', '1')
+                .then(() => enqueueContribution({ code, name: productName, presentation: null }))
+                .then((queued) => { if (queued) void flushOutbox(); })
+                .catch(() => {});
+            },
+          },
+        ],
+      );
+    } catch {
+      return;
+    }
+  };
+
   const sourceLabel = resolveHint?.nameSource === 'community'
     ? `Confirmado por ${resolveHint.communityContributors ?? 0} ${resolveHint.communityContributors === 1 ? 'tienda' : 'tiendas'}`
     : resolveHint?.nameSource === 'market'
@@ -189,6 +230,7 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
           .catch(() => {});
       }
 
+      void offerContribution(name);
       onAdded(product, quantity, previousQty);
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));

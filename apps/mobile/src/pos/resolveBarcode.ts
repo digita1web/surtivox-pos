@@ -205,9 +205,32 @@ async function resolveUncached(
   if (signal?.aborted) return null;
 
   const cachedHint = hintFromMarketRows(marketCache.rows);
+  const cachedCommunity = cachedHint || local?.status === 'found'
+    ? await withTimeout(deps.lookupCatalog(code, signal), CATALOG_TIMEOUT_MS, signal).catch(() => null)
+    : null;
   if (cachedHint) {
     if (isMarketPricesStale(marketCache.fetchedAt)) {
       void deps.refreshMarketPrices(code).catch(() => {});
+    }
+    if (cachedCommunity?.status === 'found') {
+      const name = cleanProductName(cachedCommunity.name);
+      if (name) {
+        const hint: ResolveHint = {
+          name,
+          nameSource: 'community',
+          communityContributors: cachedCommunity.contributors,
+          ...(cachedHint.reference ? { reference: cachedHint.reference } : {}),
+        };
+        await deps.saveBarcodeLookup({
+          barcode: code,
+          status: 'found',
+          name,
+          imageUrl: null,
+          source: null,
+          checkedAt: Date.now(),
+        });
+        return hint;
+      }
     }
     return cachedHint;
   }
@@ -216,6 +239,25 @@ async function resolveUncached(
     const name = cleanProductName(local.name);
     const imageUrl = local.image_url ?? undefined;
     if (name || imageUrl) {
+      if (cachedCommunity?.status === 'found') {
+        const communityName = cleanProductName(cachedCommunity.name);
+        if (communityName) {
+          await deps.saveBarcodeLookup({
+            barcode: code,
+            status: 'found',
+            name: communityName,
+            imageUrl: imageUrl ?? null,
+            source: null,
+            checkedAt: Date.now(),
+          });
+          return {
+            name: communityName,
+            nameSource: 'community',
+            communityContributors: cachedCommunity.contributors,
+            ...(imageUrl ? { imageUrl } : {}),
+          };
+        }
+      }
       return {
         ...(name ? { name } : {}),
         ...(imageUrl ? { imageUrl } : {}),
