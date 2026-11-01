@@ -16,8 +16,7 @@
         "backgroundColor": "#0B0E12"
       },
       "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.CAMERA"
       ]
     },
     "ios": {
@@ -33,14 +32,16 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Surtivox POS uses the camera to scan product barcodes."
+          "cameraPermission": "Surtivox POS usa la cámara para escanear códigos de barras de productos.",
+          "recordAudioAndroid": false
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Surtivox POS uses your photos to set product images.",
-          "cameraPermission": "Surtivox POS uses the camera to take product photos."
+          "photosPermission": "Surtivox POS usa tus fotos para asignar imágenes a los productos.",
+          "cameraPermission": "Surtivox POS usa la cámara para tomar fotos de productos.",
+          "microphonePermission": false
         }
       ],
       "expo-image",
@@ -61,7 +62,8 @@
         {
           "android": {
             "enableMinifyInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "buildArchs": ["arm64-v8a", "armeabi-v7a"]
           }
         }
       ]

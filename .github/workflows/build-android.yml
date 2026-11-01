@@ -67,6 +67,15 @@ jobs:
         working-directory: apps/mobile/android
         run: ./gradlew assembleRelease --no-daemon
 
+      - name: Report APK size
+        run: |
+          APK=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          ls -lh "$APK"
+          echo '### APK release' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          ls -lh "$APK" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
