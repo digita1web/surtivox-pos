@@ -9,7 +9,7 @@ CATALOG_MIN_CONTRIBUTORS = "2"
 [[d1_databases]]
 binding = "DB"
 database_name = "surtivox-catalog"
-database_id = "REPLACE_WITH_DATABASE_ID"
+database_id = "b6740661-3359-4780-aff9-6cd5624992a7"
 
 [observability]
 enabled = true
