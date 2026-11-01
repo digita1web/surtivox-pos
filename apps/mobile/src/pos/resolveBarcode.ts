@@ -1,6 +1,7 @@
 import { createInFlightRequests, isMarketPricesStale, isValidEan } from '../marketPrices.ts';
 import { lowestMarketPrice } from '../marketPriceSummary.ts';
 import type { BarcodeLookupOutcome } from './lookup';
+import type { CatalogLookupResult } from '../catalog';
 import type {
   BarcodeLookupRow,
   MarketPriceRow,
@@ -11,6 +12,7 @@ import type {
 const NEGATIVE_CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 const MARKET_TIMEOUT_MS = 3000;
 const OFF_TIMEOUT_MS = 2500;
+const CATALOG_TIMEOUT_MS = 2500;
 const TIMEOUT_MESSAGE = 'timeout';
 
 const GENERIC_NAMES = new Set([
@@ -46,8 +48,9 @@ export interface ResolveReference {
 export interface ResolveHint {
   name?: string;
   imageUrl?: string;
-  nameSource?: 'market' | 'off';
+  nameSource?: 'community' | 'market' | 'off';
   nameProvider?: string;
+  communityContributors?: number;
   reference?: ResolveReference;
 }
 
@@ -66,6 +69,7 @@ export interface ResolveDependencies {
   getBarcodeLookup(barcode: string): Promise<BarcodeLookupRow | null>;
   saveBarcodeLookup(input: BarcodeLookupSaveInput): Promise<void>;
   lookupBarcode(barcode: string, signal?: AbortSignal): Promise<BarcodeLookupOutcome>;
+  lookupCatalog(barcode: string, signal?: AbortSignal): Promise<CatalogLookupResult>;
 }
 
 interface NameRow {
@@ -178,13 +182,14 @@ function hintFromMarketRows(rows: readonly MarketPriceRow[]): ResolveHint | null
 }
 
 async function defaultDependencies(): Promise<ResolveDependencies> {
-  const [repos, lookup] = await Promise.all([import('../repos'), import('./lookup')]);
+  const [repos, lookup, catalog] = await Promise.all([import('../repos'), import('./lookup'), import('../catalog')]);
   return {
     getMarketPricesCache: repos.getMarketPricesCache,
     refreshMarketPrices: (ean) => repos.refreshMarketPrices(ean),
     getBarcodeLookup: repos.getBarcodeLookup,
     saveBarcodeLookup: repos.saveBarcodeLookup,
     lookupBarcode: lookup.lookupBarcode,
+    lookupCatalog: catalog.lookupCatalog,
   };
 }
 
@@ -223,25 +228,29 @@ async function resolveUncached(
     return null;
   }
 
-  const [marketResult, offResult] = await Promise.allSettled([
+  const [marketResult, offResult, catalogResult] = await Promise.allSettled([
     withTimeout(deps.refreshMarketPrices(code), MARKET_TIMEOUT_MS, signal),
     withTimeout(deps.lookupBarcode(code, signal), OFF_TIMEOUT_MS, signal),
+    withTimeout(deps.lookupCatalog(code, signal), CATALOG_TIMEOUT_MS, signal),
   ]);
   if (signal?.aborted) return null;
 
   const market = marketResult.status === 'fulfilled' ? marketResult.value : null;
   const off = offResult.status === 'fulfilled' ? offResult.value : null;
+  const catalog = catalogResult.status === 'fulfilled' ? catalogResult.value : null;
   const marketHint = market ? hintFromMarketRows(market.rows) : null;
   const offInfo = off?.status === 'found' ? off.info : undefined;
   const offName = cleanProductName(offInfo?.name);
-  const name = marketHint?.name ?? offName;
+  const communityName = catalog?.status === 'found' ? cleanProductName(catalog.name) : undefined;
+  const name = communityName ?? marketHint?.name ?? offName;
   const imageUrl = offInfo?.imageUrl;
-  const nameSource = marketHint?.name ? 'market' : offName ? 'off' : undefined;
+  const nameSource = communityName ? 'community' : marketHint?.name ? 'market' : offName ? 'off' : undefined;
   const result: ResolveHint = {
     ...(name ? { name } : {}),
     ...(imageUrl ? { imageUrl } : {}),
     ...(nameSource ? { nameSource } : {}),
     ...(marketHint?.nameProvider ? { nameProvider: marketHint.nameProvider } : {}),
+    ...(catalog?.status === 'found' ? { communityContributors: catalog.contributors } : {}),
     ...(marketHint?.reference ? { reference: marketHint.reference } : {}),
   };
 
@@ -251,7 +260,7 @@ async function resolveUncached(
       status: 'found',
       name: name ?? null,
       imageUrl: imageUrl ?? null,
-      source: nameSource ?? (imageUrl ? 'off' : null),
+      source: nameSource === 'community' ? null : nameSource ?? (imageUrl ? 'off' : null),
       checkedAt: Date.now(),
     });
     return result;
@@ -263,8 +272,9 @@ async function resolveUncached(
     market.rows.length === 0 &&
     market.errors.length === 0;
   const offValidEmpty = off?.status === 'not_found';
+  const catalogValidEmpty = catalog?.status === 'not_found';
 
-  if (marketValidEmpty && offValidEmpty) {
+  if (marketValidEmpty && offValidEmpty && catalogValidEmpty) {
     await deps.saveBarcodeLookup({
       barcode: code,
       status: 'not_found',

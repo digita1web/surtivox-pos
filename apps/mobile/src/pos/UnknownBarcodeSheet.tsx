@@ -129,11 +129,13 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
     })
     : null;
   const hintColor = margin?.tone === 'danger' ? t.danger : margin?.tone === 'warn' ? t.warn : t.muted;
-  const sourceLabel = resolveHint?.nameSource === 'market'
-    ? `Sugerido por ${resolveHint.nameProvider ?? 'supermercado'}`
-    : resolveHint?.nameSource === 'off'
-      ? 'Sugerido por Open Food Facts'
-      : null;
+  const sourceLabel = resolveHint?.nameSource === 'community'
+    ? `Confirmado por ${resolveHint.communityContributors ?? 0} ${resolveHint.communityContributors === 1 ? 'tienda' : 'tiendas'}`
+    : resolveHint?.nameSource === 'market'
+      ? `Sugerido por ${resolveHint.nameProvider ?? 'supermercado'}`
+      : resolveHint?.nameSource === 'off'
+        ? 'Sugerido por Open Food Facts'
+        : null;
 
   const add = async (inventory = saveInventory) => {
     if (!code || !store || busy) return;

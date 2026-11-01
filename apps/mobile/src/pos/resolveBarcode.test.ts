@@ -33,7 +33,7 @@ function marketRow(overrides: Record<string, unknown> = {}) {
 }
 
 function fakeDeps(overrides: Partial<ResolveDependencies> = {}) {
-  const calls = { refresh: 0, off: 0, saves: [] as unknown[] };
+  const calls = { refresh: 0, off: 0, catalog: 0, saves: [] as unknown[] };
   const deps: ResolveDependencies = {
     getMarketPricesCache: async () => ({ rows: [], fetchedAt: null }),
     refreshMarketPrices: async () => {
@@ -44,6 +44,10 @@ function fakeDeps(overrides: Partial<ResolveDependencies> = {}) {
     saveBarcodeLookup: async (input) => { calls.saves.push(input); },
     lookupBarcode: async () => {
       calls.off += 1;
+      return { status: 'not_found' };
+    },
+    lookupCatalog: async () => {
+      calls.catalog += 1;
       return { status: 'not_found' };
     },
     ...overrides,
@@ -223,5 +227,42 @@ test('partial Worker errors prevent negative caching', async () => {
   });
 
   assert.equal(await resolveHints('7702511000052', undefined, deps), null);
+  assert.equal(calls.saves.length, 0);
+});
+
+test('community name wins over market and Open Food Facts', async () => {
+  const { deps, calls } = fakeDeps({
+    lookupCatalog: async () => ({ status: 'found', name: 'ARROZ COMUNITARIO', presentation: '500 g', contributors: 3 }),
+    refreshMarketPrices: async () => ({
+      rows: [marketRow({ product_name: 'ARROZ DEL SUPERMERCADO' })],
+      fetchedAt: NOW,
+      status: 'fresh',
+      errors: [],
+    }),
+    lookupBarcode: async () => ({
+      status: 'found',
+      info: { name: 'OPEN FOOD RICE', imageUrl: 'https://example.test/rice.jpg' },
+    }),
+  });
+
+  const hint = await resolveHints('7702511000053', undefined, deps);
+  assert.equal(hint?.name, 'Arroz Comunitario');
+  assert.equal(hint?.nameSource, 'community');
+  assert.equal(hint?.communityContributors, 3);
+  assert.equal(hint?.reference?.price_minor, 4200);
+  assert.equal(calls.saves.length, 1);
+  assert.partialDeepStrictEqual(calls.saves[0], {
+    barcode: '7702511000053',
+    status: 'found',
+    source: null,
+  });
+});
+
+test('catalog errors prevent negative caching', async () => {
+  const { deps, calls } = fakeDeps({
+    lookupCatalog: async () => ({ status: 'error' }),
+  });
+
+  assert.equal(await resolveHints('7702511000054', undefined, deps), null);
   assert.equal(calls.saves.length, 0);
 });
