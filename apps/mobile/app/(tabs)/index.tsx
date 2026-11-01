@@ -18,6 +18,7 @@ import { useMoney } from '../../src/pos/ui';
 import { TourGuide } from '../../src/components/TourGuide';
 import { hasSeenFirstRunGuide } from '../../src/localFlags';
 import { useTheme, space, radius, type as ty, type Theme } from '../../src/theme';
+import { greetingForDate } from '../../src/greeting';
 
 export default function Home() {
   const t = useTheme();
@@ -35,10 +36,18 @@ export default function Home() {
   const [strip, setStrip] = useState<Product[]>([]);
   const [alerts, setAlerts] = useState<LowStockItem[]>([]);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [greeting, setGreeting] = useState(() => greetingForDate(new Date()));
 
   useEffect(() => {
     hasSeenFirstRunGuide().then((seen) => { if (!seen) setGuideOpen(true); });
   }, []);
+
+  useFocusEffect(useCallback(() => {
+    const updateGreeting = () => setGreeting(greetingForDate(new Date()));
+    updateGreeting();
+    const timer = setInterval(updateGreeting, 60_000);
+    return () => clearInterval(timer);
+  }, []));
 
   useFocusEffect(useCallback(() => {
     todayStats(store.id).then(setStats);
@@ -56,7 +65,7 @@ export default function Home() {
     <View style={[s.root, { backgroundColor: t.bg }]}>
       <TabHeader
         title={store.name}
-        subtitle="Hola de nuevo"
+        subtitle={greeting}
         right={
           <>
             <IconButton icon="search-outline" label="Buscar productos" onPress={() => router.push('/products')} />
