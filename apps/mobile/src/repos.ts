@@ -367,6 +367,80 @@ export async function saveBarcodeLookup(input: {
   );
 }
 
+export interface CatalogOutboxRow {
+  id: string;
+  barcode: string;
+  name: string;
+  presentation: string | null;
+  attempts: number;
+  created_at: number;
+}
+
+export interface CatalogCacheRow {
+  barcode: string;
+  name: string | null;
+  presentation: string | null;
+  contributors: number | null;
+  status: 'found' | 'not_found';
+  checked_at: number;
+}
+
+export async function enqueueCatalogContribution(input: {
+  barcode: string;
+  name: string;
+  presentation?: string | null;
+}): Promise<boolean> {
+  const result = await getDb().runAsync(
+    'INSERT OR IGNORE INTO catalog_outbox (id,barcode,name,presentation,attempts,created_at) VALUES (?,?,?,?,0,?)',
+    [newId(), input.barcode.trim(), input.name.trim(), input.presentation?.trim() || null, Date.now()],
+  );
+  return (result.changes ?? 0) > 0;
+}
+
+export async function listCatalogOutbox(limit = 100): Promise<CatalogOutboxRow[]> {
+  return getDb().getAllAsync<CatalogOutboxRow>(
+    'SELECT id,barcode,name,presentation,attempts,created_at FROM catalog_outbox ORDER BY created_at LIMIT ?',
+    [limit],
+  );
+}
+
+export async function deleteCatalogContributions(ids: readonly string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const placeholders = ids.map(() => '?').join(',');
+  await getDb().runAsync(`DELETE FROM catalog_outbox WHERE id IN (${placeholders})`, [...ids]);
+}
+
+export async function incrementCatalogAttempts(ids: readonly string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const placeholders = ids.map(() => '?').join(',');
+  await getDb().runAsync(`UPDATE catalog_outbox SET attempts=attempts+1 WHERE id IN (${placeholders})`, [...ids]);
+}
+
+export async function clearCatalogOutbox(): Promise<void> {
+  await getDb().runAsync('DELETE FROM catalog_outbox');
+}
+
+export async function getCatalogCache(barcode: string): Promise<CatalogCacheRow | null> {
+  return (await getDb().getFirstAsync<CatalogCacheRow>(
+    'SELECT barcode,name,presentation,contributors,status,checked_at FROM catalog_cache WHERE barcode=?',
+    [barcode],
+  )) ?? null;
+}
+
+export async function saveCatalogCache(input: CatalogCacheRow): Promise<void> {
+  await getDb().runAsync(
+    `INSERT INTO catalog_cache (barcode,name,presentation,contributors,status,checked_at)
+     VALUES (?,?,?,?,?,?)
+     ON CONFLICT(barcode) DO UPDATE SET
+       name=excluded.name,
+       presentation=excluded.presentation,
+       contributors=excluded.contributors,
+       status=excluded.status,
+       checked_at=excluded.checked_at`,
+    [input.barcode, input.name, input.presentation, input.contributors, input.status, input.checked_at],
+  );
+}
+
 export async function getLocalSetting(key: string): Promise<string | null> {
   const row = await getDb().getFirstAsync<{ value: string }>(
     'SELECT value FROM local_settings WHERE key=?',
@@ -1287,7 +1361,7 @@ export async function deleteProduct(id: string): Promise<void> {
 }
 
 const RESET_TABLES = [
-  'barcode_lookups', 'product_review', 'market_prices', 'local_settings', 'return_items', 'returns', 'payments', 'sale_items', 'sales',
+  'barcode_lookups', 'product_review', 'market_prices', 'local_settings', 'catalog_outbox', 'catalog_cache', 'return_items', 'returns', 'payments', 'sale_items', 'sales',
   'customer_ledger', 'customers', 'purchase_items', 'purchases',
   'suppliers', 'stock_movements', 'products', 'categories', 'staff', 'stores',
 ];

@@ -24,7 +24,7 @@ function tableNames(db: DatabaseSync): string[] {
 test('runMigrations applies all schema migrations in order', async () => {
   const db = new DatabaseSync(':memory:');
   const applied = await runMigrations(adapter(db), MIGRATIONS);
-  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops', '0008_market_prices', '0009_barcode_lookups', '0010_local_settings']);
+  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops', '0008_market_prices', '0009_barcode_lookups', '0010_local_settings', '0011_catalog_client']);
 
   const tables = tableNames(db);
   for (const t of [
@@ -48,6 +48,8 @@ test('runMigrations applies all schema migrations in order', async () => {
     'barcode_lookups',
     'product_review',
     'local_settings',
+    'catalog_outbox',
+    'catalog_cache',
     '_migrations',
   ]) {
     assert.ok(tables.includes(t), `expected table ${t}, got ${tables.join(', ')}`);
@@ -131,4 +133,17 @@ test('0010 adds local settings outside sync tables', async () => {
   db.prepare('INSERT INTO local_settings (key,value) VALUES (?,?)').run('last_markup_bps', '2500');
   assert.equal((db.prepare('SELECT value FROM local_settings WHERE key=?').get('last_markup_bps') as { value: string }).value, '2500');
   assert.throws(() => db.prepare('INSERT INTO local_settings (key,value) VALUES (?,?)').run('last_markup_bps', '3000'));
+});
+
+test('0011 adds local catalog outbox and cache outside sync tables', async () => {
+  const db = new DatabaseSync(':memory:');
+  await runMigrations(adapter(db), MIGRATIONS);
+  db.prepare('INSERT INTO catalog_outbox (id,barcode,name,created_at) VALUES (?,?,?,?)')
+    .run('o1', '7702511000045', 'Arroz Diana', 1000);
+  assert.throws(() => db.prepare('INSERT INTO catalog_outbox (id,barcode,name,created_at) VALUES (?,?,?,?)')
+    .run('o2', '7702511000045', 'Arroz Diana', 2000));
+  db.prepare('INSERT INTO catalog_cache (barcode,name,status,checked_at) VALUES (?,?,?,?)')
+    .run('7702511000045', 'Arroz Diana', 'found', 1000);
+  assert.throws(() => db.prepare('INSERT INTO catalog_cache (barcode,status,checked_at) VALUES (?,?,?)')
+    .run('x', 'invalid', 1000));
 });

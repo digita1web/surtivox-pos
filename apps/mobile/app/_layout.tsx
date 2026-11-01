@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { AppState, View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -12,6 +12,7 @@ import { StaffLock } from '../src/pos/StaffLock';
 import { AlertHost } from '../src/pos/alert';
 import { LaunchIntro } from '../src/pos/LaunchIntro';
 import { checkForUpdatesInBackground } from '../src/updates';
+import { flushOutbox } from '../src/catalog';
 import { useTheme } from '../src/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -39,6 +40,15 @@ export default function RootLayout() {
     SplashScreen.hideAsync().catch(() => {});
     void checkForUpdatesInBackground().catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    void flushOutbox();
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void flushOutbox();
+    });
+    return () => subscription.remove();
+  }, [ready]);
 
   return (
     <SafeAreaProvider>

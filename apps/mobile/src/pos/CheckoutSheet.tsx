@@ -8,6 +8,7 @@ import { useSession, currencyOf } from '../session';
 import { useCheckoutUI } from '../checkoutUI';
 import { settleCash } from '../checkoutMath';
 import { checkoutSale, type PaymentMethod, type Customer } from '../repos';
+import { flushOutbox } from '../catalog';
 import { useTheme } from '../theme';
 import { Thumb } from './Thumb';
 import { Row, useMoney } from './ui';
@@ -91,6 +92,7 @@ export function CheckoutSheet() {
       });
       cart.clear();
       reset();
+      void flushOutbox();
       showReceipt(receipt);
     } catch (e) {
       showAlert('No se pudo completar la venta', e instanceof Error ? e.message : String(e));
