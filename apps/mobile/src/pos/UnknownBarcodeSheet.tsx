@@ -46,7 +46,7 @@ function formatPriceInput(value: string): string {
 
 function parsePrice(value: string): number {
   if (!value.trim()) return 0;
-  return parseCurrencyInput(value, APP_CURRENCY.code);
+  return parseCurrencyInput(value.replace(/\./g, ''), APP_CURRENCY.code);
 }
 
 export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSheetProps) {
@@ -105,7 +105,7 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
   })();
   const costPrice = (() => {
     if (!cost.trim()) return null;
-    try { return parseCurrencyInput(cost, APP_CURRENCY.code); } catch { return null; }
+    try { return parseCurrencyInput(cost.replace(/\./g, ''), APP_CURRENCY.code); } catch { return null; }
   })();
   const quantity = Math.max(1, Math.floor(Number(qty) || 1));
   const suggestions = suggestPrices({
