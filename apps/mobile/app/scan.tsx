@@ -247,7 +247,7 @@ export default function Scan() {
             <View style={[st.row, { backgroundColor: t.panel, borderColor: t.line }]}>
               <Thumb uri={item.product.image_uri} name={item.product.name} category={item.product.category_name} style={st.thumb} textSize={15} />
               <View style={{ flex: 1, marginLeft: space.md }}>
-                <Text style={[ty.body, { color: t.fg, fontWeight: '700' }]} numberOfLines={1}>{item.product.name}</Text>
+                <Text style={[ty.body, { color: t.fg, fontWeight: '700', flexShrink: 1, minWidth: 0 }]} numberOfLines={1} ellipsizeMode="tail" maxFontSizeMultiplier={1.3}>{item.product.name}</Text>
                 <Text style={[ty.small, { color: t.muted, marginTop: 2 }]}>{money(asMinor(item.product.selling_price))} c/u</Text>
                 {reference ? (
                   <Text style={{ color: t.faint, fontSize: 11, marginTop: 2 }} numberOfLines={1}>

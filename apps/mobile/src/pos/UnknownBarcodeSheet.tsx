@@ -5,6 +5,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -66,7 +67,9 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
   const [markups, setMarkups] = useState<number[]>(markupsForLast(null));
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [editingName, setEditingName] = useState(false);
   const nameTouched = useRef(false);
+  const nameInput = useRef<TextInput>(null);
 
   useEffect(() => {
     setName('');
@@ -79,6 +82,7 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
     setMarkups(markupsForLast(null));
     setErr(null);
     setBusy(false);
+    setEditingName(false);
     nameTouched.current = false;
 
     if (!code) return;
@@ -99,6 +103,10 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
       controller.abort();
     };
   }, [code]);
+
+  useEffect(() => {
+    if (editingName) nameInput.current?.focus();
+  }, [editingName]);
 
   const sellingPrice = (() => {
     try { return parsePrice(price); } catch { return 0; }
@@ -205,24 +213,44 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
         <View style={[s.sheet, { backgroundColor: t.panel, paddingBottom: 12 + insets.bottom }]}>
           <View style={[s.grabber, { backgroundColor: t.line }]} />
           <View style={s.head}>
-            <View style={{ flex: 1 }}>
-              <TextInput
-                value={name}
-                onChangeText={(value) => { nameTouched.current = true; setName(value); }}
-                placeholder="Producto nuevo"
-                placeholderTextColor={t.muted}
-                style={{ color: t.fg, fontSize: 19, fontWeight: '800', padding: 0 }}
-                accessibilityLabel="Nombre del producto"
-              />
-              <Text style={{ color: t.faint, fontSize: 11, fontFamily: 'monospace', marginTop: 2 }}>{code ?? ''}</Text>
-              {sourceLabel ? <Text style={{ color: t.muted, fontSize: 10, marginTop: 1 }}>{sourceLabel}</Text> : null}
+            <View style={s.titleBlock}>
+              {editingName ? (
+                <TextInput
+                  ref={nameInput}
+                  value={name}
+                  onChangeText={(value) => { nameTouched.current = true; setName(value); }}
+                  placeholder="Producto nuevo"
+                  placeholderTextColor={t.muted}
+                  multiline
+                  autoFocus
+                  maxFontSizeMultiplier={1.3}
+                  onBlur={() => setEditingName(false)}
+                  style={[s.nameInput, { color: t.fg }]}
+                  accessibilityLabel="Nombre del producto"
+                />
+              ) : (
+                <Pressable onPress={() => setEditingName(true)} style={s.nameButton} accessibilityRole="button" accessibilityLabel="Editar nombre del producto">
+                  <Text style={[s.nameText, { color: t.fg }]} numberOfLines={2} ellipsizeMode="tail" maxFontSizeMultiplier={1.3}>
+                    {name.trim() || 'Producto nuevo'}
+                  </Text>
+                </Pressable>
+              )}
+              <Text style={[s.metaText, { color: t.faint }]} numberOfLines={1} ellipsizeMode="tail" maxFontSizeMultiplier={1.3}>
+                {code ?? ''}{sourceLabel ? ` · ${sourceLabel}` : ''}
+              </Text>
             </View>
-            <Pressable onPress={onClose} hitSlop={10} accessibilityLabel="Cerrar">
+            <Pressable onPress={onClose} style={s.close} accessibilityLabel="Cerrar">
               <Ionicons name="close" size={24} color={t.muted} />
             </Pressable>
           </View>
 
-          <MarketPricesCompactView prices={prices} />
+          <ScrollView
+            style={s.body}
+            contentContainerStyle={s.bodyContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <MarketPricesCompactView prices={prices} />
 
           <Text style={{ color: t.muted, fontSize: 11, fontWeight: '700', marginTop: 6, marginBottom: 2 }}>Tu precio de venta</Text>
           <View style={[s.priceBox, { borderColor: err ? t.danger : t.line, backgroundColor: t.bg }]}>
@@ -319,20 +347,24 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
             </View>
           </View>
 
-          <Pressable
-            onPress={() => void add()}
-            disabled={busy}
-            accessibilityLabel="Agregar a la venta"
-            style={[s.primary, { backgroundColor: t.accent, opacity: busy ? 0.65 : 1 }]}
-          >
-            {busy ? (
-              <ActivityIndicator color={t.accentFg} />
-            ) : (
-              <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 16 }} numberOfLines={1}>
-                Agregar a la venta{sellingPrice > 0 ? ` · ${money(asMinor(sellingPrice))}` : ''}
-              </Text>
-            )}
-          </Pressable>
+          </ScrollView>
+
+          <View style={[s.footer, { borderTopColor: t.line }]}>
+            <Pressable
+              onPress={() => void add()}
+              disabled={busy}
+              accessibilityLabel="Agregar a la venta"
+              style={[s.primary, { backgroundColor: t.accent, opacity: busy ? 0.65 : 1 }]}
+            >
+              {busy ? (
+                <ActivityIndicator color={t.accentFg} />
+              ) : (
+                <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 16 }} numberOfLines={1}>
+                  Agregar a la venta{sellingPrice > 0 ? ` · ${money(asMinor(sellingPrice))}` : ''}
+                </Text>
+              )}
+            </Pressable>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -341,9 +373,18 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
 
 const s = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
-  sheet: { borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingHorizontal: 16, paddingTop: 8 },
+  sheet: { borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingHorizontal: 16, paddingTop: 8, maxHeight: '96%' },
   grabber: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 6 },
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 2 },
+  titleBlock: { flex: 1, minWidth: 0 },
+  nameButton: { minHeight: 44, justifyContent: 'center' },
+  nameText: { fontSize: 19, fontWeight: '800', lineHeight: 23 },
+  nameInput: { fontSize: 19, fontWeight: '800', lineHeight: 23, padding: 0, minHeight: 23, maxHeight: 48, textAlignVertical: 'top' },
+  metaText: { fontSize: 10, fontFamily: 'monospace', marginTop: 2 },
+  close: { width: 44, height: 44, flexShrink: 0, alignItems: 'center', justifyContent: 'center' },
+  body: { flexShrink: 1, minHeight: 0 },
+  bodyContent: { paddingBottom: 6 },
+  footer: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8, backgroundColor: 'transparent' },
   priceBox: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: radius.md, paddingHorizontal: 12, paddingVertical: 4, marginTop: 6 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
   chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },

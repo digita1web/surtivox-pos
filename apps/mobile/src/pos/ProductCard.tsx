@@ -54,7 +54,7 @@ function ProductCardBase({ product }: { product: Product }) {
             </View>
           )}
         </View>
-        <Text style={[s.name, { color: t.fg }]} numberOfLines={1}>{product.name}</Text>
+        <Text style={[s.name, { color: t.fg }]} numberOfLines={1} ellipsizeMode="tail" maxFontSizeMultiplier={1.3}>{product.name}</Text>
         <View style={s.priceRow}>
           <Text style={[s.price, { color: t.fg }]} numberOfLines={1}>{money(asMinor(product.selling_price))}</Text>
           <Text style={[s.stock, { color: t.muted }]} numberOfLines={1}>{tracked ? `${product.stock} ${unit}` : 'Sin control de stock'}</Text>
@@ -97,7 +97,7 @@ const s = StyleSheet.create({
   image: { width: '100%', height: 108 },
   badge: { position: 'absolute', top: 6, right: 6, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
   badgeText: { color: '#fff', fontSize: 10, fontWeight: '800', letterSpacing: 0.3 },
-  name: { fontSize: 14, fontWeight: '700', marginTop: space.sm },
+  name: { fontSize: 14, fontWeight: '700', marginTop: space.sm, flexShrink: 1, minWidth: 0 },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 6, marginTop: 3 },
   price: { fontSize: 16, fontWeight: '800', flexShrink: 1 },
   stock: { fontSize: 11.5, flexShrink: 0 },
