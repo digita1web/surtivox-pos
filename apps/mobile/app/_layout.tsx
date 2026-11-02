@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { getDb, initDatabase } from '../src/db';
+import { getDatabaseHealth, getDb, initDatabase } from '../src/db';
 import { useSession, useLocked } from '../src/session';
 import { loadAppCurrency } from '../src/appCurrency';
 import { Onboarding } from '../src/pos/Onboarding';
@@ -16,6 +16,7 @@ import { flushOutbox } from '../src/catalog';
 import { exportFullBackup } from '../src/backup';
 import { installGlobalErrorHandler } from '../src/crashHandler';
 import { truncateErrorMessage } from '../src/diagnostics';
+import { showAlert } from '../src/pos/alert';
 import { useTheme } from '../src/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -26,6 +27,7 @@ export default function RootLayout() {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bootAttempt, setBootAttempt] = useState(0);
+  const [integrityWarning, setIntegrityWarning] = useState<string | null>(null);
   const [showIntro, setShowIntro] = useState(true);
   const loadSession = useSession((s) => s.load);
   const store = useSession((s) => s.store);
@@ -33,7 +35,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     initDatabase()
-      .then(() => loadSession())
+      .then(() => {
+        const health = getDatabaseHealth();
+        if (health.status === 'corrupt') setIntegrityWarning(health.message ?? 'quick_check no devolvió un resultado válido.');
+        return loadSession();
+      })
       .then(async () => {
         await loadAppCurrency(useSession.getState().store?.currency_code ?? 'COP');
       })
@@ -65,12 +71,29 @@ export default function RootLayout() {
           <Text style={{ color: t.fg, fontSize: 22, fontWeight: '800', textAlign: 'center' }}>No se pudo abrir la base de datos</Text>
           <Text style={{ color: t.muted, marginTop: 10, textAlign: 'center' }}>No se borró nada automáticamente.</Text>
           <Pressable
-            onPress={() => { setError(null); setReady(false); setBootAttempt((value) => value + 1); }}
+            onPress={() => { setError(null); setReady(false); setIntegrityWarning(null); setBootAttempt((value) => value + 1); }}
             style={[styles.retry, { backgroundColor: t.accent }]}
           >
             <Text style={{ color: t.accentFg, fontWeight: '800' }}>Reintentar</Text>
           </Pressable>
           <Text style={{ color: t.faint, fontSize: 11, marginTop: 18, textAlign: 'center' }} numberOfLines={4}>{error}</Text>
+        </View>
+      ) : integrityWarning ? (
+        <View style={[styles.center, { backgroundColor: t.bg, padding: 24 }]}>
+          <Text style={{ color: t.fg, fontSize: 22, fontWeight: '800', textAlign: 'center' }}>La base de datos puede estar dañada</Text>
+          <Text style={{ color: t.muted, marginTop: 10, textAlign: 'center' }}>No se borró nada automáticamente. Guarda una copia antes de continuar.</Text>
+          {store ? (
+            <Pressable
+              onPress={() => { void exportFullBackup(store).catch((e) => showAlert('No se pudo guardar la copia', e instanceof Error ? e.message : String(e))); }}
+              style={[styles.retry, { backgroundColor: t.accent }]}
+            >
+              <Text style={{ color: t.accentFg, fontWeight: '800' }}>Guardar copia de mis datos</Text>
+            </Pressable>
+          ) : null}
+          <Pressable onPress={() => setIntegrityWarning(null)} style={{ marginTop: 14, padding: 10 }}>
+            <Text style={{ color: t.muted, fontWeight: '700' }}>Continuar de todos modos</Text>
+          </Pressable>
+          <Text style={{ color: t.faint, fontSize: 11, marginTop: 14, textAlign: 'center' }} numberOfLines={3}>{integrityWarning}</Text>
         </View>
       ) : !ready ? (
         <View style={[styles.center, { backgroundColor: t.bg }]}>
