@@ -3,11 +3,12 @@ import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
 import { toCsv, parseCsv, fromMajorString, asMinor } from '@surtivox/pos-core';
 import {
-  listProducts, salesExportRows, findProductByBarcode, createProduct, updateProductFields,
+  listProducts, salesExportRows, findProductByBarcode, createProduct, updateProductFields, getStore,
 } from './repos';
 import type { Store } from './repos';
 import { APP_CURRENCY } from './branding';
 import { getDb } from './db';
+import { validateBackupPayload } from './backupValidation';
 
 const major = (minor: number, dec: number) => (minor / 10 ** dec).toFixed(dec);
 const stamp = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -45,23 +46,75 @@ export async function exportSales(store: Store): Promise<number> {
 
 /* -------------------- full-database backup & restore -------------------- */
 
-// Every user table except the migration ledger (that belongs to the install,
-// not the data, and forcing it could re-run migrations against existing tables).
-const TABLES_SQL = `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('_migrations','sync_state') ORDER BY name`;
+const TABLES_SQL = `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('_migrations','sync_state','catalog_outbox','catalog_cache') ORDER BY name`;
+const ALL_TABLES_SQL = `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`;
 const BACKUP_MAGIC = 'surtivoxpos';
+const SAFETY_PREFIX = 'surtivox-antes-de-restaurar-';
 
-/** Snapshot the whole database to a JSON file and open the share sheet. */
-export async function exportFullBackup(store: Store): Promise<number> {
+const safetyStamp = () => new Date().toISOString().replace(/[:.]/g, '-');
+
+async function readAppliedMigrations(db: ReturnType<typeof getDb>): Promise<number> {
+  try {
+    const row = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM _migrations');
+    return row?.count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+async function readSchema(db: ReturnType<typeof getDb>): Promise<Record<string, string[]>> {
+  const schema: Record<string, string[]> = {};
+  const tables = await db.getAllAsync<{ name: string }>(ALL_TABLES_SQL);
+  for (const { name } of tables) {
+    const columns = await db.getAllAsync<{ name: string }>(`PRAGMA table_info("${name.replace(/"/g, '""')}")`);
+    schema[name] = columns.map((column) => column.name);
+  }
+  return schema;
+}
+
+async function collectFullBackup(storeName: string): Promise<{ payload: Record<string, unknown>; rows: number }> {
   const db = getDb();
-  const tables = (await db.getAllAsync<{ name: string }>(TABLES_SQL)).map((r) => r.name);
+  const tables = (await db.getAllAsync<{ name: string }>(TABLES_SQL)).map((row) => row.name);
   const data: Record<string, unknown[]> = {};
   let rows = 0;
-  for (const tbl of tables) {
-    const list = await db.getAllAsync<Record<string, unknown>>(`SELECT * FROM "${tbl}"`);
-    data[tbl] = list;
+  for (const table of tables) {
+    const list = await db.getAllAsync<Record<string, unknown>>(`SELECT * FROM "${table}"`);
+    data[table] = list;
     rows += list.length;
   }
-  const payload = { app: BACKUP_MAGIC, schema: 1, exported_at: Date.now(), store: store.name, tables: data };
+  const migrations = await readAppliedMigrations(db);
+  return {
+    payload: { app: BACKUP_MAGIC, schema: 1, migrations, exported_at: Date.now(), store: storeName, tables: data },
+    rows,
+  };
+}
+
+async function safetyDirectory(): Promise<string> {
+  const base = FileSystem.documentDirectory;
+  if (!base) throw new Error('El almacenamiento interno no está disponible.');
+  const directory = `${base}safety/`;
+  await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+  return directory;
+}
+
+async function writeSafetyBackup(storeName: string): Promise<void> {
+  const directory = await safetyDirectory();
+  const filename = `${SAFETY_PREFIX}${safetyStamp()}.json`;
+  const { payload } = await collectFullBackup(storeName);
+  await FileSystem.writeAsStringAsync(`${directory}${filename}`, JSON.stringify(payload), {
+    encoding: FileSystem.EncodingType.UTF8,
+  });
+  const files = (await FileSystem.readDirectoryAsync(directory))
+    .filter((name) => name.startsWith(SAFETY_PREFIX))
+    .sort()
+    .reverse();
+  for (const old of files.slice(2)) {
+    await FileSystem.deleteAsync(`${directory}${old}`, { idempotent: true });
+  }
+}
+
+export async function exportFullBackup(store: Store): Promise<number> {
+  const { payload, rows } = await collectFullBackup(store.name);
   const filename = `surtivox-backup-${stamp()}.json`;
   const uri = FileSystem.cacheDirectory + filename;
   await FileSystem.writeAsStringAsync(uri, JSON.stringify(payload), { encoding: FileSystem.EncodingType.UTF8 });
@@ -73,29 +126,41 @@ export async function exportFullBackup(store: Store): Promise<number> {
 
 export interface RestoreResult { tables: number; rows: number }
 
-/** Pick a backup file and replace all data with it. Destructive; caller confirms. */
 export async function restoreFullBackup(): Promise<RestoreResult | null> {
   const res = await DocumentPicker.getDocumentAsync({ type: ['application/json', '*/*'], copyToCacheDirectory: true });
   if (res.canceled || !res.assets?.[0]) return null;
   const text = await FileSystem.readAsStringAsync(res.assets[0].uri);
-  let payload: { app?: string; tables?: Record<string, Record<string, unknown>[]> };
-  try { payload = JSON.parse(text); } catch { throw new Error('El archivo no es un JSON válido'); }
-  if (payload?.app !== BACKUP_MAGIC || !payload.tables) throw new Error('El archivo no es un respaldo válido de Surtivox');
+  let parsed: unknown;
+  try { parsed = JSON.parse(text); } catch { throw new Error('El archivo no es un JSON válido'); }
 
   const db = getDb();
+  const schema = await readSchema(db);
+  const appliedMigrations = await readAppliedMigrations(db);
+  const validation = validateBackupPayload(parsed, schema, appliedMigrations);
+  if (!validation.ok) throw new Error(validation.reason);
+
+  const payload = parsed as { tables: Record<string, Record<string, unknown>[]> };
   const tableNames = Object.keys(payload.tables);
+  const currentStore = await getStore().catch(() => null);
+
+  try {
+    await writeSafetyBackup(currentStore?.name ?? 'Surtivox');
+  } catch {
+    throw new Error('No se pudo crear la copia de seguridad antes de restaurar. No se modificó nada.');
+  }
+
   let rows = 0;
   await db.execAsync('PRAGMA foreign_keys = OFF;');
   try {
     await db.withTransactionAsync(async () => {
-      for (const tbl of tableNames) await db.runAsync(`DELETE FROM "${tbl}"`);
-      for (const tbl of tableNames) {
-        for (const row of payload.tables![tbl]!) {
-          const cols = Object.keys(row);
-          if (cols.length === 0) continue;
-          const colList = cols.map((c) => `"${c}"`).join(',');
-          const params = cols.map((c) => row[c] as string | number | null);
-          await db.runAsync(`INSERT INTO "${tbl}" (${colList}) VALUES (${cols.map(() => '?').join(',')})`, params);
+      for (const table of tableNames) await db.runAsync(`DELETE FROM "${table}"`);
+      for (const table of tableNames) {
+        for (const row of payload.tables[table]!) {
+          const columns = Object.keys(row);
+          if (columns.length === 0) continue;
+          const columnList = columns.map((column) => `"${column}"`).join(',');
+          const params = columns.map((column) => row[column] as string | number | null);
+          await db.runAsync(`INSERT INTO "${table}" (${columnList}) VALUES (${columns.map(() => '?').join(',')})`, params);
           rows++;
         }
       }

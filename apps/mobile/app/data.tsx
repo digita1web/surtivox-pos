@@ -16,7 +16,7 @@ export default function DataScreen() {
   const [busy, setBusy] = useState<string | null>(null);
 
   const confirmRestore = () => {
-    showAlert('Restaurar desde respaldo', 'Esto reemplaza TODOS los datos actuales —productos, ventas, clientes y personal— con el archivo de respaldo. No se puede deshacer.', [
+    showAlert('Restaurar desde respaldo', 'Antes de restaurar se guarda una copia automática de los datos actuales. Esto reemplaza TODOS los datos —productos, ventas, clientes y personal— con el archivo de respaldo.', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Elegir archivo', style: 'destructive', onPress: () => run('rs', async () => {
         const r = await restoreFullBackup();
