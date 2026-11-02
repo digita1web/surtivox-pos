@@ -230,6 +230,12 @@ export default function More() {
         />
       </View>
 
+      <View style={{ marginTop: space.sm }}>
+        <Group t={t}>
+          <Item t={t} icon="pulse-outline" label="Diagnóstico" onPress={() => router.push('/diagnostics')} last />
+        </Group>
+      </View>
+
       <Text style={[s.section, { color: t.muted }]}>GESTIÓN</Text>
       <Group t={t}>
         {manage.map((m, i) => (
