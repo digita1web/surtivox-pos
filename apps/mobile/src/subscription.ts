@@ -67,8 +67,8 @@ export async function hasCloudSync(): Promise<boolean> {
   // Billing unavailable (Expo Go / web / un-prebuilt build) → cloud backup is
   // open to everyone rather than paywalled. Can't reach the store → same: don't
   // lock a paying user out just because the connection failed.
-  if (!billingAvailable()) return true;
-  if (!(await connect())) return true;
+  if (!billingAvailable()) return false;
+  if (!(await connect())) return false;
   try {
     return await iap().hasActiveSubscriptions([CLOUD_SYNC_SKU]);
   } catch { return false; }
@@ -87,7 +87,7 @@ export async function getMonthlyPlan(): Promise<Plan | null> {
       : null;
     if (!product) return null;
     // Android prices live on the per-offer pricing; iOS prices the product.
-    const priceString = product.subscriptionOffers?.[0]?.displayPrice ?? product.displayPrice ?? '$2.00';
+    const priceString = product.subscriptionOffers?.[0]?.displayPrice ?? product.displayPrice ?? '$5.00';
     return { id: product.id, priceString, period: 'month', pkg: product };
   } catch { return null; }
 }

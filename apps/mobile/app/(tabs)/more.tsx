@@ -1,6 +1,6 @@
 import { View, Text, Pressable, ScrollView, Image, Switch, Linking, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession, useRole } from '../../src/session';
 import { can, ROLE_LABEL } from '../../src/roles';
@@ -32,11 +32,15 @@ export default function More() {
   const [seeding, setSeeding] = useState(false);
   const [currencyBusy, setCurrencyBusy] = useState(false);
   const [catalogOptIn, setCatalogOptIn] = useState(false);
+  const [developerMode, setDeveloperMode] = useState(false);
+  const versionTaps = useRef(0);
+  const versionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const appCode = useAppCurrency((s) => s.code);
   useFocusEffect(useCallback(() => {
     cloud.refresh();
     getReminderCount().then(setReminderCount);
     getLocalSetting('catalog_opt_in').then((value) => setCatalogOptIn(value === '1')).catch(() => {});
+    getLocalSetting('developer_mode').then((value) => setDeveloperMode(value === '1')).catch(() => {});
   }, [cloud.refresh]));
 
   const runReset = async () => {
@@ -89,6 +93,18 @@ export default function More() {
       { text: 'Cancelar', style: 'cancel' as const },
       { text: 'Cargar catálogo', onPress: () => { void runSeed(); } },
     ]);
+  };
+
+  const tapVersion = () => {
+    if (developerMode) return;
+    versionTaps.current += 1;
+    if (versionTimer.current) clearTimeout(versionTimer.current);
+    versionTimer.current = setTimeout(() => { versionTaps.current = 0; }, 1500);
+    if (versionTaps.current < 7) return;
+    versionTaps.current = 0;
+    setDeveloperMode(true);
+    void setLocalSetting('developer_mode', '1').catch(() => {});
+    showAlert('Modo desarrollador activado', 'La configuración técnica está disponible en Respaldo en la nube.');
   };
 
   const currencyIndex = CURRENCY_CYCLE.findIndex((code) => code === appCode);
@@ -185,7 +201,7 @@ export default function More() {
         <>
           <Text style={[s.section, { color: t.muted }]}>SUSCRIPCIÓN</Text>
           <Pressable
-            onPress={() => router.push(cloud.active ? '/cloud-sync' : '/paywall')}
+            onPress={() => router.push('/cloud-sync')}
             style={[s.planCard, { backgroundColor: cloud.active ? t.panel : t.accentSoft, borderColor: cloud.active ? t.line : t.accent }]}
           >
             <View style={[s.planIcon, { backgroundColor: t.accent }]}>
@@ -296,7 +312,9 @@ export default function More() {
         </Text>
       </View>
 
-      <Text style={{ color: t.faint, textAlign: 'center', marginTop: 20, fontSize: 12 }}>Surtivox POS · v1.0 · sin conexión</Text>
+      <Pressable onPress={tapVersion} hitSlop={8} accessibilityLabel="Versión de Surtivox POS">
+        <Text style={{ color: t.faint, textAlign: 'center', marginTop: 20, fontSize: 12 }}>Surtivox POS · v1.0 · sin conexión</Text>
+      </Pressable>
     </ScrollView>
     </View>
   );

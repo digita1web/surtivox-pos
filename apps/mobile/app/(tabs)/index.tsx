@@ -158,7 +158,7 @@ export default function Home() {
 
         {/* Upgrade — cloud sync (paid). Hidden once subscribed. */}
         {!cloud.loading && !cloud.active && can(role, 'sync') && (
-          <Pressable onPress={() => router.push('/paywall')} style={[s.upgrade, { backgroundColor: t.accentSoft, borderColor: t.accent }]}>
+          <Pressable onPress={() => router.push('/cloud-sync')} style={[s.upgrade, { backgroundColor: t.accentSoft, borderColor: t.accent }]}>
             <View style={[s.upgradeIcon, { backgroundColor: t.accent }]}>
               <Ionicons name="cloud-upload-outline" size={22} color={t.accentFg} />
             </View>

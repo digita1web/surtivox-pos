@@ -23,7 +23,7 @@ export default function Paywall() {
 
   useEffect(() => { if (available) getMonthlyPlan().then(setPlan); }, [available]);
 
-  const priceLabel = plan ? `${plan.priceString}/mes` : 'USD 2/mes';
+  const priceLabel = plan ? `${plan.priceString}/mes` : 'USD 5/mes';
 
   const subscribe = async () => {
     if (!plan || busy) return;
@@ -69,7 +69,7 @@ export default function Paywall() {
       {available ? (
         <>
           <View style={{ marginTop: space.xxl }}>
-            <PrimaryButton label={busy ? 'Espera…' : `Suscribirme · ${priceLabel}`} onPress={subscribe} busy={busy} disabled={!plan} />
+            <PrimaryButton label={busy ? 'Espera…' : `Suscribirme por $ 5 USD`} onPress={subscribe} busy={busy} disabled={!plan} />
           </View>
           <Pressable onPress={restore} disabled={busy} style={{ alignSelf: 'center', marginTop: space.lg }} hitSlop={10}>
             <Text style={{ color: t.accent, fontWeight: '700' }}>Restaurar compra</Text>
