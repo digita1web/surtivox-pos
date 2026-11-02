@@ -3,7 +3,7 @@ import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
 import { toCsv, parseCsv, fromMajorString, asMinor } from '@surtivox/pos-core';
 import {
-  listProducts, salesExportRows, findProductByBarcode, createProduct, updateProductFields, getStore,
+  listProducts, salesExportRows, findProductByBarcode, createProduct, updateProductFields, getStore, setLocalSetting,
 } from './repos';
 import type { Store } from './repos';
 import { APP_CURRENCY } from './branding';
@@ -121,6 +121,7 @@ export async function exportFullBackup(store: Store): Promise<number> {
   if (await Sharing.isAvailableAsync()) {
     await Sharing.shareAsync(uri, { mimeType: 'application/json', dialogTitle: filename, UTI: 'public.json' });
   }
+  await setLocalSetting('last_backup_at', String(Date.now())).catch(() => {});
   return rows;
 }
 

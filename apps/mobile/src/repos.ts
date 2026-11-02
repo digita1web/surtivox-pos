@@ -1384,6 +1384,21 @@ export interface SalesExportRow {
   unit_price: number; line_total: number; grand_total: number;
 }
 
+export interface BackupSalesCounts {
+  totalSales: number;
+  salesSinceBackup: number;
+}
+
+export async function salesBackupCounts(lastBackupAt: number | null): Promise<BackupSalesCounts> {
+  const row = await getDb().getFirstAsync<{ total: number; since: number }>(
+    `SELECT COUNT(*) AS total,
+            COALESCE(SUM(CASE WHEN sold_at > ? THEN 1 ELSE 0 END), 0) AS since
+     FROM sales WHERE status='completed'`,
+    [lastBackupAt ?? 0],
+  );
+  return { totalSales: row?.total ?? 0, salesSinceBackup: row?.since ?? 0 };
+}
+
 export async function salesExportRows(storeId: string): Promise<SalesExportRow[]> {
   return getDb().getAllAsync<SalesExportRow>(
     `SELECT s.invoice_no, s.sold_at, si.product_name_snapshot AS product, si.quantity,

@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { asMinor } from '@surtivox/pos-core';
 import {
-  todayStats, recentlySold, listProducts, lowStockProducts,
+  todayStats, recentlySold, listProducts, lowStockProducts, getLocalSetting, setLocalSetting, salesBackupCounts,
   type TodayStats, type Product, type LowStockItem,
 } from '../../src/repos';
 import { useSession, useRole } from '../../src/session';
@@ -19,6 +19,9 @@ import { TourGuide } from '../../src/components/TourGuide';
 import { hasSeenFirstRunGuide } from '../../src/localFlags';
 import { useTheme, space, radius, type as ty, type Theme } from '../../src/theme';
 import { greetingForDate } from '../../src/greeting';
+import { exportFullBackup } from '../../src/backup';
+import { backupReminderText, backupSnoozeUntil, shouldRemindBackup } from '../../src/backupReminder';
+import { showAlert } from '../../src/pos/alert';
 
 export default function Home() {
   const t = useTheme();
@@ -37,6 +40,8 @@ export default function Home() {
   const [alerts, setAlerts] = useState<LowStockItem[]>([]);
   const [guideOpen, setGuideOpen] = useState(false);
   const [greeting, setGreeting] = useState(() => greetingForDate(new Date()));
+  const [backupNudge, setBackupNudge] = useState<{ lastBackupAt: number | null } | null>(null);
+  const [backupBusy, setBackupBusy] = useState(false);
 
   useEffect(() => {
     hasSeenFirstRunGuide().then((seen) => { if (!seen) setGuideOpen(true); });
@@ -49,6 +54,30 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []));
 
+  const refreshBackupNudge = useCallback(async () => {
+    try {
+      const [lastRaw, snoozeRaw] = await Promise.all([
+        getLocalSetting('last_backup_at'),
+        getLocalSetting('backup_snooze_until'),
+      ]);
+      const lastParsed = lastRaw === null ? null : Number(lastRaw);
+      const lastBackupAt = lastParsed !== null && Number.isFinite(lastParsed) ? lastParsed : null;
+      const snoozeParsed = snoozeRaw === null ? null : Number(snoozeRaw);
+      const snoozedUntil = snoozeParsed !== null && Number.isFinite(snoozeParsed) ? snoozeParsed : null;
+      const counts = await salesBackupCounts(lastBackupAt);
+      const remind = shouldRemindBackup({
+        now: Date.now(),
+        lastBackupAt,
+        salesSinceBackup: counts.salesSinceBackup,
+        totalSales: counts.totalSales,
+        snoozedUntil,
+      });
+      setBackupNudge(remind ? { lastBackupAt } : null);
+    } catch {
+      setBackupNudge(null);
+    }
+  }, []);
+
   useFocusEffect(useCallback(() => {
     todayStats(store.id).then(setStats);
     recentlySold(store.id).then(async (r) => {
@@ -56,7 +85,26 @@ export default function Home() {
     });
     lowStockProducts(store.id, 50).then(setAlerts);
     cloud.refresh();
-  }, [store.id, salesVersion, cloud.refresh]));
+    void refreshBackupNudge();
+  }, [store.id, salesVersion, cloud.refresh, refreshBackupNudge]));
+
+  const saveBackup = async () => {
+    if (backupBusy) return;
+    setBackupBusy(true);
+    try {
+      await exportFullBackup(store);
+      setBackupNudge(null);
+    } catch (e) {
+      showAlert('No se pudo generar la copia', e instanceof Error ? e.message : String(e));
+    } finally {
+      setBackupBusy(false);
+    }
+  };
+
+  const snoozeBackup = () => {
+    setBackupNudge(null);
+    void setLocalSetting('backup_snooze_until', String(backupSnoozeUntil(Date.now()))).catch(() => {});
+  };
 
   const outCount = alerts.filter((a) => a.stock <= 0).length;
   const lowCount = alerts.length - outCount;
@@ -88,6 +136,25 @@ export default function Home() {
             <View style={s.todayStat}><Ionicons name="cube-outline" size={16} color={t.accentFg} /><Text style={s.todayStatTxt}>{stats.itemsSold} artículos vendidos</Text></View>
           </View>
         </Pressable>
+
+        {backupNudge ? (
+          <View style={[s.backupNudge, { backgroundColor: t.panel, borderColor: t.line }]}>
+            <View style={s.backupTitle}>
+              <Ionicons name="cloud-upload-outline" size={18} color={t.accent} />
+              <Text style={{ color: t.fg, fontWeight: '700', flex: 1, marginLeft: space.sm }} numberOfLines={1}>
+                {backupReminderText(backupNudge.lastBackupAt, Date.now())}
+              </Text>
+            </View>
+            <View style={s.backupActions}>
+              <Pressable onPress={() => { void saveBackup(); }} disabled={backupBusy} style={[s.backupAction, { backgroundColor: t.accent }]}>
+                <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 12 }}>{backupBusy ? 'Generando…' : 'Guardar copia'}</Text>
+              </Pressable>
+              <Pressable onPress={snoozeBackup} disabled={backupBusy} style={s.backupSnooze}>
+                <Text style={{ color: t.muted, fontWeight: '700', fontSize: 12 }}>Ahora no</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
 
         {/* Upgrade — cloud sync (paid). Hidden once subscribed. */}
         {!cloud.loading && !cloud.active && can(role, 'sync') && (
@@ -187,6 +254,11 @@ const s = StyleSheet.create({
   alert: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
   alertIcon: { width: 40, height: 40, borderRadius: radius.md - 2, alignItems: 'center', justifyContent: 'center' },
   upgrade: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
+  backupNudge: { borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
+  backupTitle: { flexDirection: 'row', alignItems: 'center' },
+  backupActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.sm },
+  backupAction: { borderRadius: radius.sm, paddingHorizontal: 12, paddingVertical: 8 },
+  backupSnooze: { paddingHorizontal: 8, paddingVertical: 8 },
   upgradeIcon: { width: 40, height: 40, borderRadius: radius.md - 2, alignItems: 'center', justifyContent: 'center' },
   upgradeCta: { borderRadius: radius.md - 2, paddingHorizontal: 14, paddingVertical: 8 },
   section: { ...ty.h1, marginTop: space.xxl, marginBottom: space.md },

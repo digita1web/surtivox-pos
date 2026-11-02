@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
 import { showAlert } from '../src/pos/alert';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../src/session';
 import { exportProducts, exportSales, importProducts, exportFullBackup, restoreFullBackup } from '../src/backup';
+import { getLocalSetting } from '../src/repos';
 import { useTheme, space, radius, type Theme } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
 
@@ -14,6 +15,16 @@ export default function DataScreen() {
   const store = useSession((s) => s.store)!;
   const reload = useSession((s) => s.load);
   const [busy, setBusy] = useState<string | null>(null);
+  const [lastBackupAt, setLastBackupAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    getLocalSetting('last_backup_at')
+      .then((value) => {
+        const parsed = Number(value);
+        setLastBackupAt(value !== null && Number.isFinite(parsed) ? parsed : null);
+      })
+      .catch(() => {});
+  }, []);
 
   const confirmRestore = () => {
     showAlert('Restaurar desde respaldo', 'Antes de restaurar se guarda una copia automática de los datos actuales. Esto reemplaza TODOS los datos —productos, ventas, clientes y personal— con el archivo de respaldo.', [
@@ -61,10 +72,16 @@ export default function DataScreen() {
       </Group>
 
       <Text style={[s.section, { color: t.muted }]}>Respaldo completo</Text>
+      <Text style={{ color: t.muted, fontSize: 12, marginBottom: space.sm, marginLeft: space.xs }}>
+        {lastBackupAt === null
+          ? 'Aún no has generado una copia de tus datos.'
+          : `Último respaldo generado: ${new Date(lastBackupAt).toLocaleString('es-CO')}`}
+      </Text>
       <Group t={t}>
         <Row t={t} icon="cloud-upload-outline" title="Respaldar todo" subtitle="Guarda una copia completa como archivo .json"
           busy={busy === 'fb'} onPress={() => run('fb', async () => {
             const n = await exportFullBackup(store);
+            setLastBackupAt(Date.now());
             if (n === 0) showAlert('Nada para respaldar', 'Tu tienda aún no tiene datos.');
           })} />
         <Row t={t} icon="cloud-download-outline" title="Restaurar desde respaldo" subtitle="Reemplaza todos los datos con un archivo de respaldo" last
