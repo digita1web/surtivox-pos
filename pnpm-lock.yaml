@@ -22,6 +22,8 @@ importers:
 
   apps/catalog-worker: {}
 
+  apps/payments-worker: {}
+
   apps/mobile:
     dependencies:
       '@expo/metro-runtime':
