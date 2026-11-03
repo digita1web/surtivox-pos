@@ -790,10 +790,11 @@ export async function voidSale(storeId: string, saleId: string): Promise<void> {
   );
   const now = Date.now();
   await db.withTransactionAsync(async () => {
-    await db.runAsync(
-      "UPDATE sales SET status='void', updated_at=?, version=version+1 WHERE id=? AND store_id=?",
+    const voided = await db.runAsync(
+      "UPDATE sales SET status='void', updated_at=?, version=version+1 WHERE id=? AND store_id=? AND status='completed'",
       [now, saleId, storeId],
     );
+    if (voided.changes !== 1) throw new Error('La venta ya está anulada');
     for (const item of items) {
       if (!item.product_id || item.track_inventory === 0) continue;
       await db.runAsync(
@@ -1165,6 +1166,7 @@ export async function processReturn(
   const db = getDb();
   const detail = await getSale(saleId);
   if (!detail) throw new Error('No se encontró la venta');
+  if (detail.header.status !== 'completed') throw new Error('No se puede devolver una venta anulada');
   if (refundMethod === 'account' && !detail.header.customer_id) {
     throw new Error('Esta venta no tiene cliente para devolver a su cuenta');
   }
@@ -1190,6 +1192,16 @@ export async function processReturn(
   const subtotal = grandTotal - taxTotal;
 
   await db.withTransactionAsync(async () => {
+    const current = await db.getFirstAsync<{ status: string }>('SELECT status FROM sales WHERE id=?', [saleId]);
+    if (current?.status !== 'completed') throw new Error('No se puede devolver una venta anulada');
+    for (const { pick, item } of rows) {
+      const done = await db.getFirstAsync<{ n: number }>(
+        'SELECT COALESCE(SUM(quantity),0) AS n FROM return_items WHERE sale_item_id=?',
+        [item.id],
+      );
+      const remaining = item.quantity - (done?.n ?? 0);
+      if (pick.quantity > remaining) throw new Error(`No puedes devolver más de ${remaining} de ${item.name}`);
+    }
     await db.runAsync(
       `INSERT INTO returns (id,store_id,sale_id,customer_id,refund_method,subtotal,tax_total,grand_total,reason,created_at,updated_at,device_id,version)
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1)`,

@@ -15,6 +15,7 @@ import {
 import * as Crypto from 'expo-crypto';
 import { getDb } from './db';
 import { getStore } from './repos';
+import { writeSafetyBackup } from './backup';
 
 const OVERLAP_MS = 30_000;
 
@@ -201,16 +202,34 @@ export async function restoreFromCloud(serverUrl: string, token: string): Promis
   const tk = token.trim();
   // Verify the token resolves to a store before wiping anything.
   const payload = await api(base, '/sync/pull?since=0', tk, { method: 'GET' });
+  if (!payload || typeof payload.tables !== 'object' || payload.tables === null) {
+    throw new Error('La nube devolvió una respuesta inválida. No se modificó nada.');
+  }
   const db = getDb();
+  const current = await getStore().catch(() => null);
+  try {
+    await writeSafetyBackup(current?.name ?? 'Surtivox');
+  } catch {
+    throw new Error('No se pudo crear la copia de seguridad antes de restaurar. No se modificó nada.');
+  }
+  let applied = 0;
   await db.execAsync('PRAGMA foreign_keys = OFF;');
   try {
     await db.withTransactionAsync(async () => {
       for (let i = SYNC_TABLES.length - 1; i >= 0; i--) await db.runAsync(`DELETE FROM "${SYNC_TABLES[i]!.name}"`);
+      for (const t of SYNC_TABLES) {
+        const rows = payload.tables[t.name];
+        if (!Array.isArray(rows)) continue;
+        const sql = upsertSql(t);
+        for (const row of rows) {
+          await db.runAsync(sql, rowValues(t, row) as (string | number | null)[]);
+          applied++;
+        }
+      }
     });
   } finally {
     await db.execAsync('PRAGMA foreign_keys = ON;');
   }
-  const applied = await applyPull(payload);
   const cursor = typeof payload.cursor === 'number' ? payload.cursor : Date.now();
   await saveSyncConfig(base, tk);
   await db.runAsync('UPDATE sync_state SET last_pulled_at = ?, last_synced_at = ? WHERE id = 1', [cursor, Date.now()]);

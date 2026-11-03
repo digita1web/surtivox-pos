@@ -9,9 +9,9 @@ export type Role = 'owner' | 'manager' | 'cashier';
 export const ROLES: Role[] = ['owner', 'manager', 'cashier'];
 
 export const ROLE_LABEL: Record<Role, string> = {
-  owner: 'Owner',
-  manager: 'Manager',
-  cashier: 'Cashier',
+  owner: 'Propietario',
+  manager: 'Administrador',
+  cashier: 'Cajero',
 };
 
 const RANK: Record<Role, number> = { cashier: 0, manager: 1, owner: 2 };

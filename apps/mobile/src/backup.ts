@@ -97,7 +97,7 @@ async function safetyDirectory(): Promise<string> {
   return directory;
 }
 
-async function writeSafetyBackup(storeName: string): Promise<void> {
+export async function writeSafetyBackup(storeName: string): Promise<void> {
   const directory = await safetyDirectory();
   const filename = `${SAFETY_PREFIX}${safetyStamp()}.json`;
   const { payload } = await collectFullBackup(storeName);
@@ -118,9 +118,8 @@ export async function exportFullBackup(store: Store): Promise<number> {
   const filename = `surtivox-backup-${stamp()}.json`;
   const uri = FileSystem.cacheDirectory + filename;
   await FileSystem.writeAsStringAsync(uri, JSON.stringify(payload), { encoding: FileSystem.EncodingType.UTF8 });
-  if (await Sharing.isAvailableAsync()) {
-    await Sharing.shareAsync(uri, { mimeType: 'application/json', dialogTitle: filename, UTI: 'public.json' });
-  }
+  if (!(await Sharing.isAvailableAsync())) throw new Error('Este dispositivo no permite compartir archivos. No se guardó la copia.');
+  await Sharing.shareAsync(uri, { mimeType: 'application/json', dialogTitle: filename, UTI: 'public.json' });
   await setLocalSetting('last_backup_at', String(Date.now())).catch(() => {});
   return rows;
 }
