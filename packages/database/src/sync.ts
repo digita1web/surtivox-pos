@@ -110,6 +110,34 @@ export function upsertSql(t: SyncTable): string {
     `OR (excluded."updated_at" = ${q(t.name)}."updated_at" AND excluded."version" > ${q(t.name)}."version")`;
 }
 
+/**
+ * Server-side upsert. Unlike upsertSql it never lets a pushed row take over a
+ * row that belongs to another store: mutable rows only overwrite when the
+ * stored store_id matches, and child rows are inserted only if their parent
+ * belongs to the pushing store. Bind with serverRowValues.
+ */
+export function serverUpsertSql(t: SyncTable): string {
+  const cols = t.columns.map(q).join(', ');
+  const ph = t.columns.map(() => '?').join(', ');
+  if (t.scope.kind === 'parent') {
+    const p = t.scope;
+    return `INSERT INTO ${q(t.name)} (${cols}) SELECT ${ph} ` +
+      `WHERE EXISTS (SELECT 1 FROM ${q(p.table)} WHERE "id" = ? AND "store_id" = ?) ON CONFLICT(id) DO NOTHING`;
+  }
+  if (t.mode === 'append' || t.scope.kind === 'self') return upsertSql(t);
+  const setCols = t.columns.filter((c) => c !== 'id').map((c) => `${q(c)}=excluded.${q(c)}`).join(', ');
+  return `INSERT INTO ${q(t.name)} (${cols}) VALUES (${ph}) ON CONFLICT(id) DO UPDATE SET ${setCols} ` +
+    `WHERE ${q(t.name)}."store_id" = excluded."store_id" AND (excluded."updated_at" > ${q(t.name)}."updated_at" ` +
+    `OR (excluded."updated_at" = ${q(t.name)}."updated_at" AND excluded."version" > ${q(t.name)}."version"))`;
+}
+
+/** Values for serverUpsertSql: the row columns, plus parent id and store id for child tables. */
+export function serverRowValues(t: SyncTable, row: Record<string, unknown>, storeId: string): unknown[] {
+  const values = rowValues(t, row);
+  if (t.scope.kind === 'parent') values.push(row[t.scope.fk] ?? null, storeId);
+  return values;
+}
+
 /** Column values in declared order, for binding to upsertSql. */
 export function rowValues(t: SyncTable, row: Record<string, unknown>): unknown[] {
   return t.columns.map((c) => (row[c] === undefined ? null : row[c]));

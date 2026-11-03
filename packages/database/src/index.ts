@@ -1,6 +1,6 @@
 export { runMigrations, type Migration, type SqlExecutor } from './runner.ts';
 export {
-  SYNC_TABLES, upsertSql, rowValues, changedSinceSql, pullSql, rowStoreId,
+  SYNC_TABLES, upsertSql, serverUpsertSql, serverRowValues, rowValues, changedSinceSql, pullSql, rowStoreId,
   type SyncTable, type SyncMode, type StoreScope,
 } from './sync.ts';
 import { migration as m0000 } from './migrations/0000_init.ts';

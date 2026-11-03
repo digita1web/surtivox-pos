@@ -1,5 +1,5 @@
 import {
-  SYNC_TABLES, upsertSql, rowValues, pullSql, rowStoreId, type SyncTable,
+  SYNC_TABLES, serverUpsertSql, serverRowValues, pullSql, rowStoreId, type SyncTable,
 } from '@surtivox/database';
 import { handleMarketPrices } from './marketPrices.ts';
 
@@ -28,6 +28,8 @@ async function storeForToken(env: Env, token: string): Promise<string | null> {
   return row?.store_id ?? null;
 }
 
+const VALID_STORE_ID = /^[A-Za-z0-9_-]{1,128}$/;
+
 const bind = (v: unknown[]) => v as (string | number | null)[];
 
 export default {
@@ -51,11 +53,19 @@ export default {
       const body = await req.json<{ storeId?: string }>().catch(() => ({} as { storeId?: string }));
       const storeId = body.storeId;
       if (!token || !storeId) return json({ error: 'token and storeId are required' }, 400);
+      if (!VALID_STORE_ID.test(storeId) || token.length < 12 || token.length > 256) {
+        return json({ error: 'invalid_request' }, 400);
+      }
       const existing = await storeForToken(env, token);
       if (existing && existing !== storeId) return json({ error: 'token already bound to another store' }, 409);
       if (!existing) {
-        await env.DB.prepare('INSERT INTO sync_tokens (token, store_id, created_at) VALUES (?,?,?)')
-          .bind(token, storeId, Date.now()).run();
+        const claimed = await env.DB.prepare(
+          `INSERT OR IGNORE INTO sync_tokens (token, store_id, created_at)
+           SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM sync_tokens WHERE store_id = ?)`,
+        ).bind(token, storeId, Date.now(), storeId).run();
+        if ((claimed.meta?.changes ?? 0) !== 1 && (await storeForToken(env, token)) !== storeId) {
+          return json({ error: 'store_already_claimed' }, 403);
+        }
       }
       return json({ ok: true, storeId });
     }
@@ -73,12 +83,11 @@ export default {
       for (const t of SYNC_TABLES) {
         const rows = tables[t.name];
         if (!Array.isArray(rows) || rows.length === 0) continue;
-        const stmt = env.DB.prepare(upsertSql(t));
+        const stmt = env.DB.prepare(serverUpsertSql(t));
         const batch = [] as D1PreparedStatement[];
         for (const row of rows) {
-          const owner = rowStoreId(t, row);
-          if (owner !== null && owner !== storeId) continue; // never write another store's data
-          batch.push(stmt.bind(...bind(rowValues(t, row))));
+          if (t.scope.kind !== 'parent' && rowStoreId(t, row) !== storeId) continue;
+          batch.push(stmt.bind(...bind(serverRowValues(t, row, storeId))));
         }
         if (batch.length) { await env.DB.batch(batch); applied += batch.length; }
       }
