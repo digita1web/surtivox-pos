@@ -10,7 +10,7 @@
  * breves entre relojes sin perder filas.
  */
 import {
-  SYNC_TABLES, upsertSql, rowValues, changedSinceSql,
+  SYNC_TABLES, upsertSql, rowValues, changedSinceSql, chunkPushRows, type PushTableRows,
 } from '@surtivox/database';
 import * as Crypto from 'expo-crypto';
 import { getDb } from './db';
@@ -103,20 +103,23 @@ async function register(base: string, token: string, storeId: string): Promise<v
 
 async function pushChanges(base: string, token: string, since: number): Promise<number> {
   const db = getDb();
-  const tables: Record<string, unknown[]> = {};
+  const collected: PushTableRows[] = [];
   let maxTime = since;
   const from = Math.max(0, since - OVERLAP_MS);
   for (const t of SYNC_TABLES) {
     const rows = await db.getAllAsync<Record<string, unknown>>(changedSinceSql(t), [from]);
     if (rows.length === 0) continue;
-    tables[t.name] = rows;
+    collected.push({ name: t.name, rows });
     for (const r of rows) {
       const ts = Number(r[t.timeColumn]);
       if (Number.isFinite(ts) && ts > maxTime) maxTime = ts;
     }
   }
-  if (Object.keys(tables).length === 0) return since;
-  await api(base, '/sync/push', token, { method: 'POST', body: JSON.stringify({ tables }) });
+  const batches = chunkPushRows(collected);
+  if (batches.length === 0) return since;
+  for (const tables of batches) {
+    await api(base, '/sync/push', token, { method: 'POST', body: JSON.stringify({ tables }) });
+  }
   return maxTime;
 }
 
