@@ -27,7 +27,7 @@ Ejemplo de respuesta:
 
 Este Worker reutiliza la misma base D1 del Worker de sincronización porque necesita validar `sync_tokens`. No crees una base separada para esta fase.
 
-1. Copia el `database_id` real de `surtivox-production` en `wrangler.toml`.
+1. Copia el `database_id` real de `surtivox-sync` en `wrangler.toml`.
 2. Aplica el esquema de pagos sobre esa base:
 
 ```bash

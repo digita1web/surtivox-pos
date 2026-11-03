@@ -7,8 +7,8 @@ workers_dev = true
 # database_id below before deploying.
 [[d1_databases]]
 binding = "DB"
-database_name = "surtivox-production"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_name = "surtivox-sync"
+database_id = "1faf3ce0-aa7a-414d-bc0e-e28d9be9d336"
 
 [observability]
 enabled = true

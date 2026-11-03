@@ -8,9 +8,9 @@
     "typecheck": "tsc --noEmit",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "db:create": "wrangler d1 create surtivox-production",
-    "db:schema": "wrangler d1 execute surtivox-production --remote --file=./schema.sql",
-    "db:schema:local": "wrangler d1 execute surtivox-production --local --file=./schema.sql",
+    "db:create": "wrangler d1 create surtivox-sync",
+    "db:schema": "wrangler d1 execute surtivox-sync --remote --file=./schema.sql",
+    "db:schema:local": "wrangler d1 execute surtivox-sync --local --file=./schema.sql",
     "test": "node --test \"test/**/*.test.ts\"",
     "dev:market": "wrangler dev --config wrangler.market.toml",
     "deploy:market": "wrangler deploy --config wrangler.market.toml"

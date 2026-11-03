@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "db:schema": "wrangler d1 execute surtivox-production --remote --file=./schema.sql",
-    "db:schema:local": "wrangler d1 execute surtivox-production --local --file=./schema.sql",
+    "db:schema": "wrangler d1 execute surtivox-sync --remote --file=./schema.sql",
+    "db:schema:local": "wrangler d1 execute surtivox-sync --local --file=./schema.sql",
     "test": "node --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit"
   }

@@ -30,7 +30,7 @@ replacing `REPLACE_WITH_D1_DATABASE_ID`:
 ```toml
 [[d1_databases]]
 binding = "DB"
-database_name = "surtivox-production"
+database_name = "surtivox-sync"
 database_id = "the-id-that-was-printed"
 ```
 
