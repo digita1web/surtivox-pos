@@ -1,5 +1,5 @@
 import {
-  SYNC_TABLES, serverUpsertSql, serverRowValues, pullSql, rowStoreId, type SyncTable,
+  SYNC_TABLES, serverUpsertSql, serverRowValues, pullSql, rowStoreId, PUSH_LIMITS, type SyncTable,
 } from '@surtivox/database';
 import { handleMarketPrices } from './marketPrices.ts';
 
@@ -77,15 +77,31 @@ export default {
     // rows are rejected. Mutable rows resolve by last-writer-wins (in the SQL);
     // append rows are inserted only if absent.
     if (url.pathname === '/sync/push' && req.method === 'POST') {
-      const body = await req.json<{ tables?: Record<string, Row[]> }>().catch(() => ({} as { tables?: Record<string, Row[]> }));
-      const tables = body.tables ?? {};
-      let applied = 0;
+      const declared = Number(req.headers.get('content-length') ?? '0');
+      if (declared > PUSH_LIMITS.maxBytes) return json({ error: 'payload_too_large' }, 413);
+      const text = await req.text();
+      if (new TextEncoder().encode(text).length > PUSH_LIMITS.maxBytes) return json({ error: 'payload_too_large' }, 413);
+      let body: { tables?: unknown };
+      try { body = JSON.parse(text) as { tables?: unknown }; } catch { return json({ error: 'invalid_request' }, 400); }
+      if (typeof body.tables !== 'object' || body.tables === null || Array.isArray(body.tables)) {
+        return json({ error: 'invalid_request' }, 400);
+      }
+      const tables = body.tables as Record<string, unknown>;
+      let total = 0;
       for (const t of SYNC_TABLES) {
         const rows = tables[t.name];
+        if (rows !== undefined && !Array.isArray(rows)) return json({ error: 'invalid_request' }, 400);
+        total += rows?.length ?? 0;
+      }
+      if (total > PUSH_LIMITS.maxRows) return json({ error: 'too_many_rows' }, 413);
+      let applied = 0;
+      for (const t of SYNC_TABLES) {
+        const rows = tables[t.name] as Row[] | undefined;
         if (!Array.isArray(rows) || rows.length === 0) continue;
         const stmt = env.DB.prepare(serverUpsertSql(t));
         const batch = [] as D1PreparedStatement[];
         for (const row of rows) {
+          if (typeof row !== 'object' || row === null || Array.isArray(row)) continue;
           if (t.scope.kind !== 'parent' && rowStoreId(t, row) !== storeId) continue;
           batch.push(stmt.bind(...bind(serverRowValues(t, row, storeId))));
         }

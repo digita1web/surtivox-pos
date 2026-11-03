@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
+import { chunkPushRows } from '@surtivox/database';
 import worker from '../src/index.ts';
 
 type Param = string | number | null;
@@ -143,4 +144,57 @@ test('pull returns only the token store and older pushes never overwrite newer r
   const pulled = await call('/sync/pull?since=0', TOKEN_A);
   assert.deepEqual(pulled.body.tables.products.map((r: { name: string }) => r.name), ['Nuevo']);
   assert.equal((await call('/sync/pull?since=0', TOKEN_A2)).status, 401);
+});
+
+test('push rejects oversized payloads and too many rows before touching the database', async () => {
+  const { call, db } = server();
+  await call('/sync/register', TOKEN_A, { storeId: 's1' });
+  const many = Array.from({ length: 501 }, (_, i) => product(`p${i}`, 's1', 'x'));
+  const rows = await call('/sync/push', TOKEN_A, { tables: { products: many } });
+  assert.equal(rows.status, 413);
+  assert.equal(rows.body.error, 'too_many_rows');
+  const big = await call('/sync/push', TOKEN_A, { tables: { products: [product('p1', 's1', 'x'.repeat(1_100_000))] } });
+  assert.equal(big.status, 413);
+  assert.equal(big.body.error, 'payload_too_large');
+  assert.equal((db.prepare('SELECT COUNT(*) AS n FROM products').get() as { n: number }).n, 0);
+});
+
+test('push accepts exactly the maximum number of rows', async () => {
+  const { call, db } = server();
+  await call('/sync/register', TOKEN_A, { storeId: 's1' });
+  const rows = Array.from({ length: 500 }, (_, i) => product(`p${i}`, 's1', 'x'));
+  assert.equal((await call('/sync/push', TOKEN_A, { tables: { products: rows } })).status, 200);
+  assert.equal((db.prepare('SELECT COUNT(*) AS n FROM products').get() as { n: number }).n, 500);
+});
+
+test('push answers 400 for malformed bodies and ignores non object rows instead of failing', async () => {
+  const { call, db } = server();
+  await call('/sync/register', TOKEN_A, { storeId: 's1' });
+  assert.equal((await call('/sync/push', TOKEN_A, {})).status, 400);
+  assert.equal((await call('/sync/push', TOKEN_A, { tables: [] })).status, 400);
+  assert.equal((await call('/sync/push', TOKEN_A, { tables: { products: 'x' } })).status, 400);
+  const res = await call('/sync/push', TOKEN_A, { tables: { products: [null, 7, [], product('p1', 's1', 'Ok')] } });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.applied, 1);
+  assert.equal((db.prepare('SELECT COUNT(*) AS n FROM products').get() as { n: number }).n, 1);
+});
+
+test('what the app batcher produces is always accepted by the worker, with parents before children', async () => {
+  const { call, db } = server();
+  await call('/sync/register', TOKEN_A, { storeId: 's1' });
+  const sales = Array.from({ length: 700 }, (_, i) => sale(`s${i}`, 's1'));
+  const items = sales.map((s, i) => saleItem(`i${i}`, s.id));
+  const products = Array.from({ length: 300 }, (_, i) => product(`p${i}`, 's1', `Producto ${i} ${'ñ'.repeat(200)}`));
+  const batches = chunkPushRows([
+    { name: 'stores', rows: [store('s1', 'A')] },
+    { name: 'products', rows: products },
+    { name: 'sales', rows: sales },
+    { name: 'sale_items', rows: items },
+  ]);
+  assert.ok(batches.length > 3);
+  for (const tables of batches) assert.equal((await call('/sync/push', TOKEN_A, { tables })).status, 200);
+  const count = (t: string) => (db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get() as { n: number }).n;
+  assert.equal(count('products'), 300);
+  assert.equal(count('sales'), 700);
+  assert.equal(count('sale_items'), 700);
 });

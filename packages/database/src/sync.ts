@@ -168,3 +168,42 @@ export function rowStoreId(t: SyncTable, row: Record<string, unknown>): string |
   if (t.scope.kind === 'column') return (row['store_id'] as string) ?? null;
   return null; // child tables inherit their parent's store; trusted by id
 }
+
+export const PUSH_LIMITS = { maxRows: 500, maxBytes: 1_000_000 } as const;
+export const PUSH_BATCH = { maxRows: 200, maxBytes: 300_000 } as const;
+
+export interface PushTableRows {
+  name: string;
+  rows: Record<string, unknown>[];
+}
+
+/**
+ * Split rows into ordered request bodies that stay under the batch limits.
+ * Order is preserved row by row, so parents always travel before children.
+ * A single row larger than maxBytes still gets its own batch.
+ */
+export function chunkPushRows(
+  tables: readonly PushTableRows[],
+  limits: { maxRows: number; maxBytes: number } = PUSH_BATCH,
+): Record<string, Record<string, unknown>[]>[] {
+  const batches: Record<string, Record<string, unknown>[]>[] = [];
+  let current: Record<string, Record<string, unknown>[]> = {};
+  let rows = 0;
+  let bytes = 0;
+  for (const table of tables) {
+    for (const row of table.rows) {
+      const size = JSON.stringify(row).length;
+      if (rows > 0 && (rows + 1 > limits.maxRows || bytes + size > limits.maxBytes)) {
+        batches.push(current);
+        current = {};
+        rows = 0;
+        bytes = 0;
+      }
+      (current[table.name] ??= []).push(row);
+      rows += 1;
+      bytes += size;
+    }
+  }
+  if (rows > 0) batches.push(current);
+  return batches;
+}

@@ -1,7 +1,8 @@
 export { runMigrations, type Migration, type SqlExecutor } from './runner.ts';
 export {
   SYNC_TABLES, upsertSql, serverUpsertSql, serverRowValues, rowValues, changedSinceSql, pullSql, rowStoreId,
-  type SyncTable, type SyncMode, type StoreScope,
+  PUSH_LIMITS, PUSH_BATCH, chunkPushRows,
+  type SyncTable, type SyncMode, type StoreScope, type PushTableRows,
 } from './sync.ts';
 import { migration as m0000 } from './migrations/0000_init.ts';
 import { migration as m0001 } from './migrations/0001_customers.ts';
