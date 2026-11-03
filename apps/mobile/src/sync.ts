@@ -16,6 +16,7 @@ import * as Crypto from 'expo-crypto';
 import { getDb } from './db';
 import { getStore } from './repos';
 import { writeSafetyBackup } from './backup';
+import { disconnectOn, reusableToken } from './syncState';
 import { syncErrorMessage } from './syncErrors';
 import { NUMBERED_TABLES, resolveNumberCollision } from './numberCollision';
 
@@ -80,7 +81,7 @@ export async function saveSyncConfig(serverUrl: string, token: string): Promise<
 }
 
 export async function disconnectSync(): Promise<void> {
-  await getDb().runAsync('UPDATE sync_state SET server_url = NULL, token = NULL, last_pushed_at = 0, last_pulled_at = 0, last_synced_at = NULL WHERE id = 1');
+  await disconnectOn(getDb());
 }
 
 async function api(base: string, path: string, token: string, init?: RequestInit): Promise<any> {
@@ -177,7 +178,7 @@ export async function syncNow(): Promise<SyncResult> {
 export async function turnOnCloudBackup(): Promise<SyncResult> {
   if (!hasHostedSync()) throw new Error('El respaldo en la nube no está configurado en esta compilación.');
   const state = await getSyncState();
-  const token = state.token ?? newShopCode();
+  const token = reusableToken(state.token, newShopCode);
   await saveSyncConfig(DEFAULT_SYNC_URL, token);
   return syncNow();
 }

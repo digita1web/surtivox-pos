@@ -89,7 +89,7 @@ export default function CloudSync() {
     ]);
   };
 
-  const disconnect = () => showAlert('¿Desactivar el respaldo en la nube?', 'Tus datos permanecen en este dispositivo; solo deja de sincronizarse.', [
+  const disconnect = () => showAlert('¿Desactivar el respaldo en la nube?', 'Tus datos permanecen en este dispositivo; solo deja de sincronizarse. Podrás reactivarlo con el mismo código de tienda.', [
     { text: 'Cancelar', style: 'cancel' },
     { text: 'Desactivar', style: 'destructive', onPress: () => run('off', async () => { await disconnectSync(); }) },
   ]);
