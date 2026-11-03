@@ -16,6 +16,7 @@ import * as Crypto from 'expo-crypto';
 import { getDb } from './db';
 import { getStore } from './repos';
 import { writeSafetyBackup } from './backup';
+import { NUMBERED_TABLES, resolveNumberCollision } from './numberCollision';
 
 const OVERLAP_MS = 30_000;
 
@@ -128,7 +129,9 @@ async function applyPull(payload: { tables: Record<string, Record<string, unknow
         const rows = payload.tables[t.name];
         if (!Array.isArray(rows)) continue;
         const sql = upsertSql(t);
+        const numbered = NUMBERED_TABLES.find((n) => n.table === t.name);
         for (const row of rows) {
+          if (numbered) await resolveNumberCollision(db, numbered.table, numbered.column, row);
           await db.runAsync(sql, rowValues(t, row) as (string | number | null)[]);
           applied++;
         }
