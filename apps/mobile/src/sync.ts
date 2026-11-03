@@ -16,6 +16,7 @@ import * as Crypto from 'expo-crypto';
 import { getDb } from './db';
 import { getStore } from './repos';
 import { writeSafetyBackup } from './backup';
+import { syncErrorMessage } from './syncErrors';
 import { NUMBERED_TABLES, resolveNumberCollision } from './numberCollision';
 
 const OVERLAP_MS = 30_000;
@@ -90,7 +91,7 @@ async function api(base: string, path: string, token: string, init?: RequestInit
   const text = await res.text();
   let body: any = null;
   try { body = text ? JSON.parse(text) : null; } catch { /* non-json */ }
-  if (!res.ok) throw new Error(body?.error ?? `Error de sincronización (${res.status})`);
+  if (!res.ok) throw new Error(syncErrorMessage(body?.error, res.status));
   return body;
 }
 
