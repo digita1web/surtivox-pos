@@ -16,6 +16,7 @@ import {
 import { getDb } from './db';
 import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';
+import { voidSaleOn, assertReturnable } from './saleOps';
 import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
 import { createInFlightRequests, fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceProviderError, type MarketPriceResult } from './marketPrices';
 import { type Role, hashPin, verifyPin, randomSalt } from './roles';
@@ -766,51 +767,7 @@ export async function listSales(opts: { storeId: string; since?: number; limit?:
 }
 
 export async function voidSale(storeId: string, saleId: string): Promise<void> {
-  const db = getDb();
-  const sale = await db.getFirstAsync<{ customer_id: string | null; status: string; grand_total: number }>(
-    'SELECT customer_id, status, grand_total FROM sales WHERE id=? AND store_id=?',
-    [saleId, storeId],
-  );
-  if (!sale) throw new Error('No se encontró la venta');
-  if (sale.status !== 'completed') throw new Error('La venta ya está anulada');
-  const returns = await db.getFirstAsync<{ total: number }>(
-    'SELECT COALESCE(SUM(grand_total),0) AS total FROM returns WHERE sale_id=?',
-    [saleId],
-  );
-  if ((returns?.total ?? 0) > 0) throw new Error('Esta venta tiene devoluciones; no se puede anular');
-  const items = await db.getAllAsync<{ product_id: string | null; quantity: number; track_inventory: number | null }>(
-    `SELECT si.product_id, si.quantity, p.track_inventory
-     FROM sale_items si LEFT JOIN products p ON p.id = si.product_id
-     WHERE si.sale_id=?`,
-    [saleId],
-  );
-  const ledger = await db.getFirstAsync<{ c: number }>(
-    "SELECT COUNT(*) AS c FROM customer_ledger WHERE reference_type='sale' AND reference_id=?",
-    [saleId],
-  );
-  const now = Date.now();
-  await db.withTransactionAsync(async () => {
-    const voided = await db.runAsync(
-      "UPDATE sales SET status='void', updated_at=?, version=version+1 WHERE id=? AND store_id=? AND status='completed'",
-      [now, saleId, storeId],
-    );
-    if (voided.changes !== 1) throw new Error('La venta ya está anulada');
-    for (const item of items) {
-      if (!item.product_id || item.track_inventory === 0) continue;
-      await db.runAsync(
-        `INSERT INTO stock_movements (id,store_id,product_id,type,quantity_delta,reference_type,reference_id,note,created_at,device_id)
-         VALUES (?,?,?,'sale_return',?,'sale_void',?,?,?,?)`,
-        [newId(), storeId, item.product_id, item.quantity, saleId, 'Anulación de venta', now, DEVICE_ID],
-      );
-    }
-    if (sale.customer_id && (ledger?.c ?? 0) > 0) {
-      await db.runAsync(
-        `INSERT INTO customer_ledger (id,store_id,customer_id,type,amount,reference_type,reference_id,note,created_at,device_id)
-         VALUES (?,?,?,'adjustment',?,'sale_void',?,?,?,?)`,
-        [newId(), storeId, sale.customer_id, -sale.grand_total, saleId, 'Anulación de venta', now, DEVICE_ID],
-      );
-    }
-  });
+  await voidSaleOn(getDb(), { newId, deviceId: DEVICE_ID }, storeId, saleId);
 }
 
 /** Distinct products from recent sales, most-recently-sold first. */
@@ -1192,16 +1149,7 @@ export async function processReturn(
   const subtotal = grandTotal - taxTotal;
 
   await db.withTransactionAsync(async () => {
-    const current = await db.getFirstAsync<{ status: string }>('SELECT status FROM sales WHERE id=?', [saleId]);
-    if (current?.status !== 'completed') throw new Error('No se puede devolver una venta anulada');
-    for (const { pick, item } of rows) {
-      const done = await db.getFirstAsync<{ n: number }>(
-        'SELECT COALESCE(SUM(quantity),0) AS n FROM return_items WHERE sale_item_id=?',
-        [item.id],
-      );
-      const remaining = item.quantity - (done?.n ?? 0);
-      if (pick.quantity > remaining) throw new Error(`No puedes devolver más de ${remaining} de ${item.name}`);
-    }
+    await assertReturnable(db, saleId, rows.map((r) => ({ saleItemId: r.item.id, name: r.item.name, soldQuantity: r.item.quantity, quantity: r.pick.quantity })));
     await db.runAsync(
       `INSERT INTO returns (id,store_id,sale_id,customer_id,refund_method,subtotal,tax_total,grand_total,reason,created_at,updated_at,device_id,version)
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1)`,
