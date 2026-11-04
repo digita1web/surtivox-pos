@@ -88,7 +88,7 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 ## Build, release y CI
 
 - **Firma de release con la llave debug** (`android/app/debug.keystore`, generada por `prebuild`). Falta la llave de subida y el AAB. Cambiar de llave después obliga a los usuarios a desinstalar.
-- [build-android.yml](.github/workflows/build-android.yml) **no ejecuta tests ni typecheck**, usa acciones sin fijar por SHA y Node 22 (la CI de tests usa Node 24).
+- [build-android.yml](.github/workflows/build-android.yml) ahora ejecuta `scripts/verify.sh`, `pnpm -r typecheck` y `pnpm test` antes de compilar, y fija las acciones por SHA. **Sin verificar en Actions:** los cambios de caché de Gradle y del job `plan` solo se comprobaron localmente (YAML y lógica de decisión); falta medir el primer build real en `main` y el siguiente build de tag. Sigue usando Node 22 (la CI de tests usa Node 24).
 - `pnpm -r typecheck` no cubre `packages/types` (no tiene script `typecheck`).
 - Los Workers `payments-worker` y `catalog-worker` no declaran `wrangler`, `typescript` ni `@types/node`; se resuelven por hoisting.
 - **Hipótesis, sin verificar:** el manifest no incluye el header `expo-channel-name`, así que un `eas update` al canal `production` podría no llegar al APK compilado con Gradle fuera de EAS.
