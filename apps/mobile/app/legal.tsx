@@ -7,7 +7,7 @@ import { useTheme, space } from '../src/theme';
 
 export default function Legal() {
   const t = useTheme();
-  const heading = { color: t.accent, fontSize: 18, fontWeight: '800' as const, marginTop: space.md, marginBottom: space.md };
+  const heading = { color: t.fg, fontSize: 18, fontWeight: '800' as const, marginTop: space.md, marginBottom: space.md };
   return (
     <Screen title="Términos y privacidad" subtitle={`Versión ${LEGAL_VERSION}`}>
       <Text style={heading}>Términos y Condiciones</Text>

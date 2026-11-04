@@ -1,45 +1,6 @@
 import { useColorScheme } from 'react-native';
 
-// Semantic tokens, resolved for light/dark. Components reference roles.
-const light = {
-  bg: '#f2f4f7',
-  panel: '#ffffff',
-  surfaceAlt: '#eef1f5',
-  line: '#e7ebf0',
-  chip: '#f0f3f7',
-  fg: '#0b1420',
-  muted: '#707a89',
-  faint: '#9aa4b2',
-  accent: '#0ca678', // emerald
-  accentDark: '#0b8c67',
-  accentSoft: '#e3f7ef',
-  accentFg: '#ffffff',
-  ok: '#12b76a',
-  warn: '#f79009',
-  danger: '#e5484d',
-  shadow: '0 6px 20px rgba(16,32,28,0.08)',
-  shadowStrong: '0 10px 28px rgba(0,0,0,0.22)',
-};
-
-const dark: typeof light = {
-  bg: '#0a0e13',
-  panel: '#151b22',
-  surfaceAlt: '#1c242d',
-  line: '#26303b',
-  chip: '#1e2731',
-  fg: '#e9eef4',
-  muted: '#8b96a5',
-  faint: '#69737f',
-  accent: '#15b886',
-  accentDark: '#0ea376',
-  accentSoft: '#102b23',
-  accentFg: '#04140d',
-  ok: '#26c281',
-  warn: '#f7a53b',
-  danger: '#f2555a',
-  shadow: '0 6px 20px rgba(0,0,0,0.35)',
-  shadowStrong: '0 10px 28px rgba(0,0,0,0.5)',
-};
+import { light, dark } from './themeColors';
 
 export type Theme = typeof light;
 

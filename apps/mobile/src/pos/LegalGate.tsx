@@ -52,7 +52,7 @@ export function LegalGate({ steps, onDone }: { steps: GateStep[]; onDone: () => 
   };
 
   const link = (label: string, target: Doc) => (
-    <Text accessibilityRole="link" onPress={() => setDoc(target)} style={{ color: t.accent, fontWeight: '800', textDecorationLine: 'underline' }}>
+    <Text accessibilityRole="link" onPress={() => setDoc(target)} style={{ color: t.fg, fontWeight: '800', textDecorationLine: 'underline' }}>
       {label}
     </Text>
   );
