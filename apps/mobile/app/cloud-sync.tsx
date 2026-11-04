@@ -7,7 +7,6 @@ import {
   getSyncState, saveSyncConfig, disconnectSync, syncNow, restoreFromCloud, isConfigured,
   hasHostedSync, turnOnCloudBackup, linkDeviceByCode, formatCode, type SyncState,
 } from '../src/sync';
-import { startSubscriptionPayment } from '../src/payments';
 import { getLocalSetting } from '../src/repos';
 import { newId } from '../src/id';
 import { useSession } from '../src/session';
@@ -39,7 +38,6 @@ export default function CloudSync() {
   useFocusEffect(refresh);
 
   const connected = state ? isConfigured(state) : false;
-  const subscriptionMode = !developerMode && !connected;
   const shopCode = state?.token ? formatCode(state.token) : '';
 
   const run = async (key: string, fn: () => Promise<void>) => {
@@ -103,7 +101,7 @@ export default function CloudSync() {
         </Pressable>
       );
     }
-    if (developerMode && hosted) {
+    if (hosted) {
       return (
         <Pressable onPress={turnOn} disabled={!!busy} accessibilityRole="button" style={[s.primary, { backgroundColor: t.accent, opacity: busy ? 0.6 : 1 }]}>
           {busy === 'on' ? <ActivityIndicator color={t.accentFg} /> : <Ionicons name="cloud-upload-outline" size={18} color={t.accentFg} />}
@@ -123,7 +121,7 @@ export default function CloudSync() {
   })();
 
   return (
-    <Screen title="Respaldo en la nube" footer={subscriptionMode ? null : footer}>
+    <Screen title="Respaldo en la nube" footer={footer}>
       {/* Status */}
       <View style={[s.status, { backgroundColor: connected ? t.accent : t.panel, borderColor: t.line }]}>
         <Ionicons name={connected ? 'cloud-done-outline' : 'cloud-offline-outline'} size={26} color={connected ? t.accentFg : t.muted} />
@@ -135,19 +133,15 @@ export default function CloudSync() {
         </View>
       </View>
 
-      {subscriptionMode ? (
-        <View style={[s.subscribeCard, { backgroundColor: t.accent }]}>
-          <Ionicons name="cloud-outline" size={38} color={t.accentFg} />
-          <Text style={{ color: t.accentFg, fontSize: 24, fontWeight: '800', marginTop: space.md }}>Respaldo en la nube</Text>
-          <Text style={{ color: t.accentFg, fontSize: 30, fontWeight: '800', marginTop: space.sm }}>$ 5 USD /mes</Text>
-          <Text style={{ color: t.accentFg, opacity: 0.9, fontSize: 14, marginTop: 4 }}>≈ $ 20.000 COP</Text>
-          <Text style={{ color: t.accentFg, opacity: 0.9, fontSize: 13, marginTop: space.md, textAlign: 'center' }}>Respaldo automático y sincronización entre tus dispositivos.</Text>
-          <Pressable onPress={() => { void startSubscriptionPayment(); }} style={[s.subscribeButton, { backgroundColor: t.accentFg }]}>
-            <Text style={{ color: t.accent, fontWeight: '800', fontSize: 16 }}>Suscribirme</Text>
-          </Pressable>
-          <Text style={{ color: t.accentFg, opacity: 0.8, fontSize: 12, marginTop: space.sm }}>Pago seguro</Text>
+      <View style={[s.betaCard, { backgroundColor: t.accentSoft, borderColor: t.accent }]}>
+        <Ionicons name="flask-outline" size={20} color={t.accent} />
+        <View style={{ flex: 1, marginLeft: space.md }}>
+          <Text style={{ color: t.fg, fontWeight: '800', fontSize: 14 }}>Versión de pruebas</Text>
+          <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 2 }}>
+            El respaldo en la nube está activo en modo de prueba y es gratis por ahora. Puede cambiar o dejar de estar disponible. Sigue guardando también copias locales en Respaldo y CSV.
+          </Text>
         </View>
-      ) : null}
+      </View>
 
       {/* CONNECTED (hosted): shop code to add devices */}
       {connected && hosted && shopCode ? (
@@ -170,7 +164,7 @@ export default function CloudSync() {
       ) : null}
 
       {/* NOT CONNECTED (hosted): explainer + link-with-code */}
-      {!connected && hosted && developerMode ? (
+      {!connected && hosted ? (
         <>
           <View style={[s.benefit, { borderColor: t.line }]}>
             {[
@@ -247,8 +241,7 @@ export default function CloudSync() {
 
 const s = StyleSheet.create({
   status: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: radius.lg, padding: space.lg },
-  subscribeCard: { alignItems: 'center', borderRadius: radius.xl, padding: space.xxl, marginTop: space.lg },
-  subscribeButton: { alignItems: 'center', alignSelf: 'stretch', borderRadius: radius.md, paddingVertical: 14, marginTop: space.xl },
+  betaCard: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.lg },
   label: { fontSize: 12, fontWeight: '800', letterSpacing: 0.6, marginTop: space.lg, marginBottom: space.sm },
   input: { borderWidth: 1, borderRadius: radius.md, paddingHorizontal: space.lg, paddingVertical: 13, fontSize: 16 },
   gen: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, paddingHorizontal: 14 },

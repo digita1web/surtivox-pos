@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "android": {
       "package": "io.surtivox.pos",
-      "versionCode": 5,
+      "versionCode": 6,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B0E12"

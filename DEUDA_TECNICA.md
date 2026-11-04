@@ -1,0 +1,113 @@
+# Deuda técnica
+
+Estado: **v1.0.3 beta de pruebas internas** (`versionCode` 6). No es un lanzamiento comercial. Este archivo es la lista de pendientes para la v1.0.4. Cada punto indica si fue **verificado** en el código o es una **hipótesis**.
+
+## Decisiones tomadas para la beta
+
+- El respaldo en la nube es **gratis y está abierto a todos los propietarios** de tienda. La tarjeta de precio y el botón "Suscribirme" se ocultaron en [cloud-sync.tsx](apps/mobile/app/cloud-sync.tsx).
+- El Worker de sync **no consulta `entitlements`**: no hay forma de limitar el uso por tienda.
+- La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
+- Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
+
+## Estado de la infraestructura (Cloudflare)
+
+Desplegado por la API REST el 2026-11-04, porque Wrangler 3.114 falla con `fetch failed` detrás del proxy de este equipo (el proxy es la única salida a Internet).
+
+| Worker | D1 enlazada | Notas |
+|---|---|---|
+| `surtivox-sync` | `surtivox-sync` (`1faf3ce0-aa7a-414d-bc0e-e28d9be9d336`) | 16 tablas. `sync_tokens` empezó vacía. |
+| `surtivox-catalog` | `surtivox-catalog` (`b6740661-3359-4780-aff9-6cd5624992a7`) | Cron `17 3 * * *`. `CATALOG_SALT` rotada a un valor aleatorio. |
+| `surtivox-market` | no usa D1 | Precios de referencia. |
+| `surtivox-pagos` | **no desplegado** | Ver sección de cobro. |
+
+El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el despliegue debe revocarse.
+
+## P1 · Integridad del sync
+
+- **Cursor del servidor (P1-2).** *Verificado.* El cursor de pull es el mayor `updated_at`/`created_at` que puso el dispositivo ([sync-worker/src/index.ts](apps/sync-worker/src/index.ts), [mobile/src/sync.ts](apps/mobile/src/sync.ts)). Una venta creada sin conexión y subida tarde no llega a un dispositivo que ya avanzó su cursor. Solución: columna asignada por el servidor (`server_seq` o `received_at`) y paginar por ella. **Requiere migración de D1 y cambio de contrato.**
+- **Pull sin paginar.** *Verificado.* Una tienda grande se descarga en una sola respuesta.
+- **Sync de varias tiendas (P2-5).** *Verificado.* `changedSinceSql` no filtra por tienda y hay un solo cursor `last_pushed_at`. El servidor descarta lo ajeno, pero no hay prueba.
+- **Reloj del dispositivo.** El último que escribe gana según `updated_at` del dispositivo: un reloj adelantado siempre gana.
+- **Borrados.** Solo hay borrado lógico en productos, clientes, proveedores y personal. `categories` no tiene `deleted_at`.
+- **`image_uri` local se sincroniza** como ruta que no sirve en otro dispositivo.
+- **`restoreFromCloud` borra todas las tiendas locales**, no solo la vinculada.
+
+## Seguridad
+
+- **Tokens de sync en texto plano en D1** (`sync_tokens.token`). Guardar el hash SHA-256.
+- **Sin rate limit** en sync, pagos ni catálogo. CORS abierto (`*`).
+- **El registro (`/sync/register`) ya no permite tomar una tienda ajena**, pero se apoya en que el primero que registra gana. Reinstalar la app o "Borrar todo" pierde el token: la tienda solo se recupera con el código original. Mostrar y recordar el código al activar la nube.
+- **Ids con `Math.random`** ([id.ts](apps/mobile/src/id.ts)). Usar `expo-crypto`.
+- **PIN con `cyrb53` y sal de `Math.random`** ([roles.ts](apps/mobile/src/roles.ts)). Un PIN de 4 dígitos se revierte al instante desde un respaldo o desde D1, y el hash viaja por el sync.
+- **`allowBackup="true"`** en el manifest de Android: la copia automática a Google Drive incluye fiado y token.
+- **El respaldo JSON incluye `local_settings`** (`catalog_install_id`, `developer_mode`, `last_error`).
+- **`last_error`** se trunca a 300 caracteres pero no se redacta ([diagnostics.ts](apps/mobile/src/diagnostics.ts)).
+- **Catálogo comunitario (P2-9).** El `install_id` lo elige el cliente: dos ids inventados alcanzan el umbral de consenso. Falta limitar por IP.
+- **Política de privacidad del catálogo** sigue en borrador sin publicar ([landing/privacidad-catalogo-borrador.md](landing/privacidad-catalogo-borrador.md)).
+- **Revocar** cualquier token de API de Cloudflare que se haya compartido.
+
+## Cobro y suscripción
+
+*Verificado:* la app todavía no puede cobrar.
+
+- [payments.ts](apps/mobile/src/payments.ts) tiene `CHECKOUT_ENDPOINT = ''` y **ya no lo llama ninguna pantalla** (código muerto hasta conectar el pago).
+- El Worker de pagos solo expone `POST /pagos/crear`. **No hay webhook**, no se escribe `entitlements` y no hay conciliación de `wompi_tx_id`.
+- Las tablas `payment_intents`, `entitlements` y `wompi_events` **no existen** en la D1 `surtivox-sync` (falta aplicar [payments-worker/schema.sql](apps/payments-worker/schema.sql)).
+- Los secretos `WOMPI_*` no están configurados.
+- Círculo sin salida: `/pagos/crear` exige un token ya registrado en `sync_tokens`, y registrarlo exige sincronizar. El token debería emitirse al crear el pago.
+- Falta idempotencia: cada llamada crea un `payment_intent` nuevo.
+- **Dos fuentes de verdad de la suscripción.** Inicio y Más usan el IAP de `expo-iap` ([subscription.ts](apps/mobile/src/subscription.ts)); la pantalla de nube usa el estado de `sync_state`. En la beta, Inicio y Más siguen diciendo "Opcional" aunque la nube esté activa.
+- **`paywall.tsx` sigue existiendo** y se alcanza por deep link `surtivoxpos://paywall`. Muestra "USD 5/mes". Eliminarlo junto con el IAP.
+- Quitar `expo-iap` cambia el fingerprint nativo (`runtimeVersion`): los APK ya instalados dejan de recibir OTA.
+- **Precios inconsistentes** en el código: "$2/mes", "$5.00", "USD 5/mes", "≈ 20.000 COP". El cargo real es 20.000 COP. Definir un solo precio y moneda.
+- Decidir si el Worker de pagos conserva la D1 compartida con sync o se separa con un Service Binding.
+
+## App móvil
+
+- **Respaldo marcado como hecho aunque se cancele (P2-3).** Si el usuario cancela el diálogo de compartir, `last_backup_at` se escribe igual. El archivo queda en `cacheDirectory`, que el sistema puede limpiar.
+- **Restauración parcial (P2-4).** [backup.ts](apps/mobile/src/backup.ts) solo reemplaza las tablas presentes en el archivo, sin `PRAGMA foreign_key_check` y sin reiniciar `sync_state`.
+- Los archivos de `safety/` (`pre-migracion-*.db` y `surtivox-antes-de-restaurar-*.json`) **no tienen pantalla de restauración**.
+- Si una migración falla, el error no se guarda en `last_error` y se muestra crudo y en inglés ([_layout.tsx](apps/mobile/app/_layout.tsx)). Decidir si una copia previa fallida debe bloquear la migración.
+- `collectFullBackup` carga toda la base en memoria.
+- **Modo desarrollador sin salida** salvo "Borrar todo" ([more.tsx](apps/mobile/app/(tabs)/more.tsx)).
+- Borradores con `track_inventory = 0`: anulación y devolución usan el valor actual del producto, no el movimiento original. Si algún día se activa el inventario, repondrán stock que nunca se descontó.
+- `repos.ts` sigue siendo un archivo de ~1.500 líneas con SQL repetido.
+- Textos técnicos y en inglés en errores del servidor sin traducir fuera de los códigos conocidos ([syncErrors.ts](apps/mobile/src/syncErrors.ts)).
+- Accesibilidad: sin revisar con fuente al 200 % ni en pantallas pequeñas.
+
+## Tests que faltan
+
+- Parte de escritura de `processReturn` (hoy solo se prueba `assertReturnable`).
+- `restoreFromCloud` con un fallo a mitad de la carga.
+- `restoreFullBackup` con un respaldo parcial y con claves foráneas rotas.
+- Handler completo de `POST /pagos/crear` (400, 401, 503, 201).
+- Sync entre dos dispositivos contra el Worker (hoy el Worker se prueba con SQLite en memoria, no con D1 real).
+- Concurrencia real de `expo-sqlite` en dispositivo (las pruebas de concurrencia corren en un solo hilo).
+- Cámara, `quick_check`, copia previa a migrar y backups automáticos: solo hay pruebas puras, ninguna en dispositivo.
+
+## Build, release y CI
+
+- **Firma de release con la llave debug** (`android/app/debug.keystore`, generada por `prebuild`). Falta la llave de subida y el AAB. Cambiar de llave después obliga a los usuarios a desinstalar.
+- [build-android.yml](.github/workflows/build-android.yml) **no ejecuta tests ni typecheck**, usa acciones sin fijar por SHA y Node 22 (la CI de tests usa Node 24).
+- `pnpm -r typecheck` no cubre `packages/types` (no tiene script `typecheck`).
+- Los Workers `payments-worker` y `catalog-worker` no declaran `wrangler`, `typescript` ni `@types/node`; se resuelven por hoisting.
+- **Hipótesis, sin verificar:** el manifest no incluye el header `expo-channel-name`, así que un `eas update` al canal `production` podría no llegar al APK compilado con Gradle fuera de EAS.
+- `buildArchs` limita a arm64 y armeabi: no instala en emuladores x86_64.
+- `runtimeVersion` por fingerprint: cualquier cambio nativo deja huérfano el APK anterior.
+- Wrangler 3.114 no funciona detrás del proxy de este equipo; los despliegues se hicieron por la API REST. Actualizar Wrangler o desplegar desde otra red.
+
+## Documentación
+
+- [AGENTS.md](AGENTS.md) apunta a `docs/ui-spec.md`, `docs/core-spec.md` y `docs/sync-spec.md`, que **no existen**.
+- `docs/architecture.md`, `docs/database.md`, `docs/development.md` y `docs/roadmap.md` pueden estar desactualizados.
+- Los `README`/`DEPLOY.md` de los Workers deberían describir el despliegue por la API REST y los contratos nuevos de `/sync/register` y `/sync/push` (403 `store_already_claimed`, 413 `payload_too_large` y `too_many_rows`).
+
+## Pruebas manuales en dispositivo real (pendientes)
+
+- Dos teléfonos contra el Worker nuevo, uno vendiendo sin conexión; comprobar P1-2.
+- Activar la nube, desactivarla y volver a activarla; vincular un segundo dispositivo con el código.
+- Cortar la red durante una descarga de `restoreFromCloud`.
+- Migración pendiente con copia previa; base corrupta a propósito; restauración de un respaldo antiguo.
+- Cámara: permiso denegado y bloqueado, segundo plano, cambio de pestaña, gama baja.
+- Venta con producto sin stock y con borrador; anular dos veces rápido; fiado con abono, anulación y devolución a la cuenta.
+- OTA: publicar una actualización al canal y comprobar que llega al APK de CI.
