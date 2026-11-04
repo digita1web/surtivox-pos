@@ -49,7 +49,7 @@ async function persistProduct(asset: ImagePicker.ImagePickerAsset): Promise<stri
 export async function pickFromGallery(): Promise<string | null> {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) return null;
-  const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1 });
+  const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1, allowsEditing: true, aspect: [1, 1] });
   if (res.canceled || !res.assets?.[0]) return null;
   return persistProduct(res.assets[0]);
 }
@@ -57,7 +57,7 @@ export async function pickFromGallery(): Promise<string | null> {
 export async function takePhoto(): Promise<string | null> {
   const perm = await ImagePicker.requestCameraPermissionsAsync();
   if (!perm.granted) return null;
-  const res = await ImagePicker.launchCameraAsync({ quality: 1 });
+  const res = await ImagePicker.launchCameraAsync({ quality: 1, allowsEditing: true, aspect: [1, 1] });
   if (res.canceled || !res.assets?.[0]) return null;
   return persistProduct(res.assets[0]);
 }

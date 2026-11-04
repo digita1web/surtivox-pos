@@ -275,7 +275,7 @@ export default function AddProduct() {
       <View style={{ alignSelf: 'center', marginTop: params.barcode ? space.lg : 0 }}>
         <Pressable onPress={chooseImage}>
           {imageUri ? (
-            <Image source={{ uri: imageUri }} style={[st.photo, { borderColor: t.line, backgroundColor: '#fff' }]} resizeMode="contain" />
+            <Image source={{ uri: imageUri }} style={[st.photo, { borderColor: t.line, backgroundColor: t.accentSoft }]} resizeMode="contain" />
           ) : (
             <View style={[st.photo, st.photoEmpty, { borderColor: t.line, backgroundColor: t.surfaceAlt }]}>
               <Ionicons name="camera-outline" size={30} color={t.muted} />

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, type ImageStyle, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { categoryImageFor } from './categoryImages';
-import { tileColor, initials } from '../theme';
+import { tileColor, initials, useTheme } from '../theme';
 
 export function Thumb({ uri, name, category, style, textSize = 22 }: {
   uri: string | null | undefined;
@@ -11,12 +11,13 @@ export function Thumb({ uri, name, category, style, textSize = 22 }: {
   style: StyleProp<ViewStyle>;
   textSize?: number;
 }) {
+  const t = useTheme();
   const [failedUri, setFailedUri] = useState<string | null>(null);
   if (uri && uri !== failedUri) {
     return (
       <Image
         source={uri}
-        style={[style as ImageStyle, { backgroundColor: '#ffffff' }]}
+        style={[style as ImageStyle, { backgroundColor: t.accentSoft }]}
         contentFit="contain"
         transition={150}
         cachePolicy="memory-disk"
