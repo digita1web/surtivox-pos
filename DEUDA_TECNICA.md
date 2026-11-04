@@ -62,6 +62,19 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 - **Precios inconsistentes** en el código: "$2/mes", "$5.00", "USD 5/mes", "≈ 20.000 COP". El cargo real es 20.000 COP. Definir un solo precio y moneda.
 - Decidir si el Worker de pagos conserva la D1 compartida con sync o se separa con un Service Binding.
 
+## Legal y privacidad (pendiente de revisión por un abogado colombiano)
+
+- **Los textos de la app son un borrador sin revisión legal** ([legalText.ts](apps/mobile/src/legalText.ts)). Describen el comportamiento real del código, pero no los ha aprobado un abogado. Al cambiarlos hay que subir `LEGAL_VERSION` en [legal.ts](apps/mobile/src/legal.ts): la app vuelve a pedir la aceptación.
+- **Faltan el domicilio y el teléfono del responsable** (Mateo Castro). Hoy solo figura el correo.
+- **La política web ([privacidad.html](landing/privacidad.html)) solo cubre la landing** y no coincide con el aviso de privacidad de la app. Hay que publicar una política completa y alinearla.
+- **Conservación:** el aviso dice "mientras el servicio esté activo o hasta que solicites su supresión". No hay plazos definidos ni herramienta para borrar datos del servidor: hoy una solicitud de supresión es manual.
+- **Transferencia internacional** (Cloudflare, Expo) sin clasificar; verificar con el abogado y, si aplica, el Registro Nacional de Bases de Datos.
+- **La prueba de aceptación vive solo en el teléfono** (`legal_accepted_version` y `legal_accepted_at` en `local_settings`). Es evidencia débil.
+- **Consultas de código de barras sin consentimiento:** al escanear un código desconocido la app consulta Open Food Facts y el catálogo de Surtivox (solo el código y la IP). Está declarado en el aviso; decidir si requiere opt-in.
+- **Catálogo comunitario:** el aviso inicial es opt-in (nunca preseleccionado). No cambiarlo a opt-out: la autorización debe ser previa y expresa (Ley 1581, art. 9).
+- **Accesibilidad:** `t.muted` tiene contraste 3,9:1 sobre el fondo en modo claro y `t.faint` 2,3:1, por debajo de AA (4,5:1). Afecta a toda la app, incluido el tip de la foto.
+- **Pendiente de prueba en dispositivo:** instalación limpia; actualización desde v1.0.3 con tienda existente (debe mostrar los términos y luego la pregunta del catálogo si no se respondió); fuente al 200 %; TalkBack; aviso de la nube con fuente grande.
+
 ## Fotos de productos
 
 - **Las fotos no viajan entre dispositivos.** `image_uri` es una ruta local y desde v1.0.3 está marcada como "solo local" en [sync.ts](packages/database/src/sync.ts): no se envía y el pull no la sobrescribe. Un dispositivo nuevo o una restauración desde la nube muestra el producto sin foto.

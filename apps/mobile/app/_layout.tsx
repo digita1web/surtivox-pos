@@ -12,7 +12,10 @@ import { StaffLock } from '../src/pos/StaffLock';
 import { AlertHost } from '../src/pos/alert';
 import { LaunchIntro } from '../src/pos/LaunchIntro';
 import { checkForUpdatesInBackground } from '../src/updates';
-import { flushOutbox } from '../src/catalog';
+import { flushOutbox, CATALOG_URL } from '../src/catalog';
+import { isCatalogEnabled } from '../src/catalogCore';
+import { loadGateSteps, type GateStep } from '../src/legal';
+import { LegalGate } from '../src/pos/LegalGate';
 import { exportFullBackup } from '../src/backup';
 import { installGlobalErrorHandler } from '../src/crashHandler';
 import { truncateErrorMessage } from '../src/diagnostics';
@@ -29,6 +32,7 @@ export default function RootLayout() {
   const [bootAttempt, setBootAttempt] = useState(0);
   const [integrityWarning, setIntegrityWarning] = useState<string | null>(null);
   const [showIntro, setShowIntro] = useState(true);
+  const [gate, setGate] = useState<GateStep[]>([]);
   const loadSession = useSession((s) => s.load);
   const store = useSession((s) => s.store);
   const locked = useLocked();
@@ -42,6 +46,9 @@ export default function RootLayout() {
       })
       .then(async () => {
         await loadAppCurrency(useSession.getState().store?.currency_code ?? 'COP');
+      })
+      .then(async () => {
+        setGate(await loadGateSteps(getDb(), isCatalogEnabled(CATALOG_URL)).catch((): GateStep[] => ['terms']));
       })
       .then(() => setReady(true))
       .catch((e) => setError(e instanceof Error ? e.message : String(e)));
@@ -100,6 +107,8 @@ export default function RootLayout() {
           <ActivityIndicator color={t.accent} size="large" />
           <Text style={{ color: t.muted, marginTop: 12 }}>Abriendo tienda…</Text>
         </View>
+      ) : gate.length > 0 ? (
+        <LegalGate steps={gate} onDone={() => setGate([])} />
       ) : !store ? (
         <Onboarding onCreated={loadSession} />
       ) : locked ? (

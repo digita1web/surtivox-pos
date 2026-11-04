@@ -5,7 +5,7 @@
  * app root; showAlert() can then be called from anywhere (event handlers too).
  */
 import { create } from 'zustand';
-import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
+import { Modal, View, Text, Pressable, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { useTheme, space, radius } from '../theme';
 
 export type AlertButton = { text: string; style?: 'default' | 'cancel' | 'destructive'; onPress?: () => void };
@@ -27,6 +27,7 @@ export function AlertHost() {
   const t = useTheme();
   const current = useAlertStore((s) => s.current);
   const dismiss = useAlertStore((s) => s.dismiss);
+  const { height } = useWindowDimensions();
   if (!current) return null;
 
   const { title, message, buttons } = current;
@@ -41,7 +42,11 @@ export function AlertHost() {
       <Pressable style={s.backdrop} onPress={onBackdrop}>
         <Pressable style={[s.card, { backgroundColor: t.panel, borderColor: t.line }]} onPress={() => {}}>
           <Text style={[s.title, { color: t.fg }]}>{title}</Text>
-          {message ? <Text style={[s.msg, { color: t.muted }]}>{message}</Text> : null}
+          {message ? (
+            <ScrollView style={{ maxHeight: height * 0.5 }} bounces={false}>
+              <Text style={[s.msg, { color: t.muted }]}>{message}</Text>
+            </ScrollView>
+          ) : null}
           <View style={[s.actions, { borderTopColor: t.line }, row && s.actionsRow]}>
             {buttons.map((b, i) => {
               const color = b.style === 'destructive' ? t.danger : b.style === 'cancel' ? t.muted : t.accent;

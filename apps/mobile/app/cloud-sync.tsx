@@ -9,6 +9,7 @@ import {
 } from '../src/sync';
 import { getLocalSetting } from '../src/repos';
 import { newId } from '../src/id';
+import { CLOUD_NOTICE } from '../src/legalText';
 import { useSession } from '../src/session';
 import { useTheme, space, radius } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
@@ -48,10 +49,13 @@ export default function CloudSync() {
   };
 
   // --- one-tap hosted actions ---
-  const turnOn = () => run('on', async () => {
-    await turnOnCloudBackup();
-    showAlert('Respaldo en la nube activado', 'Tu tienda está respaldada. Usa el código de tienda para agregar otro dispositivo.');
-  });
+  const turnOn = () => showAlert(CLOUD_NOTICE.title, CLOUD_NOTICE.body, [
+    { text: CLOUD_NOTICE.cancel, style: 'cancel' },
+    { text: CLOUD_NOTICE.confirm, onPress: () => { void run('on', async () => {
+      await turnOnCloudBackup();
+      showAlert('Respaldo en la nube activado', 'Tu tienda está respaldada. Usa el código de tienda para agregar otro dispositivo.');
+    }); } },
+  ]);
   const sync = () => run('sync', async () => { await syncNow(); });
   const shareCode = async () => {
     if (!shopCode) return;
