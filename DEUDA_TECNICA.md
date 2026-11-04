@@ -43,7 +43,7 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 - **El respaldo JSON incluye `local_settings`** (`catalog_install_id`, `developer_mode`, `last_error`).
 - **`last_error`** se trunca a 300 caracteres pero no se redacta ([diagnostics.ts](apps/mobile/src/diagnostics.ts)).
 - **Catálogo comunitario (P2-9).** El `install_id` lo elige el cliente: dos ids inventados alcanzan el umbral de consenso. Falta limitar por IP.
-- **Política de privacidad del catálogo** sigue en borrador sin publicar ([landing/privacidad-catalogo-borrador.md](landing/privacidad-catalogo-borrador.md)).
+- **Política de privacidad del catálogo** sigue en borrador sin publicar ([docs/privacidad-catalogo-borrador.md](docs/privacidad-catalogo-borrador.md)).
 - **Revocar** cualquier token de API de Cloudflare que se haya compartido.
 
 ## Cobro y suscripción
@@ -66,14 +66,13 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 
 - **Los textos de la app son un borrador sin revisión legal** ([legalText.ts](apps/mobile/src/legalText.ts)). Describen el comportamiento real del código, pero no los ha aprobado un abogado. Al cambiarlos hay que subir `LEGAL_VERSION` en [legal.ts](apps/mobile/src/legal.ts): la app vuelve a pedir la aceptación.
 - **Faltan el domicilio y el teléfono del responsable** (Mateo Castro). Hoy solo figura el correo.
-- **La página [privacidad.html](landing/privacidad.html) repite el aviso de la app** (secciones 1 a 9, palabra por palabra) y conserva las partes del sitio (10 a 12). Un test ([landingPrivacy.test.ts](apps/mobile/src/landingPrivacy.test.ts)) falla si se desalinean. Si cambias [legalText.ts](apps/mobile/src/legalText.ts), actualiza la web y sube `LEGAL_VERSION`. Los **Términos** de la web ([terminos.html](landing/terminos.html)) y los de la app están redactados por separado y **no** tienen ese test.
-- **Publicados por error:** `landing/privacidad-catalogo-borrador.md` y `landing/privacidad-catalogo-notas.md` están dentro de `landing/`, que GitHub Pages publica completo, aunque el borrador dice "No publicar". Moverlos a `docs/`.
+- **La web repite los textos de la app.** [privacidad.html](landing/privacidad.html) y [terminos.html](landing/terminos.html) contienen las secciones de la app palabra por palabra (privacidad 1 a 9 y términos 1 a 11) y añaden las propias del sitio. [landingLegal.test.ts](apps/mobile/src/landingLegal.test.ts) falla si se desalinean. Si cambias [legalText.ts](apps/mobile/src/legalText.ts), actualiza las dos páginas y sube `LEGAL_VERSION`. Los borradores internos viven en `docs/`, fuera de lo que publica GitHub Pages.
 - **Conservación:** el aviso dice "mientras el servicio esté activo o hasta que solicites su supresión". No hay plazos definidos ni herramienta para borrar datos del servidor: hoy una solicitud de supresión es manual.
 - **Transferencia internacional** (Cloudflare, Expo) sin clasificar; verificar con el abogado y, si aplica, el Registro Nacional de Bases de Datos.
 - **La prueba de aceptación vive solo en el teléfono** (`legal_accepted_version` y `legal_accepted_at` en `local_settings`). Es evidencia débil.
 - **Consultas de código de barras sin consentimiento:** al escanear un código desconocido la app consulta Open Food Facts y el catálogo de Surtivox (solo el código y la IP). Está declarado en el aviso; decidir si requiere opt-in.
 - **Catálogo comunitario:** el aviso inicial es opt-in (nunca preseleccionado). No cambiarlo a opt-out: la autorización debe ser previa y expresa (Ley 1581, art. 9).
-- **Contraste:** `muted` y `faint` ya cumplen 4,5:1 en todas las superficies y en ambos temas (hay un test, [themeContrast.test.ts](apps/mobile/src/themeContrast.test.ts)). **Siguen por debajo de AA en modo claro** los colores usados como texto: `accent` (2,8 a 3,1:1), `ok` (2,4:1), `warn` (2,1:1) y `danger` (3,5 a 3,9:1). Los botones con `accentFg` sobre `accent` no se midieron.
+- **Contraste:** `muted`, `faint`, `dangerText` y `warnText` cumplen 4,5:1 en todas las superficies y en ambos temas, con test ([themeContrast.test.ts](apps/mobile/src/themeContrast.test.ts)). `danger` y `warn` quedan para rellenos, bordes e iconos y un test impide usarlos como color de texto. **Siguen por debajo de AA en modo claro** `accent` como texto (2,8 a 3,1:1; es la identidad de la marca y se decidió no tocarlo) y `ok` (2,4:1). El texto blanco sobre `danger` da 3,9:1 en claro y 3,4:1 en oscuro, y sobre `warn` 2,4:1; no se midieron los botones con `accentFg`. Los iconos de `warn` (2,1 a 2,4:1) tampoco llegan a 3:1.
 - **Pendiente de prueba en dispositivo:** instalación limpia; actualización desde v1.0.3 con tienda existente (debe mostrar los términos y luego la pregunta del catálogo si no se respondió); fuente al 200 %; TalkBack; aviso de la nube con fuente grande.
 
 ## Fotos de productos
