@@ -62,7 +62,7 @@ export function CustomerPicker({ visible, onClose, onPick }: {
                   <Text style={{ color: t.fg, fontWeight: '700' }}>{item.name}</Text>
                   {item.phone ? <Text style={{ color: t.muted, fontSize: 12 }}>{item.phone}</Text> : null}
                 </View>
-                {item.balance > 0 && <Text style={{ color: t.danger, fontWeight: '700' }}>{money(item.balance as any)} pendiente</Text>}
+                {item.balance > 0 && <Text style={{ color: t.dangerText, fontWeight: '700' }}>{money(item.balance as any)} pendiente</Text>}
               </Pressable>
             )}
             ListEmptyComponent={<Text style={{ color: t.muted, textAlign: 'center', paddingVertical: 20 }}>Aún no hay clientes.</Text>}

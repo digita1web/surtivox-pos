@@ -101,7 +101,7 @@ export default function AddStaff() {
         keyboardType="number-pad" secureTextEntry maxLength={4} placeholder="••••" placeholderTextColor={t.muted}
         style={[st.input, { color: t.fg, borderColor: t.line, backgroundColor: t.panel, letterSpacing: 8 }]} />
 
-      {err && <Text style={{ color: t.danger, marginTop: space.lg }}>{err}</Text>}
+      {err && <Text style={{ color: t.dangerText, marginTop: space.lg }}>{err}</Text>}
     </Screen>
   );
 }

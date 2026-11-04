@@ -71,7 +71,7 @@ export default function Customers() {
               {item.phone ? <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>{item.phone}</Text> : null}
             </View>
             {item.balance > 0
-              ? <Text style={{ color: t.danger, fontWeight: '800' }}>{money(item.balance as Minor)}</Text>
+              ? <Text style={{ color: t.dangerText, fontWeight: '800' }}>{money(item.balance as Minor)}</Text>
               : <Text style={{ color: t.muted, fontSize: 12 }}>Al día</Text>}
           </Pressable>
         )}

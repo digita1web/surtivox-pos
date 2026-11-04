@@ -60,7 +60,7 @@ export default function Shops() {
       {me && (
         <Pressable onPress={logout} style={[s.logout, { borderColor: t.line }]}>
           <Ionicons name="log-out-outline" size={18} color={t.danger} />
-          <Text style={{ color: t.danger, fontWeight: '700', marginLeft: 8 }}>Cerrar sesión ({me.name})</Text>
+          <Text style={{ color: t.dangerText, fontWeight: '700', marginLeft: 8 }}>Cerrar sesión ({me.name})</Text>
         </Pressable>
       )}
     </Screen>

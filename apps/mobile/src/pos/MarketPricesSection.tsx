@@ -46,7 +46,7 @@ export function MarketPricesSection({ ean }: { ean: string }) {
       )}
 
       {status === 'error' && rows.length === 0 && (
-        <Text style={{ color: t.danger, marginTop: space.md }}>No se pudieron consultar los precios. Intenta de nuevo.</Text>
+        <Text style={{ color: t.dangerText, marginTop: space.md }}>No se pudieron consultar los precios. Intenta de nuevo.</Text>
       )}
 
       {status === 'empty' && (
@@ -60,7 +60,7 @@ export function MarketPricesSection({ ean }: { ean: string }) {
       ) : null}
 
       {stale && rows.length > 0 ? (
-        <Text style={{ color: t.warn, fontSize: 11, marginTop: space.sm }}>
+        <Text style={{ color: t.warnText, fontSize: 11, marginTop: space.sm }}>
           Datos guardados sin actualizar. Pueden estar desactualizados.
         </Text>
       ) : null}
@@ -74,7 +74,7 @@ export function MarketPricesSection({ ean }: { ean: string }) {
       ) : null}
 
       {mixedPresentations ? (
-        <Text style={{ color: t.warn, fontSize: 11, marginTop: space.sm }}>
+        <Text style={{ color: t.warnText, fontSize: 11, marginTop: space.sm }}>
           Las presentaciones difieren. Compara productos equivalentes antes de sacar conclusiones.
         </Text>
       ) : null}

@@ -131,7 +131,7 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
       referenceName: prices.lowest?.supermarket_name,
     })
     : null;
-  const hintColor = margin?.tone === 'danger' ? t.danger : margin?.tone === 'warn' ? t.warn : t.muted;
+  const hintColor = margin?.tone === 'danger' ? t.dangerText : margin?.tone === 'warn' ? t.warnText : t.muted;
   const offerContribution = async (productName: string) => {
     if (!nameTouched.current || !CATALOG_URL.trim()) return;
     if (!productName.trim() || isGenericCatalogName(productName)) return;
@@ -312,7 +312,7 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
               accessibilityLabel="Tu precio de venta"
             />
           </View>
-          {err ? <Text style={{ color: t.danger, fontSize: 11, marginTop: 2 }}>{err}</Text> : null}
+          {err ? <Text style={{ color: t.dangerText, fontSize: 11, marginTop: 2 }}>{err}</Text> : null}
 
           {suggestions.length > 0 ? (
             <View style={s.chips}>

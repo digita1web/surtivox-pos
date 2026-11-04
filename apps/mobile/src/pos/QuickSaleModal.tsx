@@ -87,7 +87,7 @@ export function QuickSaleModal() {
             </View>
           </View>
 
-          {err && <Text style={{ color: t.danger, marginTop: 12 }}>{err}</Text>}
+          {err && <Text style={{ color: t.dangerText, marginTop: 12 }}>{err}</Text>}
 
           <Pressable onPress={add} style={[s.primary, { backgroundColor: t.accent }]}>
             <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>Agregar al carrito</Text>

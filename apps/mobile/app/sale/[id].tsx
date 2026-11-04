@@ -126,7 +126,7 @@ export default function SaleDetailScreen() {
         {refundedTotal > 0 && (
           <View style={[s.refundedTag, { backgroundColor: t.warn + '22' }]}>
             <Ionicons name="arrow-undo-outline" size={14} color={t.warn} />
-            <Text style={{ color: t.warn, fontWeight: '700', marginLeft: 6 }}>{money(asMinor(refundedTotal))} devueltos</Text>
+            <Text style={{ color: t.warnText, fontWeight: '700', marginLeft: 6 }}>{money(asMinor(refundedTotal))} devueltos</Text>
           </View>
         )}
       </View>

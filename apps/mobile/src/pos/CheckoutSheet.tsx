@@ -154,7 +154,7 @@ export function CheckoutSheet() {
             </View>
             <View style={{ flex: 1, marginLeft: 10 }}>
               <Text style={{ color: t.fg, fontWeight: '700' }}>{customer ? customer.name : 'Cliente ocasional'}</Text>
-              {customer && customer.balance > 0 ? <Text style={{ color: t.danger, fontSize: 12 }}>{money(customer.balance as Minor)} pendiente</Text> : null}
+              {customer && customer.balance > 0 ? <Text style={{ color: t.dangerText, fontSize: 12 }}>{money(customer.balance as Minor)} pendiente</Text> : null}
             </View>
             <Ionicons name="chevron-down" size={18} color={t.muted} />
           </Pressable>
@@ -230,7 +230,7 @@ export function CheckoutSheet() {
                   </Pressable>
                 ))}
               </View>
-              <Text style={{ textAlign: 'center', marginTop: 12, color: enough ? t.ok : t.danger, fontWeight: '700' }}>
+              <Text style={{ textAlign: 'center', marginTop: 12, color: enough ? t.ok : t.dangerText, fontWeight: '700' }}>
                 {received ? (enough ? `Cambio  ${money(change)}` : `Falta  ${money((totals.grandTotal - receivedMinor) as Minor)}`) : ' '}
               </Text>
             </>
@@ -267,7 +267,7 @@ export function CheckoutSheet() {
           </Pressable>
           <Pressable onPress={cancelBill} disabled={busy || lines.length === 0} hitSlop={8}
             style={{ alignSelf: 'center', paddingVertical: 12, marginTop: 2 }}>
-            <Text style={{ color: t.danger, fontWeight: '700', fontSize: 15, opacity: busy || lines.length === 0 ? 0.4 : 1 }}>Cancelar venta</Text>
+            <Text style={{ color: t.dangerText, fontWeight: '700', fontSize: 15, opacity: busy || lines.length === 0 ? 0.4 : 1 }}>Cancelar venta</Text>
           </Pressable>
           </View>
         </View>

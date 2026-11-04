@@ -283,12 +283,12 @@ export default function More() {
 
       {can(role, 'shop') && (
         <>
-          <Text style={[s.section, { color: t.danger }]}>Zona de peligro</Text>
+          <Text style={[s.section, { color: t.dangerText }]}>Zona de peligro</Text>
           <Pressable onPress={confirmReset} disabled={resetting}
             style={[s.dangerBtn, { borderColor: t.danger, backgroundColor: t.panel, opacity: resetting ? 0.6 : 1 }]}>
             <Ionicons name="trash-outline" size={20} color={t.danger} />
             <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={{ color: t.danger, fontWeight: '800' }}>
+              <Text style={{ color: t.dangerText, fontWeight: '800' }}>
                 {resetting ? 'Borrando…' : 'Borrar todos los datos de la app'}
               </Text>
               <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 2 }}>

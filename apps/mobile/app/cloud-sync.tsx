@@ -162,7 +162,7 @@ export default function CloudSync() {
             En otro teléfono, abre Respaldo en la nube, toca “Agregar este dispositivo a una tienda” e ingresa este código. Mantenlo privado: cualquiera que lo tenga puede leer los datos de esta tienda.
           </Text>
           <Pressable onPress={disconnect} disabled={!!busy} style={[s.secondary, { borderColor: t.line }]}>
-            <Text style={{ color: t.danger, fontWeight: '700' }}>Desactivar respaldo en la nube</Text>
+            <Text style={{ color: t.dangerText, fontWeight: '700' }}>Desactivar respaldo en la nube</Text>
           </Pressable>
         </>
       ) : null}

@@ -13,7 +13,9 @@ export const light = {
   accentFg: '#ffffff',
   ok: '#12b76a',
   warn: '#f79009',
+  warnText: '#9a5905',
   danger: '#e5484d',
+  dangerText: '#ce1d23',
   shadow: '0 6px 20px rgba(16,32,28,0.08)',
   shadowStrong: '0 10px 28px rgba(0,0,0,0.22)',
 };
@@ -33,7 +35,9 @@ export const dark: typeof light = {
   accentFg: '#04140d',
   ok: '#26c281',
   warn: '#f7a53b',
+  warnText: '#f7a53b',
   danger: '#f2555a',
+  dangerText: '#f46c71',
   shadow: '0 6px 20px rgba(0,0,0,0.35)',
   shadowStrong: '0 10px 28px rgba(0,0,0,0.5)',
 };

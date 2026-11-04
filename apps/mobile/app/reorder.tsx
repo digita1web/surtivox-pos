@@ -25,9 +25,10 @@ function urgencyLabel(urgency: ReorderRow['urgency']): string {
 function UrgencyBadge({ urgency }: { urgency: ReorderRow['urgency'] }) {
   const t = useTheme();
   const color = urgency === 'critical' ? t.danger : urgency === 'low' ? t.warn : t.ok;
+  const textColor = urgency === 'critical' ? t.dangerText : urgency === 'low' ? t.warnText : t.ok;
   return (
     <View style={[styles.badge, { backgroundColor: color + '22' }]}>
-      <Text style={[ty.micro, { color }]}>{urgencyLabel(urgency)}</Text>
+      <Text style={[ty.micro, { color: textColor }]}>{urgencyLabel(urgency)}</Text>
     </View>
   );
 }
@@ -81,7 +82,7 @@ export default function Reorder() {
             <View style={styles.cardHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={[ty.h2, { color: t.fg }]} numberOfLines={2}>{item.product_name}</Text>
-                <Text style={[ty.small, { color: item.days_of_stock_left === 0 ? t.danger : t.muted, marginTop: 2 }]}>
+                <Text style={[ty.small, { color: item.days_of_stock_left === 0 ? t.dangerText : t.muted, marginTop: 2 }]}>
                   {stockMessage(item.days_of_stock_left)}
                 </Text>
               </View>

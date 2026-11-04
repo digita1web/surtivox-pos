@@ -242,7 +242,7 @@ export default function AddProduct() {
 
   const field = (label: string, value: string, set: (v: string) => void, opts?: { kb?: 'decimal-pad' | 'number-pad'; ph?: string; caps?: 'none' | 'sentences' | 'words'; req?: boolean }) => (
     <>
-      <Text style={[st.label, { color: t.muted }]}>{label}{opts?.req ? <Text style={{ color: t.danger }}> *</Text> : null}</Text>
+      <Text style={[st.label, { color: t.muted }]}>{label}{opts?.req ? <Text style={{ color: t.dangerText }}> *</Text> : null}</Text>
       <TextInput value={value} onChangeText={set} placeholder={opts?.ph} placeholderTextColor={t.muted}
         keyboardType={opts?.kb} autoCapitalize={opts?.caps} style={[st.input, { color: t.fg, borderColor: t.line, backgroundColor: t.panel }]} />
     </>
@@ -333,7 +333,7 @@ export default function AddProduct() {
       <Text style={{ color: t.faint, fontSize: 11, marginTop: 6 }}>Toca la cámara para escanear o escribe un código; se completa el nombre y la foto desde Open Food Facts.</Text>
 
       {barcode.trim() && !isValidEan(barcode) && (editId || /^INT-/i.test(barcode.trim())) ? (
-        <Text style={{ color: t.warn, fontSize: 12, marginTop: 6 }}>
+        <Text style={{ color: t.warnText, fontSize: 12, marginTop: 6 }}>
           Este producto no tiene un código EAN válido para consultar precios de referencia.
         </Text>
       ) : null}
@@ -345,7 +345,7 @@ export default function AddProduct() {
       {field('Precio de costo', cost, setCost, { kb: 'decimal-pad', ph: '0 (opcional)' })}
       {costPreview && <Text style={{ color: t.muted, fontSize: 12, marginTop: 4 }}>Se mostrará como {costPreview}</Text>}
       {margin !== null && (
-        <Text style={{ color: margin >= 0 ? t.ok : t.danger, fontSize: 12, marginTop: 6, fontWeight: '600' }}>
+        <Text style={{ color: margin >= 0 ? t.ok : t.dangerText, fontSize: 12, marginTop: 6, fontWeight: '600' }}>
           {margin >= 0 ? `Margen ${margin}%` : `Vendiendo por debajo del costo (${margin}%)`}
         </Text>
       )}
@@ -375,7 +375,7 @@ export default function AddProduct() {
       </View>
       {editId ? (
         <Pressable onPress={remove} disabled={busy} hitSlop={8} style={{ alignSelf: 'center', paddingVertical: 14, marginTop: 4 }}>
-          <Text style={{ color: t.danger, fontWeight: '700', fontSize: 15 }}>Eliminar producto</Text>
+          <Text style={{ color: t.dangerText, fontWeight: '700', fontSize: 15 }}>Eliminar producto</Text>
         </Pressable>
       ) : null}
 

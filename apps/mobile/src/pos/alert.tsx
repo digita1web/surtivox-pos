@@ -49,7 +49,7 @@ export function AlertHost() {
           ) : null}
           <View style={[s.actions, { borderTopColor: t.line }, row && s.actionsRow]}>
             {buttons.map((b, i) => {
-              const color = b.style === 'destructive' ? t.danger : b.style === 'cancel' ? t.muted : t.accent;
+              const color = b.style === 'destructive' ? t.dangerText : b.style === 'cancel' ? t.muted : t.accent;
               return (
                 <Pressable
                   key={`${b.text}-${i}`} onPress={() => run(b)} android_ripple={{ color: t.accentSoft }}

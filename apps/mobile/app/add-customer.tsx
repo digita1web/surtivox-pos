@@ -47,7 +47,7 @@ export default function AddCustomer() {
       {field('Dirección', address, setAddress, { ph: 'opcional' })}
       {field('Notas', notes, setNotes, { ph: 'opcional', multi: true })}
 
-      {err && <Text style={{ color: t.danger, marginTop: space.lg }}>{err}</Text>}
+      {err && <Text style={{ color: t.dangerText, marginTop: space.lg }}>{err}</Text>}
     </Screen>
   );
 }

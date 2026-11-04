@@ -105,7 +105,7 @@ export default function CustomerDetail() {
                 <Text style={[ty.body, { color: t.fg, fontWeight: '600' }]}>{meta.label}</Text>
                 <Text style={[ty.small, { color: t.muted, marginTop: 2 }]}>{new Date(item.created_at).toLocaleString()}</Text>
               </View>
-              <Text style={{ color: positive ? t.danger : t.ok, fontWeight: '800' }}>
+              <Text style={{ color: positive ? t.dangerText : t.ok, fontWeight: '800' }}>
                 {positive ? '+' : '−'}{money(asMinor(Math.abs(item.amount)))}
               </Text>
             </View>

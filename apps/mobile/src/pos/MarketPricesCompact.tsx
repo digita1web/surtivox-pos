@@ -43,7 +43,7 @@ export function MarketPricesCompactView({ prices }: { prices: MarketPricesHook }
         <Text style={[s.title, { color: t.fg }]} numberOfLines={1}>Precio en supermercados</Text>
         <View style={s.headRight}>
           {visibleAge ? (
-            <Text style={{ color: old || stale ? t.warn : t.faint, fontSize: 11 }} numberOfLines={1}>
+            <Text style={{ color: old || stale ? t.warnText : t.faint, fontSize: 11 }} numberOfLines={1}>
               {visibleAge}
             </Text>
           ) : null}
@@ -85,7 +85,7 @@ export function MarketPricesCompactView({ prices }: { prices: MarketPricesHook }
       ) : null}
 
       {mixedPresentations ? (
-        <Text style={{ color: t.warn, fontSize: 11, marginTop: space.sm }}>
+        <Text style={{ color: t.warnText, fontSize: 11, marginTop: space.sm }}>
           Las presentaciones difieren
         </Text>
       ) : null}

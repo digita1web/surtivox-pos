@@ -136,7 +136,7 @@ export default function Reports() {
               <Text style={{ color: t.fg, fontWeight: '700' }}>Fiado pendiente</Text>
               <Text style={{ color: t.muted, fontSize: 12 }}>{credit.customersWithBalance} cliente{credit.customersWithBalance === 1 ? '' : 's'}</Text>
             </View>
-            <Text style={{ color: t.warn, fontWeight: '800' }}>{money(asMinor(credit.totalOwed))}</Text>
+            <Text style={{ color: t.warnText, fontWeight: '800' }}>{money(asMinor(credit.totalOwed))}</Text>
             <Ionicons name="chevron-forward" size={18} color={t.muted} />
           </Pressable>
         )}
@@ -150,7 +150,7 @@ export default function Reports() {
             <View key={p.id} style={[s.listRow, i < lowStock.length - 1 && { borderBottomWidth: 1, borderColor: t.line }]}>
               <Ionicons name="alert-circle-outline" size={20} color={p.stock <= 0 ? t.danger : t.warn} />
               <Text style={{ color: t.fg, fontWeight: '600', flex: 1, marginLeft: 10 }} numberOfLines={1}>{p.name}</Text>
-              <Text style={{ color: p.stock <= 0 ? t.danger : t.warn, fontWeight: '700' }}>{p.stock <= 0 ? 'Sin stock' : `Quedan ${p.stock}`}</Text>
+              <Text style={{ color: p.stock <= 0 ? t.dangerText : t.warnText, fontWeight: '700' }}>{p.stock <= 0 ? 'Sin stock' : `Quedan ${p.stock}`}</Text>
             </View>
           ))}
         </View>
