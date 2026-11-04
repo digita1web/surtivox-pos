@@ -1,6 +1,7 @@
 {
   "name": "surtivox-sync",
   "version": "1.0.0",
+  "license": "UNLICENSED",
   "private": true,
   "type": "module",
   "description": "Cloudflare Worker + D1 sync backend for Surtivox POS",

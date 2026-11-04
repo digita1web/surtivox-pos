@@ -1,6 +1,7 @@
 {
   "name": "surtivox-pagos",
   "version": "1.0.0",
+  "license": "UNLICENSED",
   "private": true,
   "type": "module",
   "description": "Pasarela de pagos Wompi para Surtivox POS",

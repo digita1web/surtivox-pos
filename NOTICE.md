@@ -2,15 +2,7 @@
 
 ## Surtivox POS
 
-Surtivox POS es un punto de venta offline para tiendas de barrio colombianas.
-
-## OpenPocket POS
-
-Surtivox POS se basa en OpenPocket POS, publicado bajo la licencia MIT.
-
-Copyright (c) 2026 OpenPocket POS contributors.
-
-El texto completo de la licencia MIT se conserva en [`LICENSE`](LICENSE). Las modificaciones y el trabajo adicional de Surtivox se distribuyen bajo los mismos términos.
+Surtivox POS es un producto propietario creado por Mateo Castro. El código base inicial fue heredado de OpenPocket POS (licencia MIT), cuyo aviso legal original se conserva en LICENSES/MIT_LICENSE.txt. Todo el código nuevo, las modificaciones, la arquitectura en la nube (Workers, D1) y el diseño de Surtivox POS son propiedad exclusiva de Mateo Castro.
 
 ## Open Food Facts
 

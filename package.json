@@ -1,6 +1,7 @@
 {
   "name": "surtivox-pos",
   "version": "0.1.0",
+  "license": "UNLICENSED",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.17.1",
