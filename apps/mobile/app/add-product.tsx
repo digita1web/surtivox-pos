@@ -18,6 +18,7 @@ import { MarketPricesCompact } from '../src/pos/MarketPricesCompact';
 import { isValidEan, marketEanForLookup } from '../src/marketPrices';
 import { useMoney } from '../src/pos/ui';
 import { APP_CURRENCY, parseCurrencyInput } from '../src/branding';
+import { PHOTO_TIP } from '../src/legalText';
 
 const UNITS = ['unit', 'pcs', 'pack', 'box', 'dozen', 'kg', 'g', 'L', 'ml', 'lb', 'bulto', 'bottle'];
 const UNIT_LABEL: Record<string, string> = {
@@ -289,6 +290,9 @@ export default function AddProduct() {
           </Pressable>
         )}
       </View>
+      {!imageUri ? (
+        <Text style={{ color: t.muted, fontSize: 13, lineHeight: 18, textAlign: 'center', marginTop: space.sm, marginBottom: space.xs }}>{PHOTO_TIP}</Text>
+      ) : null}
 
       {field('Nombre', name, setName, { ph: 'ej. Cola 500 ml', caps: 'words', req: true })}
 
