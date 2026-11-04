@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
+import { setStatusBarStyle } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { asMinor } from '@surtivox/pos-core';
@@ -12,12 +13,17 @@ import { can } from '../../src/roles';
 import { useCheckoutUI } from '../../src/checkoutUI';
 import { useCart } from '../../src/cart';
 import { useCloudEntitlement } from '../../src/subscription';
-import { Thumb } from '../../src/pos/Thumb';
-import { TabHeader, IconButton, scrollProps, useTabListInset } from '../../src/pos/Screen';
+import { HomeHeader } from '../../src/pos/HomeHeader';
+import { ActionCard } from '../../src/pos/ActionCard';
+import { FrequentProductCard } from '../../src/pos/FrequentProductCard';
+import { PromoCard } from '../../src/pos/PromoCard';
+import { SectionHeader } from '../../src/pos/SectionHeader';
+import { homeMetrics } from '../../src/pos/homeLayout';
+import { scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { useMoney } from '../../src/pos/ui';
 import { TourGuide } from '../../src/components/TourGuide';
 import { hasSeenFirstRunGuide } from '../../src/localFlags';
-import { useTheme, space, radius, type as ty, type Theme } from '../../src/theme';
+import { useTheme, space, radius, circle } from '../../src/theme';
 import { greetingForDate } from '../../src/greeting';
 import { exportFullBackup } from '../../src/backup';
 import { backupReminderText, backupSnoozeUntil, shouldRemindBackup } from '../../src/backupReminder';
@@ -27,6 +33,8 @@ export default function Home() {
   const t = useTheme();
   const router = useRouter();
   const listInset = useTabListInset();
+  const { width, fontScale } = useWindowDimensions();
+  const m = homeMetrics(width, fontScale);
   const store = useSession((s) => s.store)!;
   const cart = useCart();
   const money = useMoney();
@@ -52,6 +60,11 @@ export default function Home() {
     updateGreeting();
     const timer = setInterval(updateGreeting, 60_000);
     return () => clearInterval(timer);
+  }, []));
+
+  useFocusEffect(useCallback(() => {
+    setStatusBarStyle('light');
+    return () => setStatusBarStyle('auto');
   }, []));
 
   const refreshBackupNudge = useCallback(async () => {
@@ -109,31 +122,75 @@ export default function Home() {
   const outCount = alerts.filter((a) => a.stock <= 0).length;
   const lowCount = alerts.length - outCount;
 
+  const productCard = (p: Product) => (
+    <FrequentProductCard
+      key={p.id}
+      name={p.name}
+      category={p.category_name}
+      imageUri={p.image_uri}
+      price={money(asMinor(p.selling_price))}
+      qty={cart.items[p.id]?.quantity ?? 0}
+      width={m.cardW}
+      photoHeight={m.photoH}
+      plusSize={m.plusSize}
+      onAdd={() => cart.add(p)}
+    />
+  );
+
   return (
     <View style={[s.root, { backgroundColor: t.bg }]}>
-      <TabHeader
-        title={store.name}
-        subtitle={greeting}
-        right={
-          <>
-            <IconButton icon="search-outline" label="Buscar productos" onPress={() => router.push('/products')} />
-            <IconButton icon="scan-outline" label="Escanear código de barras" onPress={() => router.push('/scan')} />
-          </>
-        }
+      <HomeHeader
+        name={store.name}
+        tagline={store.tagline}
+        logoUri={store.logo_uri}
+        onSearch={() => router.push('/products')}
+        onScan={() => router.push('/scan')}
       />
-      <ScrollView {...scrollProps} style={s.flex} contentContainerStyle={{ padding: space.lg, paddingBottom: listInset }}>
-        {/* Today */}
-        <Pressable onPress={() => router.push('/sales')} style={[s.today, { backgroundColor: t.accent }]} accessibilityLabel="Ventas de hoy">
+      <ScrollView {...scrollProps} style={s.flex} contentContainerStyle={{ paddingHorizontal: m.pad, paddingTop: space.xs, paddingBottom: listInset }}>
+        <View style={[s.actions, { gap: m.gap }, m.actionsStacked && s.actionsStacked]}>
+          <ActionCard icon="cart" title="Venta rápida" hint="Vende sin complicaciones" tone="green" iconSize={m.actionIcon} chevronSize={m.actionChevron} onPress={openQuick} />
+          {canProducts
+            ? <ActionCard icon="add" title="Agregar producto" hint="Nuevo artículo del catálogo" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} onPress={() => router.push('/add-product')} />
+            : <ActionCard icon="barcode-outline" title="Escanear y vender" hint="Escanea un código de barras" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} onPress={() => router.push('/scan')} />}
+        </View>
+
+        <View style={s.sectionGap}>
+          <SectionHeader title="Productos frecuentes" actionLabel="Ver todo" onAction={() => router.push('/products')} />
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={[s.stripScroll, { marginHorizontal: -m.pad }]}
+          contentContainerStyle={[s.strip, { gap: m.gap, paddingHorizontal: m.pad }]}
+        >
+          {strip.length === 0 ? (
+            <Pressable
+              onPress={() => router.push('/add-product')}
+              accessibilityRole="button"
+              style={[s.empty, { width: m.cardW, height: m.cardH, borderColor: t.line, backgroundColor: t.panel }]}
+            >
+              <Ionicons name="add-circle-outline" size={26} color={t.muted} />
+              <Text style={{ color: t.muted, marginTop: 6, textAlign: 'center' }}>Agrega tu primer producto</Text>
+            </Pressable>
+          ) : productCard(strip[0]!)}
+          <PromoCard key="promo" width={m.promoW} height={m.promoH} />
+          {strip.slice(1).map(productCard)}
+        </ScrollView>
+
+        <Pressable onPress={() => router.push('/sales')} style={[s.today, { backgroundColor: t.accent, boxShadow: t.shadowStrong }]} accessibilityLabel="Ventas de hoy">
           <View style={s.todayHead}>
-            <Text style={{ color: t.accentFg, fontWeight: '700', fontSize: 14, opacity: 0.9 }}>Ventas de hoy</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: t.accentFg, fontWeight: '600', fontSize: 13, opacity: 0.9 }} numberOfLines={1}>{greeting}</Text>
+              <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 15, marginTop: 1 }}>Ventas de hoy</Text>
+            </View>
             <Ionicons name="chevron-forward" size={18} color={t.accentFg} />
           </View>
           <Text style={{ color: t.accentFg, fontSize: 34, lineHeight: 42, fontWeight: '800', marginTop: 2 }} numberOfLines={1} adjustsFontSizeToFit>
             {money(asMinor(stats.totalSales))}
           </Text>
           <View style={s.todayStats}>
-            <View style={s.todayStat}><Ionicons name="receipt-outline" size={16} color={t.accentFg} /><Text style={s.todayStatTxt}>{stats.orders} {stats.orders === 1 ? 'pedido' : 'pedidos'}</Text></View>
-            <View style={s.todayStat}><Ionicons name="cube-outline" size={16} color={t.accentFg} /><Text style={s.todayStatTxt}>{stats.itemsSold} artículos vendidos</Text></View>
+            <View style={s.todayStat}><Ionicons name="receipt-outline" size={16} color={t.accentFg} /><Text style={[s.todayStatTxt, { color: t.accentFg }]}>{stats.orders} {stats.orders === 1 ? 'pedido' : 'pedidos'}</Text></View>
+            <View style={s.todayStat}><Ionicons name="cube-outline" size={16} color={t.accentFg} /><Text style={[s.todayStatTxt, { color: t.accentFg }]}>{stats.itemsSold} artículos vendidos</Text></View>
           </View>
         </Pressable>
 
@@ -156,7 +213,21 @@ export default function Home() {
           </View>
         ) : null}
 
-        {/* Upgrade — cloud sync (paid). Hidden once subscribed. */}
+        {alerts.length > 0 && canProducts && (
+          <Pressable onPress={() => router.push(outCount > 0 ? '/products?filter=out' : '/products?filter=low')} style={[s.alert, { backgroundColor: t.panel, borderColor: t.line }]}>
+            <View style={[s.alertIcon, { backgroundColor: outCount ? `${t.danger}22` : `${t.warn}26` }]}>
+              <Ionicons name="alert-circle-outline" size={20} color={outCount ? t.dangerText : t.warnText} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: t.fg, fontWeight: '700' }}>Requiere atención</Text>
+              <Text style={{ color: t.muted, fontSize: 13, marginTop: 1 }}>
+                {[outCount ? `${outCount} sin stock` : null, lowCount ? `${lowCount} con stock bajo` : null].filter(Boolean).join(' · ')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={t.faint} />
+          </Pressable>
+        )}
+
         {!cloud.loading && !cloud.active && can(role, 'sync') && (
           <Pressable onPress={() => router.push('/cloud-sync')} style={[s.upgrade, { backgroundColor: t.accentSoft, borderColor: t.accent }]}>
             <View style={[s.upgradeIcon, { backgroundColor: t.accent }]}>
@@ -171,107 +242,34 @@ export default function Home() {
             </View>
           </Pressable>
         )}
-
-        {/* Stock alerts */}
-        {alerts.length > 0 && canProducts && (
-          <Pressable onPress={() => router.push(outCount > 0 ? '/products?filter=out' : '/products?filter=low')} style={[s.alert, { backgroundColor: t.panel, borderColor: t.line }]}>
-            <View style={[s.alertIcon, { backgroundColor: outCount ? '#fdecec' : '#fff3e0' }]}>
-              <Ionicons name="alert-circle-outline" size={20} color={outCount ? t.danger : t.warn} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: t.fg, fontWeight: '700' }}>Requiere atención</Text>
-              <Text style={{ color: t.muted, fontSize: 13, marginTop: 1 }}>
-                {[outCount ? `${outCount} sin stock` : null, lowCount ? `${lowCount} con stock bajo` : null].filter(Boolean).join(' · ')}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={t.faint} />
-          </Pressable>
-        )}
-
-        {/* Quick actions */}
-        <Text style={[s.section, { color: t.fg }]}>Acciones rápidas</Text>
-        <View style={s.actions}>
-          <Action icon="pricetag-outline" label="Venta rápida" hint="Vende sin producto" onPress={openQuick} t={t} />
-          {canProducts
-            ? <Action icon="add-circle-outline" label="Agregar producto" hint="Nuevo artículo del catálogo" onPress={() => router.push('/add-product')} t={t} />
-            : <Action icon="barcode-outline" label="Escanear y vender" hint="Escanea un código de barras" onPress={() => router.push('/scan')} t={t} />}
-        </View>
-
-        {/* Quick products */}
-        <View style={s.sectionRow}>
-          <Text style={[s.sectionText, { color: t.fg }]}>Productos frecuentes</Text>
-          <Pressable onPress={() => router.push('/products')} hitSlop={8}><Text style={{ color: t.accent, fontWeight: '700' }}>Ver todo</Text></Pressable>
-        </View>
-        {strip.length === 0 ? (
-          <Pressable onPress={() => router.push('/add-product')} style={[s.empty, { borderColor: t.line }]}>
-            <Ionicons name="add-circle-outline" size={22} color={t.muted} />
-            <Text style={{ color: t.muted, marginTop: 6 }}>Agrega tu primer producto</Text>
-          </Pressable>
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.stripScroll} contentContainerStyle={s.strip}>
-            {strip.map((p) => {
-              const qty = cart.items[p.id]?.quantity ?? 0;
-              return (
-                <View key={p.id} style={[s.mini, { backgroundColor: t.panel, borderColor: qty > 0 ? t.accent : t.line }]}>
-                  <View style={[s.miniTileWrap, { borderColor: t.line }]}>
-                    <Thumb uri={p.image_uri} name={p.name} category={p.category_name} style={s.miniTile} textSize={18} />
-                    <Pressable onPress={() => cart.add(p)} accessibilityLabel={`Agregar ${p.name}`}
-                      style={[s.plus, { backgroundColor: t.accent }]}>
-                      {qty > 0 ? <Text style={{ color: t.accentFg, fontWeight: '800' }}>{qty}</Text> : <Ionicons name="add" size={18} color={t.accentFg} />}
-                    </Pressable>
-                  </View>
-                  <Text style={{ color: t.fg, fontWeight: '600', marginTop: space.sm, fontSize: 13.5 }} numberOfLines={1}>{p.name}</Text>
-                  <Text style={{ color: t.accent, fontWeight: '800', marginTop: 2 }}>{money(asMinor(p.selling_price))}</Text>
-                </View>
-              );
-            })}
-          </ScrollView>
-        )}
       </ScrollView>
       <TourGuide visible={guideOpen} onClose={() => setGuideOpen(false)} />
     </View>
   );
 }
 
-function Action({ icon, label, hint, onPress, t }: { icon: keyof typeof Ionicons.glyphMap; label: string; hint: string; onPress: () => void; t: Theme }) {
-  return (
-    <Pressable onPress={onPress} style={({ pressed }) => [s.action, { backgroundColor: t.panel, borderColor: t.line, opacity: pressed ? 0.8 : 1 }]}>
-      <View style={[s.actionIcon, { backgroundColor: t.accentSoft }]}><Ionicons name={icon} size={22} color={t.accent} /></View>
-      <Text style={{ color: t.fg, fontWeight: '700', marginTop: space.md }}>{label}</Text>
-      <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 2 }}>{hint}</Text>
-    </Pressable>
-  );
-}
-
 const s = StyleSheet.create({
   root: { flex: 1 },
   flex: { flex: 1 },
-  today: { borderRadius: radius.xl, padding: space.xl },
+  actions: { flexDirection: 'row', alignItems: 'stretch' },
+  actionsStacked: { flexDirection: 'column' },
+  sectionGap: { marginTop: space.xl, marginBottom: space.md },
+  stripScroll: { flexGrow: 0 },
+  strip: { alignItems: 'flex-start', paddingVertical: 6 },
+  empty: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: radius.xl, padding: space.lg, alignItems: 'center', justifyContent: 'center' },
+  today: { borderRadius: radius.xl, padding: space.xl, marginTop: space.xl },
   todayHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   todayStats: { flexDirection: 'row', gap: space.xl, marginTop: space.md },
   todayStat: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  todayStatTxt: { color: '#ffffff', fontWeight: '600', opacity: 0.95 },
+  todayStatTxt: { fontWeight: '600', opacity: 0.95 },
   alert: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
-  alertIcon: { width: 40, height: 40, borderRadius: radius.md - 2, alignItems: 'center', justifyContent: 'center' },
+  alertIcon: { ...circle(40), borderRadius: radius.md - 2 },
   upgrade: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
   backupNudge: { borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
   backupTitle: { flexDirection: 'row', alignItems: 'center' },
   backupActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.sm },
   backupAction: { borderRadius: radius.sm, paddingHorizontal: 12, paddingVertical: 8 },
   backupSnooze: { paddingHorizontal: 8, paddingVertical: 8 },
-  upgradeIcon: { width: 40, height: 40, borderRadius: radius.md - 2, alignItems: 'center', justifyContent: 'center' },
+  upgradeIcon: { ...circle(40), borderRadius: radius.md - 2 },
   upgradeCta: { borderRadius: radius.md - 2, paddingHorizontal: 14, paddingVertical: 8 },
-  section: { ...ty.h1, marginTop: space.xxl, marginBottom: space.md },
-  sectionText: { ...ty.h1 },
-  sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: space.xxl, marginBottom: space.md },
-  actions: { flexDirection: 'row', gap: space.md },
-  action: { flex: 1, borderWidth: 1, borderRadius: radius.lg, padding: space.lg, alignItems: 'flex-start' },
-  actionIcon: { width: 46, height: 46, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
-  empty: { borderWidth: 1, borderStyle: 'dashed', borderRadius: radius.lg, padding: space.xxl, alignItems: 'center' },
-  stripScroll: { marginHorizontal: -space.lg, flexGrow: 0 },
-  strip: { gap: space.md, paddingHorizontal: space.lg, paddingVertical: 2 },
-  mini: { width: 136, borderWidth: 1, borderRadius: radius.lg, padding: 10 },
-  miniTileWrap: { position: 'relative', borderRadius: radius.md - 2, borderWidth: StyleSheet.hairlineWidth, backgroundColor: '#fff', overflow: 'hidden' },
-  miniTile: { width: '100%', height: 96 },
-  plus: { position: 'absolute', right: 6, bottom: 6, minWidth: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
 });

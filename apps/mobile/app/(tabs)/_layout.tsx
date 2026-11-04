@@ -1,9 +1,9 @@
 import { useRef } from 'react';
-import { View, type ColorValue } from 'react-native';
+import { View, Text, type ColorValue } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../src/theme';
+import { useTheme, radius } from '../../src/theme';
 import { useTourTargets, type TourTarget } from '../../src/components/tourTargets';
 import { CartBar } from '../../src/pos/CartBar';
 import { CheckoutSheet } from '../../src/pos/CheckoutSheet';
@@ -39,6 +39,13 @@ export default function TabsLayout() {
   const router = useRouter();
   const tabBarHeight = 60 + insets.bottom;
 
+  const label = ({ focused, color, children }: { focused: boolean; color: ColorValue; children: string }) => (
+    <View style={{ alignItems: 'center' }}>
+      <Text style={{ color, fontSize: 11.5, fontWeight: focused ? '800' : '600', marginTop: 2 }} numberOfLines={1} maxFontSizeMultiplier={1.2}>{children}</Text>
+      <View style={{ height: 3, width: 30, borderRadius: 2, marginTop: 3, backgroundColor: focused ? color : 'transparent' }} />
+    </View>
+  );
+
   const tab = (icon: number, id: TourTarget) =>
     ({ color }: { focused: boolean; color: ColorValue }) => (
       <TourTabIcon id={id} source={icon} tintColor={color as string} />
@@ -51,16 +58,18 @@ export default function TabsLayout() {
           headerShown: false,
           lazy: true,
           tabBarActiveTintColor: t.accent,
-          tabBarInactiveTintColor: t.faint,
+          tabBarInactiveTintColor: t.tabInactive,
+          tabBarLabel: label,
           tabBarStyle: {
             backgroundColor: t.panel,
-            borderTopColor: t.line,
-            borderTopWidth: 1,
+            borderTopWidth: 0,
+            borderTopLeftRadius: radius.xxl,
+            borderTopRightRadius: radius.xxl,
             height: tabBarHeight,
             paddingTop: 8,
             paddingBottom: insets.bottom + 6,
+            boxShadow: t.shadowTab,
           },
-          tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 2 },
         }}
       >
         <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: tab(NAV_ICONS.home, 'home') }} />
@@ -69,6 +78,7 @@ export default function TabsLayout() {
           name="newsale"
           options={{
             title: '',
+            tabBarLabel: () => null,
             tabBarIcon: () => (
               <View style={{ width: 58, height: 58, borderRadius: 29, backgroundColor: t.accent, alignItems: 'center', justifyContent: 'center', marginTop: -22, borderWidth: 4, borderColor: t.panel, boxShadow: t.shadowStrong }}>
                 <Image source={NAV_ICONS.scan} style={{ width: 28, height: 28 }} tintColor={t.accentFg} contentFit="contain" />

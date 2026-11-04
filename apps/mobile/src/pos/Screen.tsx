@@ -18,16 +18,21 @@ import { useRouter } from 'expo-router';
 import { useTheme, space, type as ty, HEADER_HEIGHT, TAB_BAR_HEIGHT } from '../theme';
 
 /** Round 40px icon button used in headers. */
-export function IconButton({ icon, onPress, label, tint, filled }: {
+export function IconButton({ icon, onPress, label, tint, filled, variant = 'default', size = 40 }: {
   icon: keyof typeof Ionicons.glyphMap; onPress: () => void; label: string; tint?: string; filled?: boolean;
+  variant?: 'default' | 'onBrand'; size?: number;
 }) {
   const t = useTheme();
+  const onBrand = variant === 'onBrand';
+  const background = onBrand ? 'rgba(255,255,255,0.2)' : filled ? t.accent : t.panel;
+  const border = onBrand ? 'rgba(255,255,255,0.45)' : filled ? t.accent : t.line;
+  const color = tint ?? (onBrand ? '#FFFFFF' : filled ? t.accentFg : t.fg);
   return (
     <Pressable
       onPress={onPress} accessibilityRole="button" accessibilityLabel={label} hitSlop={6}
-      style={({ pressed }) => [s.iconBtn, { backgroundColor: filled ? t.accent : t.panel, borderColor: filled ? t.accent : t.line, opacity: pressed ? 0.7 : 1 }]}
+      style={({ pressed }) => [s.iconBtn, { width: size, height: size, borderRadius: size / 2, backgroundColor: background, borderColor: border, opacity: pressed ? 0.7 : 1 }]}
     >
-      <Ionicons name={icon} size={20} color={tint ?? (filled ? t.accentFg : t.fg)} />
+      <Ionicons name={icon} size={Math.round(size * 0.5)} color={color} />
     </Pressable>
   );
 }

@@ -4,12 +4,13 @@ import { Image } from 'expo-image';
 import { categoryImageFor } from './categoryImages';
 import { tileColor, initials, useTheme } from '../theme';
 
-export function Thumb({ uri, name, category, style, textSize = 22 }: {
+export function Thumb({ uri, name, category, style, textSize = 22, fit = 'contain' }: {
   uri: string | null | undefined;
   name: string;
   category?: string | null;
   style: StyleProp<ViewStyle>;
   textSize?: number;
+  fit?: 'contain' | 'cover';
 }) {
   const t = useTheme();
   const [failedUri, setFailedUri] = useState<string | null>(null);
@@ -18,7 +19,7 @@ export function Thumb({ uri, name, category, style, textSize = 22 }: {
       <Image
         source={uri}
         style={[style as ImageStyle, { backgroundColor: t.accentSoft }]}
-        contentFit="contain"
+        contentFit={fit}
         transition={150}
         cachePolicy="memory-disk"
         recyclingKey={uri}

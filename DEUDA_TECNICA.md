@@ -75,6 +75,16 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 - **Contraste:** `muted`, `faint`, `dangerText` y `warnText` cumplen 4,5:1 en todas las superficies y en ambos temas, con test ([themeContrast.test.ts](apps/mobile/src/themeContrast.test.ts)). `danger` y `warn` quedan para rellenos, bordes e iconos y un test impide usarlos como color de texto. **Siguen por debajo de AA en modo claro** `accent` como texto (2,8 a 3,1:1; es la identidad de la marca y se decidió no tocarlo) y `ok` (2,4:1). El texto blanco sobre `danger` da 3,9:1 en claro y 3,4:1 en oscuro, y sobre `warn` 2,4:1; no se midieron los botones con `accentFg`. Los iconos de `warn` (2,1 a 2,4:1) tampoco llegan a 3:1.
 - **Pendiente de prueba en dispositivo:** instalación limpia; actualización desde v1.0.3 con tienda existente (debe mostrar los términos y luego la pregunta del catálogo si no se respondió); fuente al 200 %; TalkBack; aviso de la nube con fuente grande.
 
+## Rediseño visual "Mercado vibrante"
+
+- **No se pudo capturar la app real.** No había teléfono ni emulador. Solo se comparó una maqueta HTML con los mismos números que el código (no es la app). Falta revisar en dispositivo: curvas del encabezado (`borderRadius: '50%'` en Android), sombras (`boxShadow`), tamaños con fuente grande y pantallas de 320 a 600 dp, en modo claro y oscuro.
+- **El logotipo de "Trailer Rodante" no está en el proyecto.** El encabezado usa el nombre, el eslogan y el logotipo de la tienda (se cargan en Más → Perfil y recibos); sin logotipo muestra el icono genérico de tienda. No se fijó "Trailer Rodante" en el código porque la app admite varias tiendas.
+- **La ilustración del bloque promocional es un recorte de la imagen de referencia** (`assets/promo/mas-ventas.webp`, 552x514) con el texto incluido en la imagen: no se traduce ni escala con el tamaño de letra. Conviene reemplazarla por una pieza diseñada a mayor resolución.
+- **El modo oscuro cambió** a verdes oscuros en lugar de casi negro (decisión por "no usar negro como fondo principal"). Confirmar que es lo deseado.
+- **Pendiente de aplicar la nueva identidad:** icono y splash de la app (`app.json`, fondo `#0B0E12`, requiere compilar), onboarding, `LaunchIntro`, `TourGuide` (resalte `rgba(25,184,142,…)`) y colores fijos (`#fff`) en otras pantallas.
+- **Ajuste a la paleta pedida:** el texto secundario `#64736D` da 4,15:1 en el peor caso y se usa `#5E6C67` (4,58:1) para conservar el mínimo de 4,5:1 con test. Las superficies `surfaceAlt` y `chip` se aclararon un poco por el mismo motivo.
+- **`ok` (verde brillante) como texto** sigue en 2,7:1 sobre blanco; solo se usa en fondos e importes de ayuda.
+
 ## Fotos de productos
 
 - **Las fotos no viajan entre dispositivos.** `image_uri` es una ruta local y desde v1.0.3 está marcada como "solo local" en [sync.ts](packages/database/src/sync.ts): no se envía y el pull no la sobrescribe. Un dispositivo nuevo o una restauración desde la nube muestra el producto sin foto.
