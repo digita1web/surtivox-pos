@@ -10,7 +10,7 @@
  * breves entre relojes sin perder filas.
  */
 import {
-  SYNC_TABLES, upsertSql, rowValues, changedSinceSql, chunkPushRows, type PushTableRows,
+  SYNC_TABLES, upsertSql, rowValues, changedSinceSql, stripLocalOnly, chunkPushRows, type PushTableRows,
 } from '@surtivox/database';
 import * as Crypto from 'expo-crypto';
 import { getDb } from './db';
@@ -109,7 +109,7 @@ async function pushChanges(base: string, token: string, since: number): Promise<
   for (const t of SYNC_TABLES) {
     const rows = await db.getAllAsync<Record<string, unknown>>(changedSinceSql(t), [from]);
     if (rows.length === 0) continue;
-    collected.push({ name: t.name, rows });
+    collected.push({ name: t.name, rows: rows.map((r) => stripLocalOnly(t, r)) });
     for (const r of rows) {
       const ts = Number(r[t.timeColumn]);
       if (Number.isFinite(ts) && ts > maxTime) maxTime = ts;

@@ -62,6 +62,13 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 - **Precios inconsistentes** en el código: "$2/mes", "$5.00", "USD 5/mes", "≈ 20.000 COP". El cargo real es 20.000 COP. Definir un solo precio y moneda.
 - Decidir si el Worker de pagos conserva la D1 compartida con sync o se separa con un Service Binding.
 
+## Fotos de productos
+
+- **Las fotos no viajan entre dispositivos.** `image_uri` es una ruta local y desde v1.0.3 está marcada como "solo local" en [sync.ts](packages/database/src/sync.ts): no se envía y el pull no la sobrescribe. Un dispositivo nuevo o una restauración desde la nube muestra el producto sin foto.
+- **El respaldo JSON no incluye los archivos de foto,** solo las rutas: tras restaurar o reinstalar, las fotos se pierden.
+- **Plan para la nube (sin implementar):** Cloudflare R2 con objetos por contenido (`stores/<store_id>/products/<sha256>.webp`), columna nueva `image_key` (migración local y D1), subida y descarga por el Worker con token, cola con reintentos y descarga perezosa. Requiere permiso de R2 en el token, límites por tienda y actualizar la política de privacidad.
+- **Quitar el fondo automáticamente:** descartado por ahora (módulo nativo que rompe OTA, rendimiento en gama baja, calidad sin medir, costo por imagen y privacidad). Si se retoma, guardar WebP con transparencia y pintar el fondo al mostrar.
+
 ## App móvil
 
 - **Respaldo marcado como hecho aunque se cancele (P2-3).** Si el usuario cancela el diálogo de compartir, `last_backup_at` se escribe igual. El archivo queda en `cacheDirectory`, que el sistema puede limpiar.

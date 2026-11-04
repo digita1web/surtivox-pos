@@ -25,6 +25,7 @@ export interface SyncTable {
   timeColumn: 'updated_at' | 'created_at';
   columns: string[];
   scope: StoreScope;
+  localOnly?: readonly string[];
 }
 
 // Ordered parents-before-children so a straight replay satisfies foreign keys.
@@ -50,7 +51,7 @@ export const SYNC_TABLES: readonly SyncTable[] = [
     columns: ['id', 'store_id', 'name', 'phone', 'email', 'address', 'notes', 'created_at', 'updated_at', 'deleted_at', 'device_id', 'version'],
   },
   {
-    name: 'products', mode: 'mutable', timeColumn: 'updated_at', scope: { kind: 'column' },
+    name: 'products', mode: 'mutable', timeColumn: 'updated_at', scope: { kind: 'column' }, localOnly: ['image_uri'],
     columns: ['id', 'store_id', 'category_id', 'name', 'sku', 'barcode', 'cost_price', 'selling_price', 'unit', 'track_inventory', 'low_stock_threshold', 'tax_bps', 'image_uri', 'active', 'created_at', 'updated_at', 'deleted_at', 'device_id', 'version'],
   },
   {
@@ -93,6 +94,16 @@ export const SYNC_TABLES: readonly SyncTable[] = [
 
 const q = (id: string) => `"${id}"`;
 
+const isLocalOnly = (t: SyncTable, column: string) => t.localOnly?.includes(column) ?? false;
+const updatableColumns = (t: SyncTable) => t.columns.filter((c) => c !== 'id' && !isLocalOnly(t, c));
+
+export function stripLocalOnly(t: SyncTable, row: Record<string, unknown>): Record<string, unknown> {
+  if (!t.localOnly?.length) return row;
+  const out = { ...row };
+  for (const c of t.localOnly) out[c] = null;
+  return out;
+}
+
 /**
  * Upsert one row. Mutable tables overwrite only when the incoming row is newer
  * (updated_at, then version) — otherwise the existing row wins. Append tables
@@ -104,7 +115,7 @@ export function upsertSql(t: SyncTable): string {
   if (t.mode === 'append') {
     return `INSERT INTO ${q(t.name)} (${cols}) VALUES (${ph}) ON CONFLICT(id) DO NOTHING`;
   }
-  const setCols = t.columns.filter((c) => c !== 'id').map((c) => `${q(c)}=excluded.${q(c)}`).join(', ');
+  const setCols = updatableColumns(t).map((c) => `${q(c)}=excluded.${q(c)}`).join(', ');
   return `INSERT INTO ${q(t.name)} (${cols}) VALUES (${ph}) ON CONFLICT(id) DO UPDATE SET ${setCols} ` +
     `WHERE excluded."updated_at" > ${q(t.name)}."updated_at" ` +
     `OR (excluded."updated_at" = ${q(t.name)}."updated_at" AND excluded."version" > ${q(t.name)}."version")`;
@@ -125,7 +136,7 @@ export function serverUpsertSql(t: SyncTable): string {
       `WHERE EXISTS (SELECT 1 FROM ${q(p.table)} WHERE "id" = ? AND "store_id" = ?) ON CONFLICT(id) DO NOTHING`;
   }
   if (t.mode === 'append' || t.scope.kind === 'self') return upsertSql(t);
-  const setCols = t.columns.filter((c) => c !== 'id').map((c) => `${q(c)}=excluded.${q(c)}`).join(', ');
+  const setCols = updatableColumns(t).map((c) => `${q(c)}=excluded.${q(c)}`).join(', ');
   return `INSERT INTO ${q(t.name)} (${cols}) VALUES (${ph}) ON CONFLICT(id) DO UPDATE SET ${setCols} ` +
     `WHERE ${q(t.name)}."store_id" = excluded."store_id" AND (excluded."updated_at" > ${q(t.name)}."updated_at" ` +
     `OR (excluded."updated_at" = ${q(t.name)}."updated_at" AND excluded."version" > ${q(t.name)}."version"))`;
@@ -138,9 +149,9 @@ export function serverRowValues(t: SyncTable, row: Record<string, unknown>, stor
   return values;
 }
 
-/** Column values in declared order, for binding to upsertSql. */
+/** Column values in declared order, for binding to upsertSql. Local-only columns always bind NULL. */
 export function rowValues(t: SyncTable, row: Record<string, unknown>): unknown[] {
-  return t.columns.map((c) => (row[c] === undefined ? null : row[c]));
+  return t.columns.map((c) => (isLocalOnly(t, c) || row[c] === undefined ? null : row[c]));
 }
 
 /** Local rows changed since a cursor (app PUSH). Single-store device: no scope. */

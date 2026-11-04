@@ -1,6 +1,6 @@
 export { runMigrations, type Migration, type SqlExecutor } from './runner.ts';
 export {
-  SYNC_TABLES, upsertSql, serverUpsertSql, serverRowValues, rowValues, changedSinceSql, pullSql, rowStoreId,
+  SYNC_TABLES, upsertSql, serverUpsertSql, stripLocalOnly, serverRowValues, rowValues, changedSinceSql, pullSql, rowStoreId,
   PUSH_LIMITS, PUSH_BATCH, chunkPushRows,
   type SyncTable, type SyncMode, type StoreScope, type PushTableRows,
 } from './sync.ts';
