@@ -8,17 +8,21 @@ export default function Licenses() {
   const body = { color: t.muted, fontSize: 14, lineHeight: 21 };
 
   return (
-    <Screen title="Licencias de código abierto" subtitle="Atribuciones legales">
+    <Screen title="Licencias y atribuciones" subtitle="Atribuciones legales">
       <Text style={title}>Surtivox POS</Text>
-      <Text style={body}>Punto de venta offline para tiendas de barrio colombianas.</Text>
+      <Text style={body}>
+        Punto de venta offline para tiendas de barrio colombianas.
+        {'\n\n'}
+        Software propietario. Todos los derechos reservados por Mateo Castro.
+      </Text>
 
       <Text style={title}>OpenPocket POS</Text>
       <Text style={body}>
-        Surtivox POS se basa en OpenPocket POS, publicado bajo la licencia MIT.
+        El código base inicial de Surtivox POS fue heredado de OpenPocket POS, publicado bajo la licencia MIT.
         {'\n\n'}
         Copyright (c) 2026 OpenPocket POS contributors.
         {'\n\n'}
-        El texto completo de la licencia MIT se conserva en el archivo LICENSE del proyecto. Las modificaciones y el trabajo adicional de Surtivox se distribuyen bajo los mismos términos.
+        El aviso original de la licencia MIT se conserva en el proyecto. Todo el código nuevo, las modificaciones y el diseño de Surtivox POS son propiedad exclusiva de Mateo Castro.
       </Text>
 
       <Text style={title}>Open Food Facts</Text>

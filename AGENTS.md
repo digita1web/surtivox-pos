@@ -27,5 +27,7 @@ Antes de cada commit ejecutar `bash scripts/verify.sh` y pegar la salida cruda. 
 ## Prohibido
 
 - Force push.
-- Modificar `LICENSE` salvo añadir una línea de copyright.
-- Tocar `apps/mobile/LICENSE`.
+- Tocar `apps/mobile/LICENSE` (licencia MIT de Expo).
+- Tocar `LICENSES/MIT_LICENSE.txt` (aviso MIT original de OpenPocket POS).
+
+El `LICENSE` de la raíz (licencia propietaria) sí puede modificarse.

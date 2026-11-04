@@ -2,7 +2,7 @@
 
 # Surtivox POS
 
-**Un punto de venta libre y offline que vive en tu bolsillo.**
+**Un punto de venta offline que vive en tu bolsillo.**
 
 Maneja tu negocio desde tu Android o iPhone — vende, imprime recibos, controla
 el inventario y consulta tus ganancias, sin cuenta y sin necesidad de internet.
@@ -12,12 +12,14 @@ Respaldo en la nube opcional y sincronización entre dispositivos.
 [![CodeQL](https://github.com/digita1web/surtivox-pos/actions/workflows/codeql.yml/badge.svg)](https://github.com/digita1web/surtivox-pos/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/digita1web/surtivox-pos/badge)](https://securityscorecards.dev/viewer/?uri=github.com/digita1web/surtivox-pos)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15134/badge)](https://www.bestpractices.dev/projects/15134)
-[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-0fa678.svg)](LICENSE)
+[![Licencia: Propietaria](https://img.shields.io/badge/Licencia-Propietaria-c0392b.svg)](LICENSE)
 ![Plataforma](https://img.shields.io/badge/plataforma-Android%20%7C%20iOS-0fa678)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
 ![Hecho con Expo](https://img.shields.io/badge/hecho%20con-Expo-1f6feb?logo=expo&logoColor=white)
 
-[**Sitio web**](https://github.com/digita1web/surtivox-pos) · [**Funciones**](#funciones) · [**Documentación**](docs/) · [**Contribuir**](CONTRIBUTING.md)
+[**Sitio web**](https://github.com/digita1web/surtivox-pos) · [**Funciones**](#funciones) · [**Documentación**](docs/)
+
+**Software Propietario - Todos los derechos reservados por Mateo Castro**
 
 </div>
 
@@ -53,7 +55,7 @@ clientes.
 - **Los importes son exactos.** Todos los montos se guardan en unidades
   menores enteras (centavos), nunca en punto flotante. Impuestos, descuentos y
   cambio son exactos.
-- **Tus datos son tuyos.** Código abierto (MIT); tus datos permanecen en tu
+- **Tus datos son tuyos.** Tus datos permanecen en tu
   dispositivo salvo que decidas respaldarlos.
 
 ## Funciones
@@ -126,5 +128,11 @@ proceso privado descrito en [SECURITY.md](SECURITY.md).
 
 ## Licencia
 
-MIT — consulta [LICENSE](LICENSE). Las contribuciones son bienvenidas; mira
-[CONTRIBUTING.md](CONTRIBUTING.md).
+**Software Propietario - Todos los derechos reservados por Mateo Castro.** Consulta [LICENSE](LICENSE).
+Queda prohibida la copia, distribución, modificación o uso comercial sin autorización
+por escrito del titular. Para una licencia comercial escribe a
+[contacto3rillodivino@gmail.com](mailto:contacto3rillodivino@gmail.com).
+
+El código base inicial fue heredado de OpenPocket POS (licencia MIT); su aviso
+original se conserva en [LICENSES/MIT_LICENSE.txt](LICENSES/MIT_LICENSE.txt).
+Consulta también [NOTICE.md](NOTICE.md).
