@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-export const LEGAL_VERSION = '2026-11-05';
+export const LEGAL_VERSION = '2026-11-04';
 
 export type GateStep = 'terms' | 'catalog';
 export type LegalDb = Pick<SQLiteDatabase, 'getFirstAsync' | 'runAsync'>;

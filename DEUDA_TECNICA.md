@@ -66,13 +66,14 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 
 - **Los textos de la app son un borrador sin revisión legal** ([legalText.ts](apps/mobile/src/legalText.ts)). Describen el comportamiento real del código, pero no los ha aprobado un abogado. Al cambiarlos hay que subir `LEGAL_VERSION` en [legal.ts](apps/mobile/src/legal.ts): la app vuelve a pedir la aceptación.
 - **Faltan el domicilio y el teléfono del responsable** (Mateo Castro). Hoy solo figura el correo.
-- **La política web ([privacidad.html](landing/privacidad.html)) solo cubre la landing** y no coincide con el aviso de privacidad de la app. Hay que publicar una política completa y alinearla.
+- **La página [privacidad.html](landing/privacidad.html) repite el aviso de la app** (secciones 1 a 9, palabra por palabra) y conserva las partes del sitio (10 a 12). Un test ([landingPrivacy.test.ts](apps/mobile/src/landingPrivacy.test.ts)) falla si se desalinean. Si cambias [legalText.ts](apps/mobile/src/legalText.ts), actualiza la web y sube `LEGAL_VERSION`. Los **Términos** de la web ([terminos.html](landing/terminos.html)) y los de la app están redactados por separado y **no** tienen ese test.
+- **Publicados por error:** `landing/privacidad-catalogo-borrador.md` y `landing/privacidad-catalogo-notas.md` están dentro de `landing/`, que GitHub Pages publica completo, aunque el borrador dice "No publicar". Moverlos a `docs/`.
 - **Conservación:** el aviso dice "mientras el servicio esté activo o hasta que solicites su supresión". No hay plazos definidos ni herramienta para borrar datos del servidor: hoy una solicitud de supresión es manual.
 - **Transferencia internacional** (Cloudflare, Expo) sin clasificar; verificar con el abogado y, si aplica, el Registro Nacional de Bases de Datos.
 - **La prueba de aceptación vive solo en el teléfono** (`legal_accepted_version` y `legal_accepted_at` en `local_settings`). Es evidencia débil.
 - **Consultas de código de barras sin consentimiento:** al escanear un código desconocido la app consulta Open Food Facts y el catálogo de Surtivox (solo el código y la IP). Está declarado en el aviso; decidir si requiere opt-in.
 - **Catálogo comunitario:** el aviso inicial es opt-in (nunca preseleccionado). No cambiarlo a opt-out: la autorización debe ser previa y expresa (Ley 1581, art. 9).
-- **Accesibilidad:** `t.muted` tiene contraste 3,9:1 sobre el fondo en modo claro y `t.faint` 2,3:1, por debajo de AA (4,5:1). Afecta a toda la app, incluido el tip de la foto.
+- **Contraste:** `muted` y `faint` ya cumplen 4,5:1 en todas las superficies y en ambos temas (hay un test, [themeContrast.test.ts](apps/mobile/src/themeContrast.test.ts)). **Siguen por debajo de AA en modo claro** los colores usados como texto: `accent` (2,8 a 3,1:1), `ok` (2,4:1), `warn` (2,1:1) y `danger` (3,5 a 3,9:1). Los botones con `accentFg` sobre `accent` no se midieron.
 - **Pendiente de prueba en dispositivo:** instalación limpia; actualización desde v1.0.3 con tienda existente (debe mostrar los términos y luego la pregunta del catálogo si no se respondió); fuente al 200 %; TalkBack; aviso de la nube con fuente grande.
 
 ## Fotos de productos

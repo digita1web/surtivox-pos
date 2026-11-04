@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Privacidad — Surtivox POS</title>
-  <meta name="description" content="Política de privacidad de Surtivox POS: datos locales, GitHub Pages, API de releases, almacenamiento técnico y derechos del usuario.">
+  <meta name="description" content="Aviso de privacidad de Surtivox POS: datos de la app, respaldo en la nube, catálogo comunitario, consultas externas, derechos del usuario y datos del sitio web.">
   <link rel="canonical" href="https://digita1web.github.io/surtivox-pos/privacidad.html">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0B0E12">
@@ -33,43 +33,53 @@
     <header class="legal-heading">
       <p class="eyebrow">Información legal</p>
       <h1>Privacidad</h1>
-      <p>Cómo funciona la landing, qué datos intervienen al descargar la app y dónde se guarda la información de tu tienda.</p>
-      <p class="legal-updated">Última actualización: 29 de octubre de 2026.</p>
+      <p>Qué datos guarda la app, cuáles salen de tu teléfono y con qué finalidad, y cómo ejercer tus derechos.</p>
+      <p class="legal-updated">Última actualización: 4 de noviembre de 2026. Versión del aviso: 2026-11-04.</p>
     </header>
 
     <article class="legal-card">
-      <h2>1. Alcance de esta política</h2>
-      <p>Esta política aplica al sitio publicado en GitHub Pages y a la información básica sobre el funcionamiento de Surtivox POS. No crea cuentas ni recopila datos personales mediante formularios en esta landing.</p>
+      <p>Este aviso cubre la aplicación Surtivox POS (secciones 1 a 9, iguales al aviso que aparece dentro de la app) y el sitio web publicado en GitHub Pages (secciones 10 a 12). Para solicitudes o dudas también puedes usar el canal público <a href="https://github.com/digita1web/surtivox-pos/issues" target="_blank" rel="noopener">github.com/digita1web/surtivox-pos/issues</a>; no publiques allí datos personales.</p>
 
-      <h2>2. Datos de la landing</h2>
-      <p>La landing no incluye formularios de registro, pagos, comentarios ni analítica propia. Tampoco utiliza cookies publicitarias ni perfiles de usuario.</p>
-      <p>Para mostrar la versión y el peso del APK, el navegador consulta la API pública de GitHub. Esa solicitud puede transmitir a GitHub tu dirección IP y datos técnicos de la conexión, sujetos a la política de privacidad de GitHub. La landing no recibe ni almacena esos datos.</p>
-      <p>El sitio se aloja en GitHub Pages. GitHub puede registrar información técnica y de acceso conforme a sus propias políticas.</p>
+      <h2>1. Responsable</h2>
+      <p>Mateo Castro, titular de Surtivox POS. Contacto: <a href="mailto:contacto3rillodivino@gmail.com">contacto3rillodivino@gmail.com</a>.</p>
 
-      <h2>3. Almacenamiento técnico</h2>
-      <p>La landing usa el almacenamiento de sesión del navegador para guardar durante un máximo de 15 minutos la versión y el tamaño del release consultado. Esta información es técnica, permanece en tu dispositivo y se elimina al cerrar la sesión del navegador.</p>
+      <h2>2. Qué guarda la app en tu teléfono</h2>
+      <p>Productos, precios, ventas, pagos, compras, proveedores, personal (nombre, rol y una huella de su PIN), clientes y fiados (nombre, teléfono y lo que escribas), fotos de productos y los datos de tu tienda. Todo queda en una base de datos dentro de tu teléfono. Surtivox no tiene acceso a esos datos, salvo que actives el respaldo en la nube.</p>
 
-      <h2>4. Datos de la aplicación</h2>
-      <p>Surtivox POS guarda productos, ventas, clientes, fiados y reportes en una base de datos SQLite dentro del teléfono. La landing no accede a esa base de datos.</p>
-      <p>El respaldo en la nube es opcional. Si el usuario lo activa, los datos se procesan mediante el Worker y los servicios de infraestructura configurados para Surtivox, bajo las condiciones que se informen dentro de la app. El usuario puede no activar ese respaldo y seguir usando las funciones locales.</p>
-      <p>La consulta de precios de referencia envía un EAN a un servicio de Surtivox que consulta catálogos públicos de supermercados. No se envían nombres de clientes, ventas ni datos de fiado en esa consulta.</p>
+      <h2>3. Consultas por internet que hace la app</h2>
+      <p>Aunque no actives nada, la app puede conectarse a internet para: (a) buscar actualizaciones al abrirse, en el servicio de actualizaciones de Expo; (b) consultar un código de barras que no tienes registrado, en Open Food Facts y en el catálogo comunitario de Surtivox (solo se envía el código); y (c) traer precios de referencia, enviando el código de barras a un servicio de Surtivox que consulta catálogos públicos de supermercados. Como en cualquier conexión a internet, el servicio que responde puede ver la dirección IP de tu conexión.</p>
 
-      <h2>5. Datos de terceros</h2>
+      <h2>4. Respaldo en la nube (solo si lo activas)</h2>
+      <p>Se guarda en servidores de Cloudflare, que pueden estar fuera de Colombia: tu tienda, productos, categorías, proveedores, personal (nombre, rol y huella del PIN), clientes y fiados (con sus nombres, teléfonos y notas), ventas, pagos, compras y devoluciones. Las fotos de productos no se envían. El código de tu tienda da acceso a esos datos: no lo compartas. Eres responsable de contar con la autorización de tus clientes; Surtivox almacena sus datos por encargo tuyo. Si desactivas el respaldo, los datos ya enviados siguen en el servidor hasta que pidas su supresión.</p>
+
+      <h2>5. Catálogo comunitario (solo si lo activas)</h2>
+      <p>Si aceptas ayudar al catálogo, cuando escribas o corrijas el nombre de un producto con código de barras se envía a Surtivox el código de barras, el nombre y la presentación, junto con un identificador aleatorio de tu instalación. No se envían precios, ventas, clientes, el nombre ni el identificador de tu tienda. Es una contribución seudónima, no anónima. Lo que ya enviaste no se borra automáticamente del catálogo compartido. Puedes dejar de participar en Más → Privacidad.</p>
+
+      <h2>6. Para qué se usan los datos</h2>
+      <p>Para que la app funcione, para ofrecerte el respaldo y la sincronización entre tus dispositivos si los activas, y para construir el catálogo comunitario si participas.</p>
+
+      <h2>7. Tus derechos</h2>
+      <p>Según la Ley 1581 de 2012 puedes conocer, actualizar, rectificar y solicitar la supresión de tus datos personales, revocar tu autorización y presentar quejas ante la Superintendencia de Industria y Comercio. Escríbenos a <a href="mailto:contacto3rillodivino@gmail.com">contacto3rillodivino@gmail.com</a>. Los datos de tu teléfono los controlas tú: Más → Borrar todos los datos de la app los elimina, pero no borra lo que ya esté en la nube.</p>
+
+      <h2>8. Conservación</h2>
+      <p>Los datos de tu teléfono se conservan hasta que los borres. Los datos de la nube y del catálogo se conservan mientras el servicio esté activo o hasta que solicites su supresión.</p>
+
+      <h2>9. Cambios</h2>
+      <p>Si este aviso cambia de forma importante, la app te pedirá aceptarlo de nuevo.</p>
+
+      <h2>10. Sitio web: datos que intervienen</h2>
+      <p>El sitio publicado en GitHub Pages no incluye formularios de registro, pagos, comentarios ni analítica propia, y tampoco utiliza cookies publicitarias ni perfiles de usuario.</p>
+      <p>Para mostrar la versión y el peso del APK, el navegador consulta la API pública de GitHub. Esa solicitud puede transmitir a GitHub tu dirección IP y datos técnicos de la conexión, sujetos a la política de privacidad de GitHub. El sitio no recibe ni almacena esos datos. GitHub puede registrar información técnica y de acceso conforme a sus propias políticas.</p>
+
+      <h2>11. Sitio web: almacenamiento técnico</h2>
+      <p>El sitio usa el almacenamiento de sesión del navegador para guardar durante un máximo de 15 minutos la versión y el tamaño del release consultado. Esta información es técnica, permanece en tu dispositivo y se elimina al cerrar la sesión del navegador. El sitio no accede a la base de datos de la aplicación.</p>
+
+      <h2>12. Terceros y seguridad</h2>
       <p>Los enlaces a GitHub, las descargas desde GitHub Releases y las publicaciones de supermercados llevan a servicios de terceros. Sus políticas de privacidad y cookies son independientes de Surtivox. Revisa esas políticas antes de usar esos servicios.</p>
-
-      <h2>6. Seguridad</h2>
       <p>Se aplican medidas razonables para mantener el sitio y la app disponibles, pero ningún sistema es completamente infalible. El usuario es responsable de proteger su teléfono, su PIN, sus copias de seguridad y el acceso a su tienda.</p>
 
-      <h2>7. Derechos y contacto</h2>
-      <p>Puedes solicitar información, corrección o eliminación de datos personales que hayas compartido voluntariamente con el proyecto escribiendo en el repositorio oficial. Para datos almacenados únicamente en tu teléfono, puedes eliminarlos desde la app o borrando sus datos locales.</p>
-      <p>Canal de contacto: <a href="https://github.com/digita1web/surtivox-pos/issues" target="_blank" rel="noopener">github.com/digita1web/surtivox-pos/issues</a>.</p>
-      <p>Correo oficial: <a href="mailto:contacto3rillodivino@gmail.com">contacto3rillodivino@gmail.com</a>.</p>
-
-      <h2>8. Cambios</h2>
-      <p>Esta política puede actualizarse cuando cambien la landing, la app o los servicios utilizados. La fecha de la última actualización aparece al inicio de esta página.</p>
-
       <div class="legal-note">
-        <strong>Nota:</strong> esta política describe el funcionamiento actual del proyecto y es una base estándar. Antes de operar un servicio comercial con cuentas, pagos o datos de terceros a escala, conviene revisarla con un especialista en protección de datos en Colombia.
+        <strong>Nota:</strong> este aviso describe el funcionamiento actual del proyecto. Antes de operar un servicio comercial con cuentas, pagos o datos de terceros a escala, conviene revisarlo con un especialista en protección de datos en Colombia.
       </div>
     </article>
   </main>
