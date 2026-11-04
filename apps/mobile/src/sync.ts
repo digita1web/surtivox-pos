@@ -26,7 +26,7 @@ const OVERLAP_MS = 30_000;
  * URL del Worker de sincronización configurado para esta compilación.
  * Vacío deja solo el flujo manual con URL y token.
  */
-export const DEFAULT_SYNC_URL = '';
+export const DEFAULT_SYNC_URL = 'https://surtivox-sync.surtivox.workers.dev';
 
 /** True when this build ships a hosted backend, so the one-tap flow is offered. */
 export function hasHostedSync(): boolean { return DEFAULT_SYNC_URL.trim().length > 0; }
