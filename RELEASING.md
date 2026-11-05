@@ -6,8 +6,7 @@ El workflow `.github/workflows/build-android.yml` compila un APK de release con 
 
 La firma de producción se inyecta en CI. Tras `expo prebuild`, el paso "Configurar firma de release" decodifica la llave desde los secretos y ejecuta `scripts/patch-android-signing.mjs`, que cambia la variante `release` de `apps/mobile/android/app/build.gradle` para leer la llave del entorno (lógica en `apps/mobile/src/androidSigning.ts`, con test). Después de compilar, "Verificar la firma del APK" ejecuta `apksigner` y muestra la huella del certificado.
 
-- **Tag `v*`:** si falta el secreto `ANDROID_KEYSTORE_BASE64` o el APK queda con el certificado debug, el workflow falla y no se publica nada.
-- **Compilaciones de `main` o manuales sin secretos:** se firman con la llave debug y el workflow lo avisa; ese APK no sirve para publicar.
+- **Cualquier compilación (tag, `main` o manual):** el workflow falla en rojo si falta alguno de los cuatro secretos, si la llave no abre, si el parche no queda aplicado en `build.gradle`, si el APK sale con el certificado debug o si la huella del certificado no es la de producción (`EXPECTED_SHA256` en el paso "Verificar la firma del APK"). Si se rota la llave, hay que actualizar esa huella.
 
 ## Llave de subida
 
