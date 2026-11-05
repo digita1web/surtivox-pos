@@ -8,6 +8,7 @@ export interface HomeMetrics {
   actionChevron: number;
   headerLogo: number;
   headerButton: number;
+  headerRight: number;
   brandSize: number;
   cardW: number;
   photoH: number;
@@ -27,6 +28,7 @@ export function homeMetrics(width: number, fontScale = 1): HomeMetrics {
   const pad = w >= 600 ? 24 : 16;
   const gap = 12;
   const compact = w < 350;
+  const narrow = w < 390;
   const room = w - 2 * pad - gap;
   const cardW = clamp(Math.round(room * 0.42), 140, 210);
   const photoH = Math.round(cardW * 0.8);
@@ -40,9 +42,10 @@ export function homeMetrics(width: number, fontScale = 1): HomeMetrics {
     actionVertical: fontScale >= 1.15 || w < 360,
     actionIcon: clamp(Math.round(w * 0.125), 44, 60),
     actionChevron: 26,
-    headerLogo: compact ? 48 : 64,
-    headerButton: compact ? 40 : 46,
-    brandSize: compact ? 28 : 36,
+    headerLogo: compact ? 48 : narrow ? 56 : 64,
+    headerButton: compact ? 36 : 40,
+    headerRight: 3 * (compact ? 36 : 40) + 16,
+    brandSize: compact ? 28 : narrow ? 31 : 36,
     cardW,
     photoH,
     cardH,

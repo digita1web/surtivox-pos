@@ -19,7 +19,8 @@ import { FrequentProductCard } from '../../src/pos/FrequentProductCard';
 import { PromoCard } from '../../src/pos/PromoCard';
 import { SectionHeader } from '../../src/pos/SectionHeader';
 import { homeMetrics } from '../../src/pos/homeLayout';
-import { APP_APPEARANCE, statusBarToneFor } from '../../src/themeMode';
+import { statusBarToneFor } from '../../src/themeMode';
+import { useAppearance } from '../../src/appearance';
 import { scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { useMoney } from '../../src/pos/ui';
 import { TourGuide } from '../../src/components/TourGuide';
@@ -35,6 +36,7 @@ export default function Home() {
   const router = useRouter();
   const listInset = useTabListInset();
   const { width, fontScale } = useWindowDimensions();
+  const scheme = useAppearance((state) => state.resolved);
   const m = homeMetrics(width, fontScale);
   const store = useSession((s) => s.store)!;
   const cart = useCart();
@@ -65,7 +67,7 @@ export default function Home() {
 
   useFocusEffect(useCallback(() => {
     setStatusBarStyle('light');
-    return () => setStatusBarStyle(statusBarToneFor(APP_APPEARANCE));
+    return () => setStatusBarStyle(statusBarToneFor(useAppearance.getState().resolved));
   }, []));
 
   const refreshBackupNudge = useCallback(async () => {
@@ -144,6 +146,8 @@ export default function Home() {
         name={store.name}
         tagline={store.tagline}
         logoUri={store.logo_uri}
+        dark={scheme === 'dark'}
+        onToggleTheme={() => { void useAppearance.getState().toggle(); }}
         onSearch={() => router.push('/products')}
         onScan={() => router.push('/scan')}
       />

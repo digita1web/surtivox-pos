@@ -9,10 +9,12 @@ import { homeMetrics } from './homeLayout';
 
 const WAVE = 34;
 
-export function HomeHeader({ name, tagline, logoUri, onSearch, onScan }: {
+export function HomeHeader({ name, tagline, logoUri, dark, onToggleTheme, onSearch, onScan }: {
   name: string;
   tagline?: string | null;
   logoUri?: string | null;
+  dark: boolean;
+  onToggleTheme: () => void;
   onSearch: () => void;
   onScan: () => void;
 }) {
@@ -56,8 +58,9 @@ export function HomeHeader({ name, tagline, logoUri, onSearch, onScan }: {
           </Text>
         </View>
 
-        <View style={[s.rightCol, { width: m.compact ? 104 : 112 }]}>
+        <View style={[s.rightCol, { width: m.headerRight }]}>
           <View style={s.buttons}>
+            <IconButton icon={dark ? 'sunny' : 'moon'} label={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'} variant="onBrand" size={m.headerButton} onPress={onToggleTheme} />
             <IconButton icon="search" label="Buscar productos" variant="onBrand" size={m.headerButton} onPress={onSearch} />
             <IconButton icon="scan-outline" label="Escanear código de barras" variant="onBrand" size={m.headerButton} onPress={onScan} />
           </View>
@@ -80,6 +83,6 @@ const s = StyleSheet.create({
   nameCol: { flex: 1, minWidth: 0, justifyContent: 'center' },
   rightCol: { alignItems: 'flex-end', flexShrink: 0 },
   buttons: { flexDirection: 'row', gap: space.sm },
-  slogan: { color: '#FFFFFF', textAlign: 'right', marginTop: space.sm },
+  slogan: { color: '#FFFFFF', textAlign: 'right', marginTop: space.sm, maxWidth: 112 },
   sloganLine: { height: 3, width: 72, borderRadius: 2, marginTop: 4 },
 });

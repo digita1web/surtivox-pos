@@ -15,6 +15,7 @@ import { resetAppCurrency, setAppCurrency, useAppCurrency } from '../../src/appC
 import { SEED_PRODUCTS } from '../../src/seedCatalog';
 import { resetFirstRunGuide } from '../../src/localFlags';
 import { getReminderCount, resetReminderCount } from '../../src/fiadoReminderStorage';
+import { AppearanceCard } from '../../src/pos/AppearanceCard';
 
 export default function More() {
   const t = useTheme();
@@ -222,6 +223,9 @@ export default function More() {
           </Pressable>
         </>
       )}
+
+      <Text style={[s.section, { color: t.muted }]}>APARIENCIA</Text>
+      <AppearanceCard />
 
       <Text style={[s.section, { color: t.muted }]}>PRIVACIDAD</Text>
       <View style={[s.catalogCard, { backgroundColor: t.panel, borderColor: t.line }]}>

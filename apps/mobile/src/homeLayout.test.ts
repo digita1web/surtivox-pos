@@ -67,3 +67,12 @@ test('action cards switch to a vertical layout with large system fonts or narrow
   assert.equal(homeMetrics(340, 1).actionVertical, true);
   assert.equal(homeMetrics(360, 1).actionVertical, false);
 });
+
+test('the header always leaves room for the store name next to three buttons', () => {
+  for (const width of [320, 340, 360, 393, 411, 480, 600]) {
+    const m = homeMetrics(width);
+    const nameWidth = width - 2 * m.pad - m.headerLogo - 2 * 12 - m.headerRight;
+    assert.ok(nameWidth >= m.brandSize * 3.2, `${width}: ${nameWidth}px para un nombre de ${m.brandSize}px`);
+    assert.equal(m.headerRight, 3 * m.headerButton + 16);
+  }
+});

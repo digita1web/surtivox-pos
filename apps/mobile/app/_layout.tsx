@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AppState, Appearance, View, Text, ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { AppState, View, Text, ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { Stack, usePathname, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -24,10 +24,10 @@ import { installGlobalErrorHandler } from '../src/crashHandler';
 import { truncateErrorMessage } from '../src/diagnostics';
 import { showAlert } from '../src/pos/alert';
 import { useTheme } from '../src/theme';
-import { APP_APPEARANCE, statusBarToneFor, systemSchemeOverride } from '../src/themeMode';
+import { statusBarToneFor } from '../src/themeMode';
+import { useAppearance, useAppearanceSync } from '../src/appearance';
 import { light } from '../src/themeColors';
 
-Appearance.setColorScheme(systemSchemeOverride(APP_APPEARANCE));
 SplashScreen.preventAutoHideAsync().catch(() => {});
 installGlobalErrorHandler();
 
@@ -69,6 +69,8 @@ export default function RootLayout() {
   const [showIntro, setShowIntro] = useState(true);
   const [gate, setGate] = useState<GateStep[]>([]);
   const loadSession = useSession((s) => s.load);
+  const resolvedScheme = useAppearance((s) => s.resolved);
+  useAppearanceSync();
   const store = useSession((s) => s.store);
   const locked = useLocked();
 
@@ -81,6 +83,7 @@ export default function RootLayout() {
       })
       .then(async () => {
         await loadAppCurrency(useSession.getState().store?.currency_code ?? 'COP');
+        await useAppearance.getState().load();
       })
       .then(async () => {
         setGate(await loadGateSteps(getDb(), isCatalogEnabled(CATALOG_URL)).catch((): GateStep[] => ['terms']));
@@ -105,7 +108,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style={statusBarToneFor(APP_APPEARANCE)} />
+      <StatusBar style={statusBarToneFor(resolvedScheme)} />
       {showIntro ? (
         <LaunchIntro isReady={ready || error !== null} onFinish={() => setShowIntro(false)} />
       ) : error ? (
