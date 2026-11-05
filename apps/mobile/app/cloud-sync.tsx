@@ -9,6 +9,7 @@ import {
 } from '../src/sync';
 import { SyncHttpError } from '../src/syncErrors';
 import type { KitStatus } from '../src/kitOps';
+import { RECOVER_CARD_ACTION, RECOVER_CARD_TITLE, RECOVER_REPLACE_WARNING, recoverEntryOnCloudScreen } from '../src/recoverAccess';
 import { getLocalSetting } from '../src/repos';
 import { newId } from '../src/id';
 import { CLOUD_NOTICE } from '../src/legalText';
@@ -41,6 +42,7 @@ export default function CloudSync() {
   useFocusEffect(refresh);
 
   const connected = state ? isConfigured(state) : false;
+  const recoverEntry = recoverEntryOnCloudScreen({ hosted, connected });
   const shopCode = state?.token ? formatCode(state.token) : '';
 
   const run = async (key: string, fn: () => Promise<void>) => {
@@ -135,7 +137,7 @@ export default function CloudSync() {
   })();
 
   return (
-    <Screen title="Respaldo en la nube" footer={footer}>
+    <Screen title="Respaldo en la nube" footer={footer} contentStyle={{ paddingBottom: 160 }}>
       {/* Status */}
       <View style={[s.status, { backgroundColor: connected ? t.accent : t.panel, borderColor: t.line }]}>
         <Ionicons name={connected ? 'cloud-done-outline' : 'cloud-offline-outline'} size={26} color={connected ? t.accentFg : t.muted} />
@@ -156,6 +158,22 @@ export default function CloudSync() {
           </Text>
         </View>
       </View>
+
+      {recoverEntry.visible && recoverEntry.placement === 'primary' ? (
+        <Pressable
+          onPress={() => router.push('/recover')}
+          accessibilityRole="button"
+          accessibilityLabel={`${RECOVER_CARD_TITLE} ${RECOVER_CARD_ACTION}`}
+          style={[s.recoverCard, { borderColor: t.accent, backgroundColor: t.panel }]}
+        >
+          <View style={[s.bIcon, { backgroundColor: t.accentSoft }]}><Ionicons name="cloud-download-outline" size={20} color={t.accent} /></View>
+          <View style={{ flex: 1, marginLeft: space.md }}>
+            <Text style={{ color: t.fg, fontWeight: '800' }}>{RECOVER_CARD_TITLE}</Text>
+            <Text style={{ color: t.accent, fontWeight: '700', marginTop: 2 }}>{RECOVER_CARD_ACTION}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={t.accent} />
+        </Pressable>
+      ) : null}
 
       {connected && hosted ? (
         <>
@@ -200,6 +218,15 @@ export default function CloudSync() {
           <Pressable onPress={disconnect} disabled={!!busy} style={[s.secondary, { borderColor: t.line }]}>
             <Text style={{ color: t.dangerText, fontWeight: '700' }}>Desactivar respaldo en la nube</Text>
           </Pressable>
+          {recoverEntry.visible && recoverEntry.placement === 'secondary' ? (
+            <View style={{ marginTop: space.xl }}>
+              <Pressable onPress={() => router.push('/recover')} accessibilityRole="button" style={[s.secondary, { borderColor: t.line, marginTop: 0 }]}>
+                <Ionicons name="cloud-download-outline" size={18} color={t.fg} />
+                <Text style={{ color: t.fg, fontWeight: '700', marginLeft: space.sm }}>{RECOVER_CARD_ACTION}</Text>
+              </Pressable>
+              <Text style={{ color: t.dangerText, fontSize: 12, marginTop: 6, textAlign: 'center' }}>{RECOVER_REPLACE_WARNING}</Text>
+            </View>
+          ) : null}
         </>
       ) : null}
 
@@ -221,11 +248,6 @@ export default function CloudSync() {
             ))}
           </View>
 
-          <Pressable onPress={() => router.push('/recover')} style={[s.disclosure, { borderColor: t.line }]}>
-            <Ionicons name="phone-portrait-outline" size={18} color={t.accent} />
-            <Text style={{ color: t.fg, fontWeight: '700', flex: 1, marginLeft: 10 }}>Ya tengo mi tienda</Text>
-            <Ionicons name="chevron-forward" size={18} color={t.muted} />
-          </Pressable>
         </>
       ) : null}
 
@@ -281,5 +303,6 @@ const s = StyleSheet.create({
   share: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 9 },
   benefit: { borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.lg },
   bIcon: { width: 36, height: 36, borderRadius: radius.md - 2, alignItems: 'center', justifyContent: 'center' },
+  recoverCard: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderRadius: radius.lg, padding: space.md, marginTop: space.lg },
   disclosure: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.lg },
 });

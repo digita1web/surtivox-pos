@@ -11,6 +11,9 @@ import { setAppCurrency } from '../appCurrency';
 import { useTheme, type Theme } from '../theme';
 import { DEFAULT_ACCENT, CURRENCIES, defaultCurrencyFor, currencyConfigFor } from '../branding';
 import { ShopDetailsFields, ReceiptFields, ReceiptPreview } from './StoreProfileForm';
+import { RecoverBody, RecoverButton, useRecover } from './RecoverForm';
+import { hasHostedSync } from '../sync';
+import { RECOVER_CARD_ACTION, RECOVER_CARD_TITLE, showRecoverOnOnboarding } from '../recoverAccess';
 
 
 const SLIDES: { icon: keyof typeof Ionicons.glyphMap; title: string; sub: string }[] = [
@@ -27,6 +30,8 @@ export function Onboarding({ onCreated }: { onCreated: () => void }) {
   const fade = useRef(new Animated.Value(0)).current;
   const rise = useRef(new Animated.Value(24)).current;
   const [page, setPage] = useState(0);
+  const [recovering, setRecovering] = useState(false);
+  const canRecover = showRecoverOnOnboarding(hasHostedSync());
   const pageCount = SLIDES.length + 1;
 
   useEffect(() => {
@@ -37,6 +42,8 @@ export function Onboarding({ onCreated }: { onCreated: () => void }) {
   }, [fade, rise]);
 
   const goTo = (i: number) => scrollRef.current?.scrollTo({ x: i * width, animated: true });
+
+  if (recovering) return <RecoverPanel onBack={() => setRecovering(false)} onRecovered={onCreated} />;
 
   return (
     <View style={{ flex: 1, backgroundColor: t.bg }}>
@@ -66,6 +73,7 @@ export function Onboarding({ onCreated }: { onCreated: () => void }) {
                 <Text style={[o.title, { color: t.fg }]}>{sl.title}</Text>
                 <Text style={[o.sub, { color: t.muted }]}>{sl.sub}</Text>
               </View>
+              {i === 0 && canRecover ? <ReturningCard onPress={() => setRecovering(true)} /> : null}
               <Pressable onPress={() => goTo(i + 1)} style={[o.next, { backgroundColor: t.accent, marginBottom: insets.bottom + 40 }]}>
                 <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 17 }}>Siguiente</Text>
                 <Ionicons name="arrow-forward" size={18} color={t.accentFg} style={{ marginLeft: 8 }} />
@@ -75,7 +83,7 @@ export function Onboarding({ onCreated }: { onCreated: () => void }) {
 
           {/* setup form page */}
           <View style={{ width }}>
-            <SetupForm t={t} insets={insets} onCreated={onCreated} />
+            <SetupForm t={t} insets={insets} onCreated={onCreated} onRecover={canRecover ? () => setRecovering(true) : null} />
           </View>
         </Animated.ScrollView>
 
@@ -98,13 +106,57 @@ export function Onboarding({ onCreated }: { onCreated: () => void }) {
   );
 }
 
+function ReturningCard({ onPress }: { onPress: () => void }) {
+  const t = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${RECOVER_CARD_TITLE} ${RECOVER_CARD_ACTION}`}
+      style={[o.returning, { borderColor: t.accent, backgroundColor: t.accentSoft }]}
+    >
+      <Ionicons name="cloud-download-outline" size={22} color={t.accent} />
+      <View style={{ flex: 1, marginLeft: 12 }}>
+        <Text style={{ color: t.fg, fontWeight: '800' }}>{RECOVER_CARD_TITLE}</Text>
+        <Text style={{ color: t.accent, fontWeight: '700', marginTop: 2 }}>{RECOVER_CARD_ACTION}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={t.accent} />
+    </Pressable>
+  );
+}
+
+function RecoverPanel({ onBack, onRecovered }: { onBack: () => void; onRecovered: () => void }) {
+  const t = useTheme();
+  const insets = useSafeAreaInsets();
+  const state = useRecover(async (restored) => {
+    await onRecovered();
+    showAlert('Tienda recuperada', `Se descargaron ${restored} registros. Las fotos y el logotipo no viajan en la nube: tendrás que volver a cargarlos.`);
+  });
+  return (
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: t.bg }} behavior="padding">
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingTop: insets.top + 24, paddingHorizontal: 24, paddingBottom: 24 }}>
+        <Pressable onPress={onBack} hitSlop={10} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+          <Ionicons name="chevron-back" size={20} color={t.muted} />
+          <Text style={{ color: t.muted, fontWeight: '700' }}>Atrás</Text>
+        </Pressable>
+        <Text style={[o.title, { color: t.fg, fontSize: 26, textAlign: 'left', marginTop: 0 }]}>Ya tengo mi tienda</Text>
+        <View style={{ height: 16 }} />
+        <RecoverBody state={state} />
+      </ScrollView>
+      <View style={{ paddingHorizontal: 24, paddingBottom: insets.bottom + 16, paddingTop: 8 }}>
+        <RecoverButton state={state} />
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
 const EMPTY_PROFILE: StoreProfile = {
   name: '', address: '', phone: '', email: '', website: '', taxId: '', tagline: '', logoUri: null,
   receiptFooter: '', receiptTerms: '', receiptAccent: DEFAULT_ACCENT, receiptPaper: 'a4',
   showLogo: true, showContact: true, showStaff: true,
 };
 
-function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; bottom: number }; onCreated: () => void }) {
+function SetupForm({ t, insets, onCreated, onRecover }: { t: Theme; insets: { top: number; bottom: number }; onCreated: () => void; onRecover: (() => void) | null }) {
   const [step, setStep] = useState<0 | 1>(0);
   const [profile, setProfile] = useState<StoreProfile>(EMPTY_PROFILE);
   // Start from the device's region (US → USD, GB → GBP, DE → EUR …); always changeable.
@@ -133,6 +185,7 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingTop: insets.top + 40, paddingHorizontal: 24, paddingBottom: insets.bottom + 40, flexGrow: 1 }}>
+        {onRecover ? <ReturningCard onPress={onRecover} /> : null}
         <View style={o.stepRow}>
           {[0, 1].map((i) => (
             <View key={i} style={[o.stepBar, { backgroundColor: i <= step ? t.accent : t.line }]} />
@@ -196,6 +249,7 @@ function SetupForm({ t, insets, onCreated }: { t: Theme; insets: { top: number; 
 }
 
 const o = StyleSheet.create({
+  returning: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderRadius: 16, padding: 14, marginBottom: 16, alignSelf: 'stretch' },
   stepRow: { flexDirection: 'row', gap: 8 },
   stepBar: { flex: 1, height: 5, borderRadius: 3 },
   dots: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },

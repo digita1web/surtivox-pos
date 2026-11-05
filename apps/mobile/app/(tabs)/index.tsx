@@ -30,7 +30,8 @@ import { greetingForDate } from '../../src/greeting';
 import { exportFullBackup } from '../../src/backup';
 import { backupReminderText, backupSnoozeUntil, shouldRemindBackup } from '../../src/backupReminder';
 import { showAlert } from '../../src/pos/alert';
-import { kitReminderNow, snoozeKitReminder } from '../../src/sync';
+import { kitReminderNow, snoozeKitReminder, getSyncState, isConfigured, hasHostedSync } from '../../src/sync';
+import { RECOVER_CARD_ACTION, RECOVER_CARD_TITLE, showRecoverCardOnHome } from '../../src/recoverAccess';
 
 export default function Home() {
   const t = useTheme();
@@ -55,6 +56,7 @@ export default function Home() {
   const [backupNudge, setBackupNudge] = useState<{ lastBackupAt: number | null } | null>(null);
   const [backupBusy, setBackupBusy] = useState(false);
   const [recoveryMissing, setRecoveryMissing] = useState(false);
+  const [cloudConnected, setCloudConnected] = useState(false);
   const [kitNudge, setKitNudge] = useState<{ title: string; body: string } | null>(null);
   const me = useSession((state) => state.staff);
   const staffTotal = useSession((state) => state.staffCount);
@@ -110,6 +112,7 @@ export default function Home() {
     cloud.refresh();
     void refreshBackupNudge();
     kitReminderNow().then(setKitNudge).catch(() => setKitNudge(null));
+    getSyncState().then((state) => setCloudConnected(isConfigured(state))).catch(() => setCloudConnected(false));
   }, [store.id, salesVersion, cloud.refresh, refreshBackupNudge, me?.role, staffTotal]));
 
   const saveBackup = async () => {
@@ -166,6 +169,24 @@ export default function Home() {
             ? <ActionCard icon="add" title="Agregar producto" hint="Nuevo artículo del catálogo" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={() => router.push('/add-product')} />
             : <ActionCard icon="barcode-outline" title="Escanear y vender" hint="Escanea un código de barras" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={() => router.push('/scan')} />}
         </View>
+
+        {showRecoverCardOnHome({ hosted: hasHostedSync(), canSync: can(role, 'sync'), cloudConnected, productCount: strip.length, orderCount: stats.orders }) ? (
+          <Pressable
+            onPress={() => router.push('/recover')}
+            accessibilityRole="button"
+            accessibilityLabel={`${RECOVER_CARD_TITLE} ${RECOVER_CARD_ACTION}`}
+            style={[s.backupNudge, { backgroundColor: t.accentSoft, borderColor: t.accent, marginTop: space.lg }]}
+          >
+            <View style={s.backupTitle}>
+              <Ionicons name="cloud-download-outline" size={20} color={t.accent} />
+              <View style={{ flex: 1, marginLeft: space.sm }}>
+                <Text style={{ color: t.fg, fontWeight: '800' }}>{RECOVER_CARD_TITLE}</Text>
+                <Text style={{ color: t.accent, fontWeight: '700', marginTop: 1 }}>{RECOVER_CARD_ACTION}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={t.accent} />
+            </View>
+          </Pressable>
+        ) : null}
 
         <View style={s.sectionGap}>
           <SectionHeader title="Productos frecuentes" actionLabel="Ver todo" onAction={() => router.push('/products')} />
