@@ -23,7 +23,3 @@ export function patchReleaseSigning(gradle: string): string {
     `$1signingConfig = System.getenv("ANDROID_KEYSTORE_PATH") ? signingConfigs.release : signingConfigs.debug`,
   );
 }
-
-export function isDebugCertificate(printedCerts: string): boolean {
-  return /Android Debug/i.test(printedCerts);
-}

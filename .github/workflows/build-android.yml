@@ -44,7 +44,7 @@ jobs:
             build=true
           elif [ -z "${BEFORE}" ] || [ "${BEFORE}" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
             build=true
-          elif git diff --name-only "${BEFORE}" "${GITHUB_SHA}" | grep -Eq '^(apps/mobile/|packages/|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|package\.json$|\.github/workflows/build-android\.yml$)'; then
+          elif git diff --name-only "${BEFORE}" "${GITHUB_SHA}" | grep -Eq '^(apps/mobile/|packages/|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|package\.json$|scripts/patch-android-signing\.mjs$|\.github/workflows/build-android\.yml$)'; then
             build=true
           fi
           echo "build=${build}" >> "${GITHUB_OUTPUT}"
@@ -119,7 +119,7 @@ jobs:
         run: |
           set -euo pipefail
           for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
-            if [ -z "${!name}" ]; then
+            if [ -z "${!name:-}" ]; then
               echo "::error::Falta el secreto ANDROID_${name} en GitHub Actions. No se compila un APK sin la llave de produccion."
               exit 1
             fi
