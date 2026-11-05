@@ -1,12 +1,14 @@
 import { useCallback, useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, Share, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
 import { showAlert } from '../src/pos/alert';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
   getSyncState, saveSyncConfig, disconnectSync, syncNow, restoreFromCloud, isConfigured,
-  hasHostedSync, turnOnCloudBackup, linkDeviceByCode, formatCode, type SyncState,
+  hasHostedSync, turnOnCloudBackup, getKitStatus, changeShopKey, formatCode, type SyncState,
 } from '../src/sync';
+import { SyncHttpError } from '../src/syncErrors';
+import type { KitStatus } from '../src/kitOps';
 import { getLocalSetting } from '../src/repos';
 import { newId } from '../src/id';
 import { CLOUD_NOTICE } from '../src/legalText';
@@ -22,14 +24,14 @@ export default function CloudSync() {
   const [state, setState] = useState<SyncState | null>(null);
   const [url, setUrl] = useState('');
   const [token, setToken] = useState('');
-  const [linkCode, setLinkCode] = useState('');
-  const [showLink, setShowLink] = useState(false);
+  const [kitStatus, setKitStatus] = useState<KitStatus>('none');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [developerMode, setDeveloperMode] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
     getLocalSetting('developer_mode').then((value) => setDeveloperMode(value === '1')).catch(() => {});
+    getKitStatus().then(setKitStatus).catch(() => {});
     getSyncState().then((s) => {
       setState(s);
       setUrl(s.server_url ?? '');
@@ -44,7 +46,18 @@ export default function CloudSync() {
   const run = async (key: string, fn: () => Promise<void>) => {
     if (busy) return;
     setBusy(key);
-    try { await fn(); } catch (e) { showAlert('Error de sincronización', e instanceof Error ? e.message : String(e)); }
+    try {
+      await fn();
+    } catch (e) {
+      if (e instanceof SyncHttpError && e.code === 'key_changed') {
+        showAlert('La llave cambió', e.message, [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Ingresar kit', onPress: () => router.push('/recover') },
+        ]);
+      } else {
+        showAlert('Error de sincronización', e instanceof Error ? e.message : String(e));
+      }
+    }
     finally { setBusy(null); refresh(); }
   };
 
@@ -52,26 +65,23 @@ export default function CloudSync() {
   const turnOn = () => showAlert(CLOUD_NOTICE.title, CLOUD_NOTICE.body, [
     { text: CLOUD_NOTICE.cancel, style: 'cancel' },
     { text: CLOUD_NOTICE.confirm, onPress: () => { void run('on', async () => {
-      await turnOnCloudBackup();
-      showAlert('Respaldo en la nube activado', 'Tu tienda está respaldada. Usa el código de tienda para agregar otro dispositivo.');
+      const activation = await turnOnCloudBackup();
+      if (activation.words) router.push('/kit?mode=new');
+      else showAlert('Respaldo en la nube activado', 'Tu tienda está respaldada.');
     }); } },
   ]);
   const sync = () => run('sync', async () => { await syncNow(); });
-  const shareCode = async () => {
-    if (!shopCode) return;
-    try { await Share.share({ message: `Agrega este dispositivo a mi tienda Surtivox con el código: ${shopCode}` }); } catch { /* dismissed */ }
-  };
-  const link = () => {
-    if (!linkCode.trim()) { showAlert('Ingresa un código de tienda', 'Pega el código que aparece en tu otro dispositivo.'); return; }
-    showAlert('¿Vincular este dispositivo?', 'Esto REEMPLAZA todos los datos de este dispositivo con la tienda de la nube. Úsalo en un teléfono nuevo o de respaldo.', [
+  const rotate = () => showAlert(
+    kitStatus === 'legacy' ? 'Crear tu kit de recuperación' : 'Cambiar la llave de la tienda',
+    'La llave actual dejará de servir. Los otros teléfonos vinculados tendrán que ingresar el nuevo kit para seguir sincronizando.',
+    [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Reemplazar y vincular', style: 'destructive', onPress: () => run('link', async () => {
-        const n = await linkDeviceByCode(linkCode);
-        await reload(); router.replace('/');
-        showAlert('Dispositivo vinculado', `Se descargaron ${n} registros de esta tienda.`);
-      }) },
-    ]);
-  };
+      { text: kitStatus === 'legacy' ? 'Crear kit' : 'Cambiar llave', style: 'destructive', onPress: () => { void run('rotate', async () => {
+        await changeShopKey();
+        router.push('/kit?mode=new');
+      }); } },
+    ],
+  );
 
   const connectAndSync = () => run('sync', async () => {
     if (!url.trim() || !token.trim()) { showAlert('Faltan datos', 'Ingresa la URL del servidor y el token.'); return; }
@@ -147,19 +157,45 @@ export default function CloudSync() {
         </View>
       </View>
 
-      {/* CONNECTED (hosted): shop code to add devices */}
-      {connected && hosted && shopCode ? (
+      {connected && hosted ? (
         <>
-          <Text style={[s.label, { color: t.muted }]}>CÓDIGO DE TU TIENDA</Text>
-          <View style={[s.codeCard, { borderColor: t.accent, backgroundColor: t.accentSoft }]}>
-            <Text selectable style={[s.code, { color: t.fg }]}>{shopCode}</Text>
-            <Pressable onPress={shareCode} style={[s.share, { backgroundColor: t.accent }]}>
-              <Ionicons name="share-outline" size={16} color={t.accentFg} />
-              <Text style={{ color: t.accentFg, fontWeight: '700', marginLeft: 6, fontSize: 13 }}>Compartir</Text>
-            </Pressable>
+          {kitStatus === 'legacy' && shopCode ? (
+            <>
+              <Text style={[s.label, { color: t.muted }]}>CÓDIGO DE TU TIENDA</Text>
+              <View style={[s.codeCard, { borderColor: t.accent, backgroundColor: t.accentSoft }]}>
+                <Text selectable style={[s.code, { color: t.fg }]}>{shopCode}</Text>
+              </View>
+              <Text style={{ color: t.faint, fontSize: 12, marginTop: 6 }}>
+                Este código largo se reemplaza por un kit de 8 palabras. Mantenlo privado: cualquiera que lo tenga puede leer los datos de esta tienda.
+              </Text>
+            </>
+          ) : null}
+          <Text style={[s.label, { color: t.muted }]}>KIT DE RECUPERACIÓN</Text>
+          <View style={[s.codeCard, { borderColor: kitStatus === 'confirmed' ? t.accent : t.warn, backgroundColor: t.panel }]}>
+            <Ionicons name={kitStatus === 'confirmed' ? 'shield-checkmark-outline' : 'alert-circle-outline'} size={22} color={kitStatus === 'confirmed' ? t.accent : t.warnText} />
+            <Text style={{ color: t.fg, fontWeight: '700', flex: 1, marginLeft: space.md }}>
+              {kitStatus === 'confirmed' ? 'Kit guardado y confirmado' : kitStatus === 'unconfirmed' ? 'Kit sin confirmar' : 'Aún no tienes un kit'}
+            </Text>
           </View>
+          {kitStatus === 'legacy' ? (
+            <Pressable onPress={rotate} disabled={!!busy} style={[s.secondary, { borderColor: t.accent }]}>
+              <Ionicons name="key-outline" size={18} color={t.accent} />
+              <Text style={{ color: t.accent, fontWeight: '700', marginLeft: space.sm }}>Crea tu kit de recuperación</Text>
+            </Pressable>
+          ) : (
+            <>
+              <Pressable onPress={() => router.push(kitStatus === 'confirmed' ? '/kit?mode=view' : '/kit?mode=new')} style={[s.secondary, { borderColor: t.accent }]}>
+                <Ionicons name="eye-outline" size={18} color={t.accent} />
+                <Text style={{ color: t.accent, fontWeight: '700', marginLeft: space.sm }}>{kitStatus === 'confirmed' ? 'Ver mi kit' : 'Ver y confirmar mi kit'}</Text>
+              </Pressable>
+              <Pressable onPress={rotate} disabled={!!busy} style={[s.secondary, { borderColor: t.line, marginTop: space.md }]}>
+                {busy === 'rotate' ? <ActivityIndicator color={t.fg} /> : <Ionicons name="refresh-outline" size={18} color={t.fg} />}
+                <Text style={{ color: t.fg, fontWeight: '700', marginLeft: space.sm }}>Cambiar llave</Text>
+              </Pressable>
+            </>
+          )}
           <Text style={{ color: t.faint, fontSize: 12, marginTop: 6 }}>
-            En otro teléfono, abre Respaldo en la nube, toca “Agregar este dispositivo a una tienda” e ingresa este código. Mantenlo privado: cualquiera que lo tenga puede leer los datos de esta tienda.
+            En otro teléfono, abre Respaldo en la nube, toca “Ya tengo mi tienda” e ingresa el kit. Quien tenga el kit puede abrir esta tienda.
           </Text>
           <Pressable onPress={disconnect} disabled={!!busy} style={[s.secondary, { borderColor: t.line }]}>
             <Text style={{ color: t.dangerText, fontWeight: '700' }}>Desactivar respaldo en la nube</Text>
@@ -167,7 +203,7 @@ export default function CloudSync() {
         </>
       ) : null}
 
-      {/* NOT CONNECTED (hosted): explainer + link-with-code */}
+      {/* NOT CONNECTED (hosted): explainer + recover entry */}
       {!connected && hosted ? (
         <>
           <View style={[s.benefit, { borderColor: t.line }]}>
@@ -185,23 +221,11 @@ export default function CloudSync() {
             ))}
           </View>
 
-          <Pressable onPress={() => setShowLink((v) => !v)} style={[s.disclosure, { borderColor: t.line }]}>
+          <Pressable onPress={() => router.push('/recover')} style={[s.disclosure, { borderColor: t.line }]}>
             <Ionicons name="phone-portrait-outline" size={18} color={t.accent} />
-            <Text style={{ color: t.fg, fontWeight: '700', flex: 1, marginLeft: 10 }}>Agregar este dispositivo a una tienda</Text>
-            <Ionicons name={showLink ? 'chevron-up' : 'chevron-down'} size={18} color={t.muted} />
+            <Text style={{ color: t.fg, fontWeight: '700', flex: 1, marginLeft: 10 }}>Ya tengo mi tienda</Text>
+            <Ionicons name="chevron-forward" size={18} color={t.muted} />
           </Pressable>
-          {showLink ? (
-            <View style={{ marginTop: space.md }}>
-              <Text style={{ color: t.muted, fontSize: 13, marginBottom: space.sm }}>¿Ya vendes desde otro teléfono? Ingresa el código de esa tienda para descargarla aquí.</Text>
-              <TextInput value={linkCode} onChangeText={setLinkCode} autoCapitalize="characters" autoCorrect={false}
-                placeholder="XXXX-XXXX-XXXX-XXXX" placeholderTextColor={t.muted}
-                style={[s.input, { color: t.fg, borderColor: t.line, backgroundColor: t.panel, letterSpacing: 1 }]} />
-              <Pressable onPress={link} disabled={!!busy} style={[s.secondary, { borderColor: t.accent, marginTop: space.md }]}>
-                {busy === 'link' ? <ActivityIndicator color={t.accent} /> : <Ionicons name="cloud-download-outline" size={18} color={t.accent} />}
-                <Text style={{ color: t.accent, fontWeight: '700', marginLeft: space.sm }}>{busy === 'link' ? 'Vinculando…' : 'Vincular este dispositivo'}</Text>
-              </Pressable>
-            </View>
-          ) : null}
         </>
       ) : null}
 

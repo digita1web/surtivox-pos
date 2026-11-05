@@ -30,6 +30,7 @@ import { greetingForDate } from '../../src/greeting';
 import { exportFullBackup } from '../../src/backup';
 import { backupReminderText, backupSnoozeUntil, shouldRemindBackup } from '../../src/backupReminder';
 import { showAlert } from '../../src/pos/alert';
+import { kitReminderNow, snoozeKitReminder } from '../../src/sync';
 
 export default function Home() {
   const t = useTheme();
@@ -54,6 +55,7 @@ export default function Home() {
   const [backupNudge, setBackupNudge] = useState<{ lastBackupAt: number | null } | null>(null);
   const [backupBusy, setBackupBusy] = useState(false);
   const [recoveryMissing, setRecoveryMissing] = useState(false);
+  const [kitNudge, setKitNudge] = useState<{ title: string; body: string } | null>(null);
   const me = useSession((state) => state.staff);
   const staffTotal = useSession((state) => state.staffCount);
 
@@ -107,6 +109,7 @@ export default function Home() {
     else setRecoveryMissing(false);
     cloud.refresh();
     void refreshBackupNudge();
+    kitReminderNow().then(setKitNudge).catch(() => setKitNudge(null));
   }, [store.id, salesVersion, cloud.refresh, refreshBackupNudge, me?.role, staffTotal]));
 
   const saveBackup = async () => {
@@ -232,6 +235,21 @@ export default function Home() {
                 <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 1 }}>Sin él, si olvidas tu PIN no podrás entrar.</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={t.faint} />
+            </View>
+          </Pressable>
+        ) : null}
+
+        {kitNudge && can(role, 'sync') ? (
+          <Pressable onPress={() => router.push('/cloud-sync')} accessibilityRole="button" style={[s.backupNudge, { backgroundColor: t.panel, borderColor: t.warn }]}>
+            <View style={s.backupTitle}>
+              <Ionicons name="key-outline" size={18} color={t.warnText} />
+              <View style={{ flex: 1, marginLeft: space.sm }}>
+                <Text style={{ color: t.fg, fontWeight: '700' }}>{kitNudge.title}</Text>
+                <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 1 }}>{kitNudge.body}</Text>
+              </View>
+              <Pressable onPress={() => { setKitNudge(null); void snoozeKitReminder().catch(() => {}); }} hitSlop={10} accessibilityLabel="Recordarme después">
+                <Ionicons name="close" size={18} color={t.faint} />
+              </Pressable>
             </View>
           </Pressable>
         ) : null}
