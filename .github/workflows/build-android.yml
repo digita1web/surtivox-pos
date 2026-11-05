@@ -127,10 +127,17 @@ jobs:
           KEYSTORE_FILE="${RUNNER_TEMP}/surtivox-upload.keystore"
           printf '%s' "${KEYSTORE_BASE64}" | base64 -d > "${KEYSTORE_FILE}"
           chmod 600 "${KEYSTORE_FILE}"
-          keytool -list -keystore "${KEYSTORE_FILE}" -storepass "${KEYSTORE_PASSWORD}" -alias "${KEY_ALIAS}" > /dev/null
+          if ! keytool -list -keystore "${KEYSTORE_FILE}" -storepass "${KEYSTORE_PASSWORD}" -alias "${KEY_ALIAS}" > "${RUNNER_TEMP}/keytool.txt" 2>&1; then
+            echo "::error::La llave no abre con los secretos cargados (contrasena, alias o base64 incorrectos)"
+            sed 's/^/keytool: /' "${RUNNER_TEMP}/keytool.txt" | grep -v -i 'password' || true
+            exit 1
+          fi
           echo "ANDROID_KEYSTORE_PATH=${KEYSTORE_FILE}" >> "${GITHUB_ENV}"
           node scripts/patch-android-signing.mjs apps/mobile/android/app/build.gradle
-          grep -q 'ANDROID_KEYSTORE_PATH' apps/mobile/android/app/build.gradle
+          if ! grep -q 'ANDROID_KEYSTORE_PATH' apps/mobile/android/app/build.gradle; then
+            echo "::error::El parche no quedo aplicado en build.gradle"
+            exit 1
+          fi
 
       - name: Pin Gradle 8.13
         run: sed -i -E 's#gradle-9\.[0-9]+\.[0-9]+-bin\.zip#gradle-8.13-bin.zip#g' apps/mobile/android/gradle/wrapper/gradle-wrapper.properties
@@ -163,7 +170,11 @@ jobs:
             echo "::error::El APK quedo firmado con la llave debug"
             exit 1
           fi
-          ACTUAL=$(grep -m1 'certificate SHA-256 digest' "${RUNNER_TEMP}/apk-certs.txt" | awk '{print $NF}' | tr 'a-f' 'A-F')
+          ACTUAL=$(grep -m1 'certificate SHA-256 digest' "${RUNNER_TEMP}/apk-certs.txt" | awk '{print $NF}' | tr 'a-f' 'A-F' || true)
+          if [ -z "${ACTUAL}" ]; then
+            echo "::error::apksigner no devolvio la huella del certificado"
+            exit 1
+          fi
           if [ "${ACTUAL}" != "${EXPECTED_SHA256}" ]; then
             echo "::error::La huella del certificado (${ACTUAL}) no es la de la llave de produccion (${EXPECTED_SHA256})"
             exit 1
