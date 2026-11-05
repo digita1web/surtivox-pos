@@ -80,10 +80,16 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 - **No se pudo capturar la app real.** No había teléfono ni emulador. Solo se comparó una maqueta HTML con los mismos números que el código (no es la app). Falta revisar en dispositivo: curvas del encabezado (`borderRadius: '50%'` en Android), sombras (`boxShadow`), tamaños con fuente grande y pantallas de 320 a 600 dp, en modo claro y oscuro.
 - **El logotipo de "Trailer Rodante" no está en el proyecto.** El encabezado usa el nombre, el eslogan y el logotipo de la tienda (se cargan en Más → Perfil y recibos); sin logotipo muestra el icono genérico de tienda. No se fijó "Trailer Rodante" en el código porque la app admite varias tiendas.
 - **La ilustración del bloque promocional es un recorte de la imagen de referencia** (`assets/promo/mas-ventas.webp`, 552x514) con el texto incluido en la imagen: no se traduce ni escala con el tamaño de letra. Conviene reemplazarla por una pieza diseñada a mayor resolución.
-- **El modo oscuro cambió** a verdes oscuros en lugar de casi negro (decisión por "no usar negro como fondo principal"). Confirmar que es lo deseado.
-- **Pendiente de aplicar la nueva identidad:** icono y splash de la app (`app.json`, fondo `#0B0E12`, requiere compilar), onboarding, `LaunchIntro`, `TourGuide` (resalte `rgba(25,184,142,…)`) y colores fijos (`#fff`) en otras pantallas.
+- **La app es siempre clara.** [themeMode.ts](apps/mobile/src/themeMode.ts) fija `APP_APPEARANCE = 'light'` e ignora el modo oscuro del teléfono (en Android `Appearance.setColorScheme` aplica a teclado y diálogos). La paleta oscura (verdes profundos) sigue en `themeColors.ts`: cambiar la constante a `'system'` la reactiva. Falta decidir si se ofrece un ajuste de apariencia en Más.
+- **Pendiente de la nueva identidad:** icono de la app (el launcher sigue con el fondo `#0B0E12` y el glifo anterior). El splash nativo ya es claro, pero **solo se ve con un APK nuevo**: el cambio de `app.json` altera el fingerprint y esa actualización no llega por OTA a los APK instalados.
 - **Ajuste a la paleta pedida:** el texto secundario `#64736D` da 4,15:1 en el peor caso y se usa `#5E6C67` (4,58:1) para conservar el mínimo de 4,5:1 con test. Las superficies `surfaceAlt` y `chip` se aclararon un poco por el mismo motivo.
 - **`ok` (verde brillante) como texto** sigue en 2,7:1 sobre blanco; solo se usa en fondos e importes de ayuda.
+
+## Landing
+
+- **Invertida a tema claro** con la paleta de marca (variables de `landing/styles.css`; hay test en [landingTheme.test.ts](apps/mobile/src/landingTheme.test.ts)). La sección "Hecho para tienda de barrio" y la tarjeta final son verde oscuro a propósito.
+- **Las capturas del teléfono (`landing/assets/screen-*.webp`) muestran la interfaz anterior,** en inglés ("Maple Street Market"). Hay que volver a capturarlas con la app nueva. `og-image.png` (vista previa al compartir) sigue oscura.
+- El enlace "Ver código fuente" del pie y de la tarjeta final se conserva aunque la licencia es propietaria; decidir si se renombra a "Ver repositorio".
 
 ## Fotos de productos
 

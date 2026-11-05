@@ -21,7 +21,7 @@ body.legal-body {
 }
 
 .legal-back:hover {
-  color: var(--paper);
+  color: var(--text);
 }
 
 .legal-heading {
@@ -59,7 +59,7 @@ body.legal-body {
 
 .legal-card h2 {
   margin: 34px 0 10px;
-  color: var(--paper);
+  color: var(--text);
   font-family: var(--display);
   font-size: 24px;
   font-weight: 800;
@@ -101,14 +101,14 @@ body.legal-body {
   margin-top: 24px;
   padding: 16px 18px;
   border-left: 3px solid var(--warm);
-  background: rgba(229, 185, 78, 0.07);
+  background: rgba(244, 185, 66, 0.07);
   color: var(--muted);
   font-size: 12px;
   line-height: 1.7;
 }
 
 .legal-note strong {
-  color: var(--paper);
+  color: var(--text);
 }
 
 .legal-footer {
