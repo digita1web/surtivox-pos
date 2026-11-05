@@ -74,3 +74,21 @@ test('rejects rows that are not objects', () => {
 test('accepts empty tables', () => {
   assert.deepEqual(validateBackupPayload(payload({ products: [], sales: [] }), schema, 11), { ok: true });
 });
+
+import { verifyBackupText } from './backupValidation.ts';
+
+const sample = JSON.stringify({ app: 'surtivoxpos', tables: { products: [{ id: 'a' }, { id: 'b' }], sales: [{ id: 'c' }] } });
+
+test('verifyBackupText acepta un archivo completo', () => {
+  assert.deepEqual(verifyBackupText(sample, 3), { ok: true });
+});
+
+test('verifyBackupText rechaza un archivo truncado o con otro conteo', () => {
+  assert.equal(verifyBackupText(sample.slice(0, -10), 3).ok, false);
+  assert.equal(verifyBackupText(sample, 4).ok, false);
+});
+
+test('verifyBackupText rechaza lo que no es un respaldo de Surtivox', () => {
+  assert.equal(verifyBackupText('{"app":"otro","tables":{}}', 0).ok, false);
+  assert.equal(verifyBackupText('{"app":"surtivoxpos","tables":{"x":5}}', 0).ok, false);
+});

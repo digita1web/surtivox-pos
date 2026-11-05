@@ -122,7 +122,7 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 
 ## App móvil
 
-- **Respaldo marcado como hecho aunque se cancele (P2-3).** Si el usuario cancela el diálogo de compartir, `last_backup_at` se escribe igual. El archivo queda en `cacheDirectory`, que el sistema puede limpiar.
+- **Respaldo marcado como hecho aunque se cancele (P2-3), parcialmente resuelto.** `expo-sharing` no informa si el usuario completó o canceló el diálogo, así que "Compartir copia" sigue marcando `last_backup_at` sin poder confirmarlo y el archivo queda en `cacheDirectory`. Se añadió "Guardar copia en el teléfono" ([backup.ts](apps/mobile/src/backup.ts), `saveBackupToDevice`): escribe en una carpeta elegida por el usuario con el Storage Access Framework, relee el archivo y comprueba que el conteo de registros coincide (`verifyBackupText`, con test) antes de marcar el respaldo. **Sin probar en dispositivo:** el selector de carpeta, la escritura y la relectura por SAF.
 - **Restauración parcial (P2-4).** [backup.ts](apps/mobile/src/backup.ts) solo reemplaza las tablas presentes en el archivo, sin `PRAGMA foreign_key_check` y sin reiniciar `sync_state`.
 - Los archivos de `safety/` (`pre-migracion-*.db` y `surtivox-antes-de-restaurar-*.json`) **no tienen pantalla de restauración**.
 - Si una migración falla, el error no se guarda en `last_error` y se muestra crudo y en inglés ([_layout.tsx](apps/mobile/app/_layout.tsx)). Decidir si una copia previa fallida debe bloquear la migración.

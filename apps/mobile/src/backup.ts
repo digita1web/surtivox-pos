@@ -8,7 +8,7 @@ import {
 import type { Store } from './repos';
 import { APP_CURRENCY } from './branding';
 import { getDb } from './db';
-import { validateBackupPayload } from './backupValidation';
+import { validateBackupPayload, verifyBackupText } from './backupValidation';
 
 const major = (minor: number, dec: number) => (minor / 10 ** dec).toFixed(dec);
 const stamp = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -122,6 +122,24 @@ export async function exportFullBackup(store: Store): Promise<number> {
   await Sharing.shareAsync(uri, { mimeType: 'application/json', dialogTitle: filename, UTI: 'public.json' });
   await setLocalSetting('last_backup_at', String(Date.now())).catch(() => {});
   return rows;
+}
+
+export interface SavedBackup { rows: number; filename: string }
+
+export async function saveBackupToDevice(store: Store): Promise<SavedBackup | null> {
+  const saf = FileSystem.StorageAccessFramework;
+  const permission = await saf.requestDirectoryPermissionsAsync(saf.getUriForDirectoryInRoot('Download'));
+  if (!permission.granted) return null;
+  const { payload, rows } = await collectFullBackup(store.name);
+  const text = JSON.stringify(payload);
+  const filename = `surtivox-backup-${stamp()}`;
+  const fileUri = await saf.createFileAsync(permission.directoryUri, filename, 'application/json');
+  await FileSystem.writeAsStringAsync(fileUri, text, { encoding: FileSystem.EncodingType.UTF8 });
+  const saved = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.UTF8 });
+  const check = verifyBackupText(saved, rows);
+  if (!check.ok) throw new Error(`${check.reason} No se marcó como respaldo hecho.`);
+  await setLocalSetting('last_backup_at', String(Date.now())).catch(() => {});
+  return { rows, filename };
 }
 
 export interface RestoreResult { tables: number; rows: number }

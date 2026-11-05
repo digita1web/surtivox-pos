@@ -67,3 +67,24 @@ export function validateBackupPayload(
 
   return { ok: true };
 }
+
+export function verifyBackupText(text: string, expectedRows: number): BackupValidationResult {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return { ok: false, reason: 'El archivo guardado está dañado.' };
+  }
+  if (!isRecord(parsed) || parsed.app !== BACKUP_MAGIC || !isRecord(parsed.tables)) {
+    return { ok: false, reason: 'El archivo guardado no es un respaldo válido.' };
+  }
+  let rows = 0;
+  for (const list of Object.values(parsed.tables)) {
+    if (!Array.isArray(list)) return { ok: false, reason: 'El archivo guardado tiene una tabla inválida.' };
+    rows += list.length;
+  }
+  if (rows !== expectedRows) {
+    return { ok: false, reason: `El archivo guardado está incompleto (${rows} de ${expectedRows} registros).` };
+  }
+  return { ok: true };
+}

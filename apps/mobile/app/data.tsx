@@ -4,7 +4,7 @@ import { showAlert } from '../src/pos/alert';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../src/session';
-import { exportProducts, exportSales, importProducts, exportFullBackup, restoreFullBackup } from '../src/backup';
+import { exportProducts, exportSales, importProducts, exportFullBackup, saveBackupToDevice, restoreFullBackup } from '../src/backup';
 import { getLocalSetting } from '../src/repos';
 import { useTheme, space, radius, type Theme } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
@@ -78,7 +78,14 @@ export default function DataScreen() {
           : `Último respaldo generado: ${new Date(lastBackupAt).toLocaleString('es-CO')}`}
       </Text>
       <Group t={t}>
-        <Row t={t} icon="cloud-upload-outline" title="Respaldar todo" subtitle="Guarda una copia completa como archivo .json"
+        <Row t={t} icon="save-outline" title="Guardar copia en el teléfono" subtitle="Elige una carpeta (por ejemplo Descargas). Se verifica al guardar"
+          busy={busy === 'sd'} onPress={() => run('sd', async () => {
+            const r = await saveBackupToDevice(store);
+            if (!r) return;
+            setLastBackupAt(Date.now());
+            showAlert('Copia guardada y verificada', `Se guardaron ${r.rows} registros en ${r.filename}.json. Cópiala también fuera del teléfono: si desinstalas la app, el archivo debe estar a salvo.`);
+          })} />
+        <Row t={t} icon="cloud-upload-outline" title="Compartir copia" subtitle="Envía el archivo .json por otra app. No se puede confirmar que lo guardaras"
           busy={busy === 'fb'} onPress={() => run('fb', async () => {
             const n = await exportFullBackup(store);
             setLastBackupAt(Date.now());
