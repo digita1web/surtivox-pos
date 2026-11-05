@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { CurrencyConfig } from '@surtivox/pos-core';
-import { getStore, listStores, setCurrentStore, staffCount, type Store, type Staff } from './repos';
+import { getStore, listStores, setCurrentStore, staffCount, getLocalSetting, setLocalSetting, type Store, type Staff } from './repos';
+import { parseAutoLock, DEFAULT_AUTO_LOCK_MINUTES } from './staffRules';
 import { appCurrencyConfig } from './appCurrency';
 import type { Role } from './roles';
 
@@ -11,6 +12,8 @@ interface SessionState {
   stores: Store[];         // every shop on this device
   staffCount: number;      // number of active staff for the current shop
   staff: Staff | null;     // who is currently signed in (null = not yet unlocked)
+  autoLockMinutes: number;
+  setAutoLockMinutes: (minutes: number) => Promise<void>;
   load: () => Promise<void>;
   refreshStaffCount: () => Promise<void>;
   switchStore: (id: string) => Promise<void>;
@@ -23,10 +26,16 @@ export const useSession = create<SessionState>((set, get) => ({
   stores: [],
   staffCount: 0,
   staff: null,
+  autoLockMinutes: DEFAULT_AUTO_LOCK_MINUTES,
+  setAutoLockMinutes: async (minutes) => {
+    set({ autoLockMinutes: minutes });
+    await setLocalSetting('auto_lock_minutes', String(minutes));
+  },
   load: async () => {
     const store = await getStore();
     const stores = await listStores();
-    set({ store, stores, staffCount: store ? await staffCount(store.id) : 0 });
+    const autoLockMinutes = parseAutoLock(await getLocalSetting('auto_lock_minutes').catch(() => null));
+    set({ store, stores, autoLockMinutes, staffCount: store ? await staffCount(store.id) : 0 });
   },
   refreshStaffCount: async () => {
     const store = get().store;

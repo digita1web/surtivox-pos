@@ -32,6 +32,34 @@ export function can(role: Role, cap: Capability): boolean {
   return RANK[role] >= MIN_RANK[cap];
 }
 
+export const CAPABILITIES: readonly Capability[] = [
+  'reports', 'products', 'returns', 'purchases', 'suppliers', 'customers', 'backup', 'staff', 'sync', 'shop',
+];
+
+export const CAPABILITY_LABEL: Record<Capability, string> = {
+  reports: 'ver reportes',
+  products: 'editar productos',
+  returns: 'hacer devoluciones y anular ventas',
+  purchases: 'registrar compras',
+  suppliers: 'gestionar proveedores',
+  customers: 'gestionar clientes y fiados',
+  backup: 'hacer y restaurar copias',
+  staff: 'gestionar personal',
+  sync: 'activar la nube',
+  shop: 'editar el perfil de la tienda',
+};
+
+export function capabilitiesOf(role: Role): Capability[] {
+  return CAPABILITIES.filter((cap) => can(role, cap));
+}
+
+export function roleSummary(role: Role): string {
+  const caps = capabilitiesOf(role);
+  if (caps.length === 0) return 'Solo puede vender y recibir pagos';
+  if (caps.length === CAPABILITIES.length) return 'Acceso total, incluida la gestión de personal';
+  return `Puede vender, además de: ${caps.map((cap) => CAPABILITY_LABEL[cap]).join(', ')}`;
+}
+
 /**
  * PIN hashing. A 4-digit PIN has only 10k combinations, so no hash is
  * brute-force resistant here — the point is to avoid storing the PIN in

@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppState, Appearance, View, Text, ActivityIndicator, Pressable, StyleSheet } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, usePathname, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { getDatabaseHealth, getDb, initDatabase } from '../src/db';
-import { useSession, useLocked } from '../src/session';
+import { useSession, useLocked, useRole } from '../src/session';
+import { can, ROLE_LABEL } from '../src/roles';
+import { capabilityForPath } from '../src/routeAccess';
+import { shouldAutoLock } from '../src/staffRules';
 import { loadAppCurrency } from '../src/appCurrency';
 import { Onboarding } from '../src/pos/Onboarding';
 import { StaffLock } from '../src/pos/StaffLock';
@@ -27,6 +30,35 @@ import { light } from '../src/themeColors';
 Appearance.setColorScheme(systemSchemeOverride(APP_APPEARANCE));
 SplashScreen.preventAutoHideAsync().catch(() => {});
 installGlobalErrorHandler();
+
+function RouteGuard() {
+  const pathname = usePathname();
+  const role = useRole();
+  const router = useRouter();
+  useEffect(() => {
+    const capability = capabilityForPath(pathname);
+    if (capability && !can(role, capability)) {
+      router.replace('/');
+      showAlert('Sin permiso', `Tu rol (${ROLE_LABEL[role]}) no permite abrir esta sección.`);
+    }
+  }, [pathname, role]);
+  return null;
+}
+
+function AutoLock() {
+  const minutes = useSession((s) => s.autoLockMinutes);
+  const away = useRef<number | null>(null);
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'background') { away.current = Date.now(); return; }
+      if (state !== 'active') return;
+      if (shouldAutoLock({ backgroundedAt: away.current, now: Date.now(), minutes })) useSession.getState().signOut();
+      away.current = null;
+    });
+    return () => subscription.remove();
+  }, [minutes]);
+  return null;
+}
 
 export default function RootLayout() {
   const t = useTheme();
@@ -117,7 +149,11 @@ export default function RootLayout() {
       ) : locked ? (
         <StaffLock />
       ) : (
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg } }} />
+        <>
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg } }} />
+          <RouteGuard />
+          <AutoLock />
+        </>
       )}
       <AlertHost />
     </SafeAreaProvider>

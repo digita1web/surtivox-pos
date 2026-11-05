@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { can, hashPin, verifyPin, randomSalt, isValidPin } from './roles.ts';
+import {
+  can, hashPin, verifyPin, randomSalt, isValidPin, capabilitiesOf, roleSummary, CAPABILITIES, CAPABILITY_LABEL, ROLES,
+} from './roles.ts';
 
 test('capabilities respect role rank', () => {
   assert.equal(can('owner', 'staff'), true);
@@ -28,3 +30,17 @@ test('isValidPin requires exactly 4 digits', () => {
   assert.equal(isValidPin('12a4'), false);
   assert.equal(isValidPin('12345'), false);
 });
+
+test('the role summary lists exactly what each role can do', () => {
+  assert.deepEqual(capabilitiesOf('cashier'), []);
+  assert.equal(roleSummary('cashier'), 'Solo puede vender y recibir pagos');
+  assert.equal(capabilitiesOf('owner').length, CAPABILITIES.length);
+  assert.match(roleSummary('owner'), /Acceso total/);
+  const manager = roleSummary('manager');
+  for (const cap of CAPABILITIES) {
+    assert.equal(manager.includes(CAPABILITY_LABEL[cap]), can('manager', cap), `${cap} en el resumen del administrador`);
+  }
+  assert.ok(!manager.includes('gestionar personal'));
+  for (const role of ROLES) assert.ok(roleSummary(role).length > 10);
+});
+

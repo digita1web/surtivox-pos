@@ -19,7 +19,9 @@ import { newId, DEVICE_ID } from './id';
 import { voidSaleOn, assertReturnable } from './saleOps';
 import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
 import { createInFlightRequests, fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceProviderError, type MarketPriceResult } from './marketPrices';
-import { type Role, hashPin, verifyPin, randomSalt } from './roles';
+import { type Role, hashPin, verifyPin } from './roles';
+import * as Crypto from 'expo-crypto';
+import { createStaffOn, updateStaffOn, deleteStaffOn, attemptPinOn, lockRetryAtOn, type StaffDeps, type PinAttempt } from './staffOps';
 import { defaultDraftName, draftCost, tracksInventory } from './pos/stockPolicy';
 
 export type ReceiptPaper = 'a4' | 'thermal80' | 'thermal58';
@@ -1395,60 +1397,34 @@ export async function staffCount(storeId: string): Promise<number> {
   return row?.c ?? 0;
 }
 
+const staffDeps: StaffDeps = {
+  newId,
+  deviceId: DEVICE_ID,
+  salt: () => Array.from(Crypto.getRandomBytes(8), (byte) => byte.toString(16).padStart(2, '0')).join(''),
+  hash: hashPin,
+  verify: verifyPin,
+};
+
 export async function createStaff(input: {
   storeId: string; name: string; role: Role; pin: string;
 }): Promise<string> {
-  const id = newId();
-  const now = Date.now();
-  const salt = randomSalt();
-  await getDb().runAsync(
-    `INSERT INTO staff (id,store_id,name,role,pin_salt,pin_hash,active,created_at,updated_at,device_id,version)
-     VALUES (?,?,?,?,?,?,1,?,?,?,1)`,
-    [id, input.storeId, input.name.trim(), input.role, salt, hashPin(input.pin, salt), now, now, DEVICE_ID],
-  );
-  return id;
+  return createStaffOn(getDb(), staffDeps, input);
 }
 
 export async function updateStaff(input: {
   id: string; name: string; role: Role; pin?: string;
 }): Promise<void> {
-  const now = Date.now();
-  if (input.pin) {
-    const salt = randomSalt();
-    await getDb().runAsync(
-      `UPDATE staff SET name=?, role=?, pin_salt=?, pin_hash=?, updated_at=?, version=version+1 WHERE id=?`,
-      [input.name.trim(), input.role, salt, hashPin(input.pin, salt), now, input.id],
-    );
-  } else {
-    await getDb().runAsync(
-      `UPDATE staff SET name=?, role=?, updated_at=?, version=version+1 WHERE id=?`,
-      [input.name.trim(), input.role, now, input.id],
-    );
-  }
+  await updateStaffOn(getDb(), staffDeps, input);
 }
 
-/** Soft-delete a staff member. Refuses to remove the last remaining owner. */
-export async function deleteStaff(storeId: string, id: string): Promise<void> {
-  const target = await getDb().getFirstAsync<{ role: Role }>(`SELECT role FROM staff WHERE id=?`, [id]);
-  if (target?.role === 'owner') {
-    const owners = await getDb().getFirstAsync<{ c: number }>(
-      `SELECT COUNT(*) AS c FROM staff WHERE store_id=? AND role='owner' AND active=1 AND deleted_at IS NULL`, [storeId],
-    );
-    if ((owners?.c ?? 0) <= 1) throw new Error('No se puede quitar al último propietario');
-  }
-  await getDb().runAsync(
-    `UPDATE staff SET active=0, deleted_at=?, updated_at=?, version=version+1 WHERE id=?`,
-    [Date.now(), Date.now(), id],
-  );
+export async function deleteStaff(storeId: string, id: string, actingId: string | null = null): Promise<void> {
+  await deleteStaffOn(getDb(), storeId, id, actingId);
 }
 
-/** Verify a staff PIN. Returns the staff on success, null otherwise. */
-export async function authenticateStaff(id: string, pin: string): Promise<Staff | null> {
-  const row = await getDb().getFirstAsync<{ id: string; name: string; role: Role; created_at: number; pin_salt: string; pin_hash: string }>(
-    `SELECT id, name, role, created_at, pin_salt, pin_hash FROM staff
-     WHERE id=? AND active=1 AND deleted_at IS NULL`, [id],
-  );
-  if (!row) return null;
-  if (!verifyPin(pin, row.pin_salt, row.pin_hash)) return null;
-  return { id: row.id, name: row.name, role: row.role, created_at: row.created_at };
+export async function staffLockRetryAt(id: string): Promise<number | null> {
+  return lockRetryAtOn(getDb(), id, Date.now());
+}
+
+export async function attemptStaffPin(id: string, pin: string): Promise<PinAttempt> {
+  return attemptPinOn(getDb(), staffDeps, id, pin, Date.now());
 }

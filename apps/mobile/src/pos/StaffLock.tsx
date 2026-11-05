@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, Animated, Image, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { listStaff, authenticateStaff, type Staff } from '../repos';
+import { listStaff, attemptStaffPin, staffLockRetryAt, type Staff } from '../repos';
+import { formatWait } from '../staffRules';
 import { ROLE_LABEL } from '../roles';
 import { useSession } from '../session';
 import { useTheme, initials, tileColor } from '../theme';
@@ -17,9 +18,29 @@ export function StaffLock() {
   const [picked, setPicked] = useState<Staff | null>(null);
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
+  const [retryAt, setRetryAt] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+  const [note, setNote] = useState<string | null>(null);
   const shake = useRef(new Animated.Value(0)).current;
 
   useEffect(() => { listStaff(store.id).then(setStaff); }, [store.id]);
+
+  const waitMs = Math.max(0, retryAt - now);
+  const locked = waitMs > 0;
+  useEffect(() => {
+    if (!locked) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [locked]);
+
+  const choose = async (member: Staff) => {
+    setPin('');
+    setNote(null);
+    const until = await staffLockRetryAt(member.id).catch(() => null);
+    setNow(Date.now());
+    setRetryAt(until ?? 0);
+    setPicked(member);
+  };
 
   const fail = () => {
     setError(true);
@@ -33,13 +54,22 @@ export function StaffLock() {
   };
 
   const press = async (d: string) => {
-    if (!picked || pin.length >= 4 || error) return;
+    if (!picked || pin.length >= 4 || error || locked) return;
     const next = pin + d;
     setPin(next);
     if (next.length === 4) {
-      const ok = await authenticateStaff(picked.id, next);
-      if (ok) signIn(ok);
-      else fail();
+      const result = await attemptStaffPin(picked.id, next);
+      if (result.status === 'ok') { signIn(result.staff); return; }
+      if (result.status === 'locked') {
+        setNow(Date.now());
+        setRetryAt(result.retryAt);
+        setNote(null);
+      } else if (result.status === 'wrong') {
+        setNote(result.attemptsLeft <= 2 ? `Te quedan ${result.attemptsLeft} ${result.attemptsLeft === 1 ? 'intento' : 'intentos'} antes de un bloqueo temporal.` : null);
+      } else {
+        setNote('Esta cuenta ya no existe. Vuelve atrás.');
+      }
+      fail();
     }
   };
 
@@ -58,7 +88,7 @@ export function StaffLock() {
         <Text style={[st.sub, { color: t.muted }]}>Toca tu nombre para entrar</Text>
         <View style={st.grid}>
           {staff.map((m) => (
-            <Pressable key={m.id} onPress={() => { setPin(''); setPicked(m); }} style={st.person}>
+            <Pressable key={m.id} onPress={() => { void choose(m); }} style={st.person} accessibilityRole="button" accessibilityLabel={`${m.name}, ${ROLE_LABEL[m.role]}`}>
               <View style={[st.avatar, { backgroundColor: tileColor(m.id) }]}>
                 <Text style={{ color: '#fff', fontWeight: '800', fontSize: 20 }}>{initials(m.name)}</Text>
               </View>
@@ -74,14 +104,16 @@ export function StaffLock() {
   // PIN pad
   return (
     <View style={[st.root, { backgroundColor: t.bg, paddingTop: insets.top + 40 }]}>
-      <Pressable onPress={() => { setPicked(null); setPin(''); }} hitSlop={12} style={[st.back, { top: insets.top + 8 }]}>
+      <Pressable onPress={() => { setPicked(null); setPin(''); setNote(null); }} hitSlop={12} style={[st.back, { top: insets.top + 8 }]} accessibilityRole="button" accessibilityLabel="Cambiar de persona">
         <Ionicons name="chevron-back" size={26} color={t.fg} />
       </Pressable>
       <View style={[st.avatar, { backgroundColor: tileColor(picked.id), width: 72, height: 72, borderRadius: 22 }]}>
         <Text style={{ color: '#fff', fontWeight: '800', fontSize: 26 }}>{initials(picked.name)}</Text>
       </View>
       <Text style={[st.title, { color: t.fg, marginTop: 16 }]}>{picked.name}</Text>
-      <Text style={[st.sub, { color: t.muted }]}>Ingresa tu PIN de 4 dígitos</Text>
+      <Text style={[st.sub, { color: locked ? t.dangerText : t.muted }]} accessibilityLiveRegion="polite">
+        {locked ? `Demasiados intentos. Intenta de nuevo en ${formatWait(waitMs)}` : 'Ingresa tu PIN de 4 dígitos'}
+      </Text>
 
       <Animated.View style={[st.dots, { transform: [{ translateX: shake }] }]}>
         {[0, 1, 2, 3].map((i) => (
@@ -92,7 +124,9 @@ export function StaffLock() {
         ))}
       </Animated.View>
 
-      <View style={st.pad}>
+      {note && !locked ? <Text style={{ color: t.dangerText, fontSize: 13, textAlign: 'center', marginTop: -24, marginBottom: 16 }}>{note}</Text> : null}
+
+      <View style={[st.pad, { opacity: locked ? 0.35 : 1 }]} pointerEvents={locked ? 'none' : 'auto'}>
         {['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'].map((k, i) => {
           if (k === '') return <View key={i} style={st.key} />;
           if (k === 'del') return (

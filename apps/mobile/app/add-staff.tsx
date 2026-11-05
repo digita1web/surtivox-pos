@@ -4,15 +4,10 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Screen } from '../src/pos/Screen';
 import { PrimaryButton } from '../src/pos/kit';
 import { getStore, listStaff, createStaff, updateStaff, type Store } from '../src/repos';
-import { ROLES, ROLE_LABEL, isValidPin, type Role } from '../src/roles';
+import { ROLES, ROLE_LABEL, roleSummary, type Role } from '../src/roles';
+import { validatePin, validateStaffName, MAX_STAFF_NAME } from '../src/staffRules';
 import { useSession } from '../src/session';
 import { useTheme, space, radius } from '../src/theme';
-
-const ROLE_HINT: Record<Role, string> = {
-  owner: 'Acceso total, incluida la gestión de personal',
-  manager: 'Reportes, productos, devoluciones y compras; sin gestión de personal',
-  cashier: 'Solo puede vender y recibir pagos',
-};
 
 export default function AddStaff() {
   const t = useTheme();
@@ -21,9 +16,12 @@ export default function AddStaff() {
   const editing = !!params.id;
   const refreshStaffCount = useSession((s) => s.refreshStaffCount);
   const signIn = useSession((s) => s.signIn);
+  const me = useSession((s) => s.staff);
 
   const [store, setStore] = useState<Store | null>(null);
   const [firstEver, setFirstEver] = useState(false);
+  const [otherNames, setOtherNames] = useState<string[]>([]);
+  const [onlyOwner, setOnlyOwner] = useState(false);
   const [name, setName] = useState(params.name ?? '');
   const [role, setRole] = useState<Role>(params.role ?? 'cashier');
   const [pin, setPin] = useState('');
@@ -34,9 +32,13 @@ export default function AddStaff() {
   useEffect(() => {
     getStore().then(async (st) => {
       setStore(st);
-      if (st && !editing) {
-        const existing = await listStaff(st.id);
-        if (existing.length === 0) { setFirstEver(true); setRole('owner'); }
+      if (!st) return;
+      const existing = await listStaff(st.id);
+      setOtherNames(existing.filter((m) => m.id !== params.id).map((m) => m.name));
+      if (!editing && existing.length === 0) { setFirstEver(true); setRole('owner'); }
+      if (editing) {
+        const owners = existing.filter((m) => m.role === 'owner');
+        setOnlyOwner(owners.length <= 1 && owners.some((m) => m.id === params.id));
       }
     });
   }, []);
@@ -44,18 +46,20 @@ export default function AddStaff() {
   const save = async () => {
     if (!store || busy) return;
     setErr(null);
-    if (!name.trim()) { setErr('El nombre es obligatorio'); return; }
+    const nameError = validateStaffName(name, otherNames);
+    if (nameError) { setErr(nameError); return; }
     // PIN required on create; optional on edit (blank = keep existing).
     const changingPin = pin.length > 0 || confirm.length > 0 || !editing;
     if (changingPin) {
-      if (!isValidPin(pin)) { setErr('El PIN debe tener exactamente 4 dígitos'); return; }
-      if (pin !== confirm) { setErr('Los PIN no coinciden'); return; }
+      const pinError = validatePin(pin, confirm);
+      if (pinError) { setErr(pinError); return; }
     }
     setBusy(true);
     try {
       if (editing) {
         await updateStaff({ id: params.id!, name, role, pin: pin || undefined });
         await refreshStaffCount();
+        if (me && me.id === params.id) signIn({ ...me, name: name.replace(/\s+/g, ' ').trim(), role });
       } else {
         const id = await createStaff({ storeId: store.id, name, role, pin });
         await refreshStaffCount();
@@ -72,24 +76,25 @@ export default function AddStaff() {
     <Screen title={editing ? 'Editar personal' : 'Nuevo personal'}
       footer={<PrimaryButton label={editing ? 'Guardar cambios' : 'Agregar personal'} onPress={save} busy={busy} disabled={!store} />}>
       <Text style={[st.label, { color: t.muted }]}>Nombre</Text>
-      <TextInput value={name} onChangeText={setName} placeholder="ej. Camila Rodríguez" placeholderTextColor={t.muted}
+      <TextInput value={name} onChangeText={setName} maxLength={MAX_STAFF_NAME} placeholder="ej. Camila Rodríguez" placeholderTextColor={t.muted} accessibilityLabel="Nombre"
         style={[st.input, { color: t.fg, borderColor: t.line, backgroundColor: t.panel }]} />
 
       <Text style={[st.label, { color: t.muted }]}>Rol</Text>
       {firstEver && <Text style={{ color: t.muted, fontSize: 12, marginBottom: space.sm }}>La primera cuenta debe ser del propietario.</Text>}
+      {onlyOwner && <Text style={{ color: t.muted, fontSize: 12, marginBottom: space.sm }}>Es el único propietario: su rol no se puede cambiar. Primero agrega otro propietario.</Text>}
       <View style={st.roleRow}>
         {ROLES.map((r) => {
           const on = role === r;
-          const disabled = firstEver && r !== 'owner';
+          const disabled = (firstEver || onlyOwner) && r !== 'owner';
           return (
-            <Pressable key={r} onPress={() => !disabled && setRole(r)} disabled={disabled}
+            <Pressable key={r} onPress={() => !disabled && setRole(r)} disabled={disabled} accessibilityRole="radio" accessibilityState={{ selected: on, disabled }}
               style={[st.rolePill, { borderColor: on ? t.accent : t.line, backgroundColor: on ? t.accent : t.panel, opacity: disabled ? 0.4 : 1 }]}>
               <Text style={{ color: on ? t.accentFg : t.fg, fontWeight: '700' }}>{ROLE_LABEL[r]}</Text>
             </Pressable>
           );
         })}
       </View>
-      <Text style={{ color: t.muted, fontSize: 13, marginTop: space.sm }}>{ROLE_HINT[role]}</Text>
+      <Text style={{ color: t.muted, fontSize: 13, marginTop: space.sm }}>{roleSummary(role)}</Text>
 
       <Text style={[st.label, { color: t.muted }]}>{editing ? 'PIN de 4 dígitos (déjalo vacío para conservarlo)' : 'PIN de 4 dígitos'}</Text>
       <TextInput value={pin} onChangeText={(v) => setPin(v.replace(/\D/g, '').slice(0, 4))}

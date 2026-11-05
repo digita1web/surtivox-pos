@@ -85,6 +85,15 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 - **Ajuste a la paleta pedida:** el texto secundario `#64736D` da 4,15:1 en el peor caso y se usa `#5E6C67` (4,58:1) para conservar el mínimo de 4,5:1 con test. Las superficies `surfaceAlt` y `chip` se aclararon un poco por el mismo motivo.
 - **`ok` (verde brillante) como texto** sigue en 2,7:1 sobre blanco; solo se usa en fondos e importes de ayuda.
 
+## Personal y roles
+
+- **El PIN es un candado de conveniencia, no una protección fuerte.** Son 4 dígitos con `cyrb53` (no criptográfico) y la huella viaja a la nube con el resto de `staff` para que otros dispositivos puedan autenticar. Quien tenga acceso a la base o al servidor puede recuperar un PIN en segundos. El límite de intentos protege solo contra quien usa la pantalla. Cambiarlo implica versionar el hash y decidir si la huella debe sincronizarse.
+- **El bloqueo por intentos es local a cada dispositivo** (`local_settings`, clave `pin_guard:<id>`): el contador no se comparte entre teléfonos.
+- **Quien borra la app o "Borrar todo" reinicia el control.** Es inherente a un esquema sin servidor.
+- **Rutas protegidas por rol:** la lista está en [routeAccess.ts](apps/mobile/src/routeAccess.ts). Una pantalla nueva con permiso debe añadirse ahí; `/add-customer` queda abierta a propósito porque el cajero la usa al cobrar un fiado.
+- **El rol de otra persona editada mientras está conectada** no se actualiza en su sesión hasta que se bloquee; solo se refresca la sesión propia.
+- Sin probar en dispositivo: pantalla de bloqueo con cuenta atrás, bloqueo automático al volver de otra app y la guardia de rutas.
+
 ## Landing
 
 - **Invertida a tema claro** con la paleta de marca (variables de `landing/styles.css`; hay test en [landingTheme.test.ts](apps/mobile/src/landingTheme.test.ts)). La sección "Hecho para tienda de barrio" y la tarjeta final son verde oscuro a propósito.
