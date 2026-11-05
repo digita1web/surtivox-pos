@@ -93,7 +93,18 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 - **Quien borra la app o "Borrar todo" reinicia el control.** Es inherente a un esquema sin servidor.
 - **Rutas protegidas por rol:** la lista está en [routeAccess.ts](apps/mobile/src/routeAccess.ts). Una pantalla nueva con permiso debe añadirse ahí; `/add-customer` queda abierta a propósito porque el cajero la usa al cobrar un fiado.
 - **El rol de otra persona editada mientras está conectada** no se actualiza en su sesión hasta que se bloquee; solo se refresca la sesión propia.
-- Sin probar en dispositivo: pantalla de bloqueo con cuenta atrás, bloqueo automático al volver de otra app y la guardia de rutas.
+- **Recuperación del propietario (implementada, sin cambios de esquema).** Código de 16 caracteres (80 bits) generado con el aleatorio de `expo-crypto`; se guarda solo una huella SHA-256 con sal en `local_settings` (`recovery_hash:<tienda>`, `recovery_salt:<tienda>`), que no se sincroniza a la nube. Se muestra una vez, se rota al usarse y tiene el mismo límite de intentos que el PIN. Detalles a recordar:
+  - "Copiar" usa el menú de compartir del sistema porque no hay librería de portapapeles instalada (no se añadieron dependencias).
+  - Las tiendas que ya existían no tienen código: ven un aviso en Inicio y un botón en Personal y roles.
+  - Sin código y con un solo propietario, la única salida es borrar los datos de la app; restaurar una copia no ayuda porque trae las mismas huellas de PIN.
+  - La huella del código viaja en las copias JSON (`local_settings`); el código en sí nunca se guarda.
+  - Cualquiera con el código puede cambiar el PIN del propietario: hay que guardarlo fuera del teléfono.
+  - El alfabeto del código de tienda de [sync.ts](apps/mobile/src/sync.ts) contiene la `L` aunque su comentario dice que no; el de recuperación sí la excluye. Es cosmético y no afecta a los códigos existentes.
+- **Pendiente para la v1.0.4 (decidido, requiere migración o cambios estructurales):**
+  1. **Registrar quién anula o devuelve.** Hoy solo la venta guarda quién la cobró (`sales.staff_id`); `returns` y las anulaciones no. Requiere una columna nueva y migración.
+  2. **PIN más fuerte.** PIN de 6 dígitos para el propietario, hash versionado (SHA-256) con mejora silenciosa al iniciar sesión, y decidir si la huella del PIN debe sincronizarse a la nube.
+  3. **Aprobación del supervisor** (PIN de un administrador) para descuentos grandes, anulaciones y devoluciones hechas por un cajero.
+- Sin probar en dispositivo: pantalla de bloqueo con cuenta atrás, bloqueo automático al volver de otra app, la guardia de rutas, el flujo "¿Olvidaste tu PIN?" y la hoja del código con "Copiar o compartir".
 
 ## Landing
 

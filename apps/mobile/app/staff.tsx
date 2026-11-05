@@ -4,7 +4,8 @@ import { showAlert } from '../src/pos/alert';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { listStaff, deleteStaff, type Staff } from '../src/repos';
+import { listStaff, deleteStaff, hasRecovery, setupRecovery, type Staff } from '../src/repos';
+import { RecoveryCodeSheet } from '../src/pos/RecoveryCodeSheet';
 import { ROLE_LABEL, type Role } from '../src/roles';
 import { AUTO_LOCK_OPTIONS, FREE_ATTEMPTS } from '../src/staffRules';
 import { useSession } from '../src/session';
@@ -28,9 +29,12 @@ export default function StaffScreen() {
   const autoLockMinutes = useSession((s) => s.autoLockMinutes);
   const setAutoLockMinutes = useSession((s) => s.setAutoLockMinutes);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [hasCode, setHasCode] = useState<boolean | null>(null);
+  const [newCode, setNewCode] = useState<string | null>(null);
 
   const reload = useCallback(() => {
     listStaff(store.id).then(setStaff);
+    hasRecovery(store.id).then(setHasCode).catch(() => setHasCode(null));
     refreshStaffCount();
   }, [store.id]);
   useFocusEffect(reload);
@@ -46,6 +50,23 @@ export default function StaffScreen() {
         try { await deleteStaff(store.id, m.id, me?.id ?? null); reload(); }
         catch (e) { showAlert('No se pudo quitar', e instanceof Error ? e.message : String(e)); }
       } },
+    ]);
+  };
+
+  const generateCode = async () => {
+    try {
+      setNewCode(await setupRecovery(store.id));
+      setHasCode(true);
+    } catch (e) {
+      showAlert('No se pudo crear el código', e instanceof Error ? e.message : String(e));
+    }
+  };
+
+  const askGenerate = () => {
+    if (!hasCode) { void generateCode(); return; }
+    showAlert('¿Generar un código nuevo?', 'El código anterior dejará de funcionar. Anota el nuevo en un lugar seguro.', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Generar', onPress: () => { void generateCode(); } },
     ]);
   };
 
@@ -86,6 +107,23 @@ export default function StaffScreen() {
     </View>
   );
 
+  const recovery = (
+    <View style={[s.security, { backgroundColor: t.panel, borderColor: hasCode === false ? t.warn : t.line }]}>
+      <View style={s.securityHead}>
+        <Ionicons name="key-outline" size={18} color={hasCode === false ? t.warnText : t.accent} />
+        <Text style={{ color: t.fg, fontWeight: '800', marginLeft: space.sm, flex: 1 }}>Código de recuperación</Text>
+      </View>
+      <Text style={{ color: t.muted, fontSize: 13, marginTop: 6 }}>
+        {hasCode === false
+          ? 'Aún no tienes uno. Sin él, si olvidas tu PIN de propietario no podrás volver a entrar.'
+          : 'Sirve para restablecer el PIN del propietario si lo olvidas. Generar uno nuevo invalida el anterior.'}
+      </Text>
+      <Pressable onPress={askGenerate} accessibilityRole="button" style={[s.codeButton, { backgroundColor: hasCode === false ? t.accent : t.surfaceAlt, borderColor: hasCode === false ? t.accent : t.line }]}>
+        <Text style={{ color: hasCode === false ? t.accentFg : t.fg, fontWeight: '800' }}>{hasCode === false ? 'Generar código' : 'Generar código nuevo'}</Text>
+      </Pressable>
+    </View>
+  );
+
   return (
     <Screen
       title="Personal y roles"
@@ -99,7 +137,7 @@ export default function StaffScreen() {
         contentContainerStyle={{ padding: space.lg, paddingBottom: insets.bottom + space.xxl, flexGrow: 1 }}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         ListHeaderComponent={header}
-        ListFooterComponent={staff.length > 0 ? security : null}
+        ListFooterComponent={staff.length > 0 ? <>{recovery}{security}</> : null}
         ListEmptyComponent={<EmptyState icon="people-outline" title="Aún no hay personal" hint="Agrega cuentas para que cada persona entre con su propio PIN." />}
         renderItem={({ item }) => {
           const chip = roleChip(t, item.role);
@@ -142,6 +180,7 @@ export default function StaffScreen() {
           );
         }}
       />
+      <RecoveryCodeSheet visible={newCode !== null} code={newCode ?? ''} storeName={store.name} onDone={() => setNewCode(null)} />
     </Screen>
   );
 }
@@ -155,5 +194,6 @@ const s = StyleSheet.create({
   security: { borderWidth: 1, borderRadius: radius.lg, padding: space.lg, marginTop: space.xl },
   securityHead: { flexDirection: 'row', alignItems: 'center' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.md },
+  codeButton: { borderWidth: 1, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, marginTop: space.md, minHeight: 46 },
   chip: { borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 16, paddingVertical: 9, minHeight: 40, justifyContent: 'center' },
 });

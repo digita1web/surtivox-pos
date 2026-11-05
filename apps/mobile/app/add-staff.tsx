@@ -3,7 +3,9 @@ import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Screen } from '../src/pos/Screen';
 import { PrimaryButton } from '../src/pos/kit';
-import { getStore, listStaff, createStaff, updateStaff, type Store } from '../src/repos';
+import { getStore, listStaff, createStaff, updateStaff, setupRecovery, type Store } from '../src/repos';
+import { RecoveryCodeSheet } from '../src/pos/RecoveryCodeSheet';
+import { showAlert } from '../src/pos/alert';
 import { ROLES, ROLE_LABEL, roleSummary, type Role } from '../src/roles';
 import { validatePin, validateStaffName, MAX_STAFF_NAME } from '../src/staffRules';
 import { useSession } from '../src/session';
@@ -27,6 +29,7 @@ export default function AddStaff() {
   const [pin, setPin] = useState('');
   const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
+  const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -62,11 +65,19 @@ export default function AddStaff() {
         if (me && me.id === params.id) signIn({ ...me, name: name.replace(/\s+/g, ' ').trim(), role });
       } else {
         const id = await createStaff({ storeId: store.id, name, role, pin });
-        await refreshStaffCount();
-        // Adding the very first account would otherwise flip the app into the
-        // PIN lock and unmount this screen (a GO_BACK-on-nothing warning). Sign
-        // the new owner in so setup continues seamlessly.
-        if (firstEver) signIn({ id, name: name.trim(), role, created_at: Date.now() });
+        if (firstEver) {
+          signIn({ id, name: name.replace(/\s+/g, ' ').trim(), role, created_at: Date.now() });
+          await refreshStaffCount();
+          try {
+            setRecoveryCode(await setupRecovery(store.id));
+            setBusy(false);
+            return;
+          } catch {
+            showAlert('No se pudo crear el código de recuperación', 'Puedes generarlo después en Personal y roles.');
+          }
+        } else {
+          await refreshStaffCount();
+        }
       }
       router.back();
     } catch (e) { setErr(e instanceof Error ? e.message : String(e)); setBusy(false); }
@@ -107,6 +118,7 @@ export default function AddStaff() {
         style={[st.input, { color: t.fg, borderColor: t.line, backgroundColor: t.panel, letterSpacing: 8 }]} />
 
       {err && <Text style={{ color: t.dangerText, marginTop: space.lg }}>{err}</Text>}
+      <RecoveryCodeSheet visible={recoveryCode !== null} code={recoveryCode ?? ''} storeName={store?.name ?? 'tu tienda'} onDone={() => { setRecoveryCode(null); router.back(); }} />
     </Screen>
   );
 }

@@ -22,6 +22,7 @@ import { createInFlightRequests, fetchMarketPrices, isMarketPricesStale, marketP
 import { type Role, hashPin, verifyPin } from './roles';
 import * as Crypto from 'expo-crypto';
 import { createStaffOn, updateStaffOn, deleteStaffOn, attemptPinOn, lockRetryAtOn, type StaffDeps, type PinAttempt } from './staffOps';
+import { setupRecoveryOn, hasRecoveryOn, resetPinWithRecoveryOn, type RecoveryDeps, type RecoveryResult } from './recoveryOps';
 import { defaultDraftName, draftCost, tracksInventory } from './pos/stockPolicy';
 
 export type ReceiptPaper = 'a4' | 'thermal80' | 'thermal58';
@@ -1427,4 +1428,23 @@ export async function staffLockRetryAt(id: string): Promise<number | null> {
 
 export async function attemptStaffPin(id: string, pin: string): Promise<PinAttempt> {
   return attemptPinOn(getDb(), staffDeps, id, pin, Date.now());
+}
+
+const recoveryDeps: RecoveryDeps = {
+  randomBytes: (length) => Crypto.getRandomBytes(length),
+  digest: (text) => Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, text),
+  salt: staffDeps.salt,
+  hashPin,
+};
+
+export async function setupRecovery(storeId: string): Promise<string> {
+  return setupRecoveryOn(getDb(), recoveryDeps, storeId);
+}
+
+export async function hasRecovery(storeId: string): Promise<boolean> {
+  return hasRecoveryOn(getDb(), storeId);
+}
+
+export async function resetOwnerPin(input: { storeId: string; ownerId: string; code: string; newPin: string }): Promise<RecoveryResult> {
+  return resetPinWithRecoveryOn(getDb(), recoveryDeps, { ...input, now: Date.now() });
 }

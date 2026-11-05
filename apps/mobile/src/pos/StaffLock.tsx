@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { listStaff, attemptStaffPin, staffLockRetryAt, type Staff } from '../repos';
 import { formatWait } from '../staffRules';
+import { ForgotPinSheet } from './ForgotPinSheet';
 import { ROLE_LABEL } from '../roles';
 import { useSession } from '../session';
 import { useTheme, initials, tileColor } from '../theme';
@@ -21,6 +22,7 @@ export function StaffLock() {
   const [retryAt, setRetryAt] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   const [note, setNote] = useState<string | null>(null);
+  const [forgot, setForgot] = useState(false);
   const shake = useRef(new Animated.Value(0)).current;
 
   useEffect(() => { listStaff(store.id).then(setStaff); }, [store.id]);
@@ -73,6 +75,19 @@ export function StaffLock() {
     }
   };
 
+  const owners = staff.filter((m) => m.role === 'owner');
+  const forgotSheet = (
+    <ForgotPinSheet
+      visible={forgot}
+      storeId={store.id}
+      storeName={store.name}
+      owners={owners}
+      initialOwnerId={picked?.role === 'owner' ? picked.id : undefined}
+      onClose={() => setForgot(false)}
+      onRecovered={(owner) => signIn(owner)}
+    />
+  );
+
   // Staff picker
   if (!picked) {
     return (
@@ -97,6 +112,12 @@ export function StaffLock() {
             </Pressable>
           ))}
         </View>
+        {owners.length > 0 ? (
+          <Pressable onPress={() => setForgot(true)} accessibilityRole="button" hitSlop={10} style={st.forgot}>
+            <Text style={{ color: t.accent, fontWeight: '800' }}>¿Olvidaste el PIN del propietario?</Text>
+          </Pressable>
+        ) : null}
+        {forgotSheet}
       </View>
     );
   }
@@ -141,6 +162,12 @@ export function StaffLock() {
           );
         })}
       </View>
+      {picked.role === 'owner' ? (
+        <Pressable onPress={() => setForgot(true)} accessibilityRole="button" hitSlop={10} style={st.forgot}>
+          <Text style={{ color: t.accent, fontWeight: '800' }}>¿Olvidaste tu PIN?</Text>
+        </Pressable>
+      ) : null}
+      {forgotSheet}
     </View>
   );
 }
@@ -159,4 +186,5 @@ const st = StyleSheet.create({
   pad: { width: 300, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 18 },
   key: { width: 84, height: 84, alignItems: 'center', justifyContent: 'center' },
   keyNum: { borderRadius: 42, borderWidth: 1 },
+  forgot: { marginTop: 28, paddingVertical: 10, paddingHorizontal: 12 },
 });

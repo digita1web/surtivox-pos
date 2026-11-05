@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { asMinor } from '@surtivox/pos-core';
 import {
-  todayStats, recentlySold, listProducts, lowStockProducts, getLocalSetting, setLocalSetting, salesBackupCounts,
+  todayStats, recentlySold, listProducts, lowStockProducts, getLocalSetting, setLocalSetting, salesBackupCounts, hasRecovery,
   type TodayStats, type Product, type LowStockItem,
 } from '../../src/repos';
 import { useSession, useRole } from '../../src/session';
@@ -53,6 +53,9 @@ export default function Home() {
   const [greeting, setGreeting] = useState(() => greetingForDate(new Date()));
   const [backupNudge, setBackupNudge] = useState<{ lastBackupAt: number | null } | null>(null);
   const [backupBusy, setBackupBusy] = useState(false);
+  const [recoveryMissing, setRecoveryMissing] = useState(false);
+  const me = useSession((state) => state.staff);
+  const staffTotal = useSession((state) => state.staffCount);
 
   useEffect(() => {
     hasSeenFirstRunGuide().then((seen) => { if (!seen) setGuideOpen(true); });
@@ -100,9 +103,11 @@ export default function Home() {
       setStrip(r.length ? r : (await listProducts(store.id)).slice(0, 8));
     });
     lowStockProducts(store.id, 50).then(setAlerts);
+    if (me?.role === 'owner' && staffTotal > 0) hasRecovery(store.id).then((ok) => setRecoveryMissing(!ok)).catch(() => setRecoveryMissing(false));
+    else setRecoveryMissing(false);
     cloud.refresh();
     void refreshBackupNudge();
-  }, [store.id, salesVersion, cloud.refresh, refreshBackupNudge]));
+  }, [store.id, salesVersion, cloud.refresh, refreshBackupNudge, me?.role, staffTotal]));
 
   const saveBackup = async () => {
     if (backupBusy) return;
@@ -216,6 +221,19 @@ export default function Home() {
               </Pressable>
             </View>
           </View>
+        ) : null}
+
+        {recoveryMissing ? (
+          <Pressable onPress={() => router.push('/staff')} accessibilityRole="button" style={[s.backupNudge, { backgroundColor: t.panel, borderColor: t.warn }]}>
+            <View style={s.backupTitle}>
+              <Ionicons name="key-outline" size={18} color={t.warnText} />
+              <View style={{ flex: 1, marginLeft: space.sm }}>
+                <Text style={{ color: t.fg, fontWeight: '700' }}>Genera tu código de recuperación</Text>
+                <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 1 }}>Sin él, si olvidas tu PIN no podrás entrar.</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={t.faint} />
+            </View>
+          </Pressable>
         ) : null}
 
         {alerts.length > 0 && canProducts && (
