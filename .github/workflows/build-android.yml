@@ -110,6 +110,26 @@ jobs:
         run: |
           node -e "const {execFileSync}=require('child_process'); const raw=execFileSync('npx',['expo-modules-autolinking','resolve','--platform','android','--json'],{encoding:'utf8'}); const config=JSON.parse(raw); const missing=config.modules.flatMap((m)=>m.projects.filter((p)=>p.publication&&!p.publication.version).map(()=>m.packageName)); if(missing.length){console.error('Publicaciones Expo sin version: '+missing.join(', ')); process.exit(1);} console.log('Publicaciones Expo OK');"
 
+      - name: Configurar firma de release
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          IS_RELEASE: ${{ needs.plan.outputs.release }}
+        run: |
+          set -euo pipefail
+          if [ -z "${KEYSTORE_BASE64}" ]; then
+            if [ "${IS_RELEASE}" = "true" ]; then
+              echo "::error::Falta el secreto ANDROID_KEYSTORE_BASE64: un release no puede firmarse con la llave debug"
+              exit 1
+            fi
+            echo "::warning::Sin llave de release: este APK queda firmado con la llave debug y no sirve para publicar"
+            exit 0
+          fi
+          KEYSTORE_FILE="${RUNNER_TEMP}/surtivox-upload.keystore"
+          printf '%s' "${KEYSTORE_BASE64}" | base64 -d > "${KEYSTORE_FILE}"
+          chmod 600 "${KEYSTORE_FILE}"
+          echo "ANDROID_KEYSTORE_PATH=${KEYSTORE_FILE}" >> "${GITHUB_ENV}"
+          node scripts/patch-android-signing.mjs apps/mobile/android/app/build.gradle
+
       - name: Pin Gradle 8.13
         run: sed -i -E 's#gradle-9\.[0-9]+\.[0-9]+-bin\.zip#gradle-8.13-bin.zip#g' apps/mobile/android/gradle/wrapper/gradle-wrapper.properties
 
@@ -123,7 +143,31 @@ jobs:
 
       - name: Build release APK
         working-directory: apps/mobile/android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew assembleRelease --no-daemon --build-cache
+
+      - name: Verificar la firma del APK
+        env:
+          IS_RELEASE: ${{ needs.plan.outputs.release }}
+        run: |
+          set -euo pipefail
+          APK=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          APKSIGNER=$(ls "${ANDROID_HOME}"/build-tools/*/apksigner | sort -V | tail -n 1)
+          "${APKSIGNER}" verify --verbose --print-certs "${APK}" | tee "${RUNNER_TEMP}/apk-certs.txt"
+          if grep -qi 'Android Debug' "${RUNNER_TEMP}/apk-certs.txt"; then
+            if [ "${IS_RELEASE}" = "true" ]; then
+              echo "::error::El APK del release quedo firmado con la llave debug"
+              exit 1
+            fi
+            echo "::warning::APK firmado con la llave debug"
+          fi
+          echo '### Firma del APK' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          grep -E 'certificate (DN|SHA-256 digest)' "${RUNNER_TEMP}/apk-certs.txt" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report APK size
         run: |

@@ -4,7 +4,10 @@
 
 El workflow `.github/workflows/build-android.yml` compila un APK de release con `./gradlew assembleRelease` y lo adjunta a un GitHub Release cuando se empuja un tag que empieza por `v`.
 
-El APK actual no debe considerarse una firma de producción. En el proyecto Android generado localmente por `expo prebuild`, `apps/mobile/android/app/build.gradle` asigna `signingConfig = signingConfigs.debug` a la variante `release`. Esa evidencia corresponde al proyecto generado; el directorio `android/` está ignorado por Git. No se generó ninguna llave en este repositorio.
+La firma de producción se inyecta en CI. Tras `expo prebuild`, el paso "Configurar firma de release" decodifica la llave desde los secretos y ejecuta `scripts/patch-android-signing.mjs`, que cambia la variante `release` de `apps/mobile/android/app/build.gradle` para leer la llave del entorno (lógica en `apps/mobile/src/androidSigning.ts`, con test). Después de compilar, "Verificar la firma del APK" ejecuta `apksigner` y muestra la huella del certificado.
+
+- **Tag `v*`:** si falta el secreto `ANDROID_KEYSTORE_BASE64` o el APK queda con el certificado debug, el workflow falla y no se publica nada.
+- **Compilaciones de `main` o manuales sin secretos:** se firman con la llave debug y el workflow lo avisa; ese APK no sirve para publicar.
 
 ## Llave de subida
 
@@ -33,7 +36,13 @@ Cuando exista una configuración de firma, la llave y sus datos deben guardarse 
 
 El contenido binario de la llave debe codificarse en base64 antes de guardarlo en el secreto. Los valores de las contraseñas no deben escribirse en el workflow, en la documentación ni en el historial de Git.
 
-Este documento no configura la firma ni modifica el workflow. La configuración de firma queda pendiente.
+Las cuatro variables ya las lee el workflow. Hace falta cargarlas en GitHub (Settings, Secrets and variables, Actions) a partir de los archivos de la llave.
+
+## Cambio de llave y datos de los usuarios
+
+Los APK instalados hasta ahora (v1.0.3 y anteriores) están firmados con la llave debug. Android no permite actualizar una app con otra firma: hay que **desinstalar e instalar de nuevo**, y la base SQLite local se pierde. Antes de distribuir el primer APK con la llave de producción, cada usuario debe exportar una copia (Más, Datos) o tener la nube activa, y luego restaurar.
+
+Después de ese cambio, la llave no puede volver a cambiarse sin repetir el proceso.
 
 ## Play Store
 

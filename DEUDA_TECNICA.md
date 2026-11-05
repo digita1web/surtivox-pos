@@ -145,7 +145,7 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 
 ## Build, release y CI
 
-- **Firma de release con la llave debug** (`android/app/debug.keystore`, generada por `prebuild`). Falta la llave de subida y el AAB. Cambiar de llave después obliga a los usuarios a desinstalar.
+- **Firma de release (2026-11-05):** el workflow ya firma con una llave de producción leída de secretos de GitHub y falla en un tag si falta o si el APK sale con el certificado debug. **Sin verificar en Actions ni con un Gradle local** (el build local no corrió: sin acceso a los plugins sin conexión). Faltan cargar los 4 secretos, respaldar la llave fuera de este equipo y el AAB. Los APK instalados con la llave debug exigen desinstalar al pasar a la nueva: ver [RELEASING.md](RELEASING.md).
 - [build-android.yml](.github/workflows/build-android.yml) ahora ejecuta `scripts/verify.sh`, `pnpm -r typecheck` y `pnpm test` antes de compilar, y fija las acciones por SHA. **Sin verificar en Actions:** los cambios de caché de Gradle y del job `plan` solo se comprobaron localmente (YAML y lógica de decisión); falta medir el primer build real en `main` y el siguiente build de tag. Sigue usando Node 22 (la CI de tests usa Node 24).
 - `pnpm -r typecheck` no cubre `packages/types` (no tiene script `typecheck`).
 - Los Workers `payments-worker` y `catalog-worker` no declaran `wrangler`, `typescript` ni `@types/node`; se resuelven por hoisting.

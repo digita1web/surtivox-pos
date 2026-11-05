@@ -35,3 +35,6 @@ apps/mobile/android/keystore.properties
 # Built app bundles (not tracked)
 *.aab
 Surtivox-POS.aab
+
+*.keystore
+*.jks
