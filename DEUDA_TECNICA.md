@@ -109,7 +109,8 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 ## Landing
 
 - **Invertida a tema claro** con la paleta de marca (variables de `landing/styles.css`; hay test en [landingTheme.test.ts](apps/mobile/src/landingTheme.test.ts)). La sección "Hecho para tienda de barrio" y la tarjeta final son verde oscuro a propósito.
-- **Las capturas del teléfono (`landing/assets/screen-*.webp`) muestran la interfaz anterior,** en inglés ("Maple Street Market"). Hay que volver a capturarlas con la app nueva. `og-image.png` (vista previa al compartir) sigue oscura.
+- **Las imágenes `screen-*.webp` y `og-image.png` son maquetas HTML, no capturas de la app.** Se rehicieron en español y en tema claro con la paleta y los textos reales, pero sin teléfono ni emulador. Reemplazarlas por capturas reales cuando se compile la app. Los datos que muestran (Tienda Don Pepe, $ 186.400) son inventados.
+- **Contraste y paleta:** los textos pequeños de la landing se agrandaron y los enlaces de la tarjeta final quedaron en blanco sólido; se sumaron mango, naranja, sol y coral de la app. Sin verificar en un móvil real; solo se revisó con Firefox headless.
 - El enlace "Ver código fuente" del pie y de la tarjeta final se conserva aunque la licencia es propietaria; decidir si se renombra a "Ver repositorio".
 
 ## Fotos de productos
@@ -155,7 +156,7 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 
 ## Documentación
 
-- [AGENTS.md](AGENTS.md) apunta a `docs/ui-spec.md`, `docs/core-spec.md` y `docs/sync-spec.md`, que **no existen**.
+- [AGENTS.md](AGENTS.md) apunta a `docs/ui-spec.md`, `docs/core-spec.md` y `docs/sync-spec.md`, que **siguen sin existir** (verificado el 2026-11-05).
 - `docs/architecture.md`, `docs/database.md`, `docs/development.md` y `docs/roadmap.md` pueden estar desactualizados.
 - Los `README`/`DEPLOY.md` de los Workers deberían describir el despliegue por la API REST y los contratos nuevos de `/sync/register` y `/sync/push` (403 `store_already_claimed`, 413 `payload_too_large` y `too_many_rows`).
 
