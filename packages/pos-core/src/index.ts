@@ -6,3 +6,5 @@ export * from './suggestReorder.ts';
 export * from './suggest.ts';
 
 export type { CurrencyConfig, Minor } from '@surtivox/types';
+export * from './recoveryKit.ts';
+export { KIT_WORDS } from './recoveryWords.ts';
