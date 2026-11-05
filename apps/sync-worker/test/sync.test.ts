@@ -92,7 +92,7 @@ test('register refuses a second token for a store that is already claimed', asyn
   assert.equal(attack.status, 403);
   assert.equal(attack.body.error, 'store_already_claimed');
   assert.equal((await call('/sync/pull?since=0', TOKEN_B)).status, 401);
-  assert.equal((db.prepare('SELECT COUNT(*) AS n FROM sync_tokens').get() as { n: number }).n, 1);
+  assert.equal((db.prepare('SELECT COUNT(*) AS n FROM shop_keys').get() as { n: number }).n, 1);
 });
 
 test('register refuses to move a token to another store and rejects malformed input', async () => {
