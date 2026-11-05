@@ -75,6 +75,19 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 - **Contraste:** `muted`, `faint`, `dangerText` y `warnText` cumplen 4,5:1 en todas las superficies y en ambos temas, con test ([themeContrast.test.ts](apps/mobile/src/themeContrast.test.ts)). `danger` y `warn` quedan para rellenos, bordes e iconos y un test impide usarlos como color de texto. **Siguen por debajo de AA en modo claro** `accent` como texto (2,8 a 3,1:1; es la identidad de la marca y se decidió no tocarlo) y `ok` (2,4:1). El texto blanco sobre `danger` da 3,9:1 en claro y 3,4:1 en oscuro, y sobre `warn` 2,4:1; no se midieron los botones con `accentFg`. Los iconos de `warn` (2,1 a 2,4:1) tampoco llegan a 3:1.
 - **Pendiente de prueba en dispositivo:** instalación limpia; actualización desde v1.0.3 con tienda existente (debe mostrar los términos y luego la pregunta del catálogo si no se respondió); fuente al 200 %; TalkBack; aviso de la nube con fuente grande.
 
+## Kit de recuperación (2026-11-05)
+
+Implementado sin desplegar: llave de 8 palabras generada en el teléfono, huella en el servidor, rotación y límite de intentos. Diseño en [apps/sync-worker/README.md](apps/sync-worker/README.md).
+
+- **Falta aplicar la migración D1 y desplegar el Worker antes de publicar el APK** (orden en el reporte de la entrega). Si el APK nuevo sale antes, `/sync/rotate` responde 404 y la activación de la nube falla.
+- **La lista de 2048 palabras requiere revisión humana** (palabras ofensivas, coloquialismos de Colombia). La escribí yo y solo comprobé ortografía contra el diccionario del sistema; el test valida unicidad, longitud, primeras 4 letras únicas y ausencia de homófonos obvios, no el buen gusto.
+- **Fase de QR bloqueada:** no hay generador de QR ni `react-native-svg`. Tampoco `react-native-view-shot` (sin "Guardar imagen"), `expo-secure-store` ni `expo-local-authentication` ("Ver mi kit" solo lleva una advertencia, sin pedir el bloqueo del teléfono).
+- **La entropía `E` se guarda en `local_settings`** (`kit_entropy_v1`) para poder volver a mostrar el kit. Se excluye de las copias JSON y de los diagnósticos, pero `allowBackup="true"` sigue copiando la base completa a Google Drive.
+- **Sin sugerencias de palabras al escribir** en la pantalla de recuperar; el error dice qué palabra no existe.
+- **"Copiar" usa el menú de compartir del sistema** (sin librería de portapapeles).
+- **Versiones viejas de la app** no entienden el kit: un teléfono con la app anterior vinculado a una tienda rotada recibe 401 y no puede ingresar las palabras.
+- **Sin probar en dispositivo:** pantallas del kit y de recuperar, compartir por WhatsApp, rotación contra el Worker real y el límite de intentos bajo D1 real.
+
 ## Rediseño visual "Mercado vibrante"
 
 - **No se pudo capturar la app real.** No había teléfono ni emulador. Solo se comparó una maqueta HTML con los mismos números que el código (no es la app). Falta revisar en dispositivo: curvas del encabezado (`borderRadius: '50%'` en Android), sombras (`boxShadow`), tamaños con fuente grande y pantallas de 320 a 600 dp, en modo claro y oscuro.
