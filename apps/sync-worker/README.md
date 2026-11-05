@@ -36,6 +36,33 @@ Auth is a per-store **Bearer token**; the app generates one and the shopkeeper
 shares it across their own devices. A token maps to exactly one store; a device
 can only read/write its own store's rows.
 
+## Recovery kit (shop key)
+
+The shop key is generated on the phone and shown as 8 Spanish words. The
+worker never receives or stores the words or the entropy behind them.
+
+- **Format.** 80 random bits `E` (10 bytes from `expo-crypto`), plus an 8-bit
+  checksum (first byte of SHA-256 of `"surtivox-kit-v1" || E`). The 88 bits map
+  to 8 words of a 2048-word list (11 bits each). Code: `packages/pos-core/src/recoveryKit.ts`.
+- **Derivation.** `T = hex(SHA-256("surtivox-shop-v2" || E))` is the bearer
+  token the phone sends. `H = hex(SHA-256(T))` is what the server keeps.
+- **Server storage.** Table `shop_keys(store_id, key_hash, created_at, rotated_at)`
+  holds `H` only. Legacy 16-character codes are hashed the same way: on first
+  use the row in `sync_tokens` is copied to `shop_keys` as a hash and deleted,
+  so the clear text disappears. Old app versions keep working.
+- **Rotation.** `POST /sync/rotate` with the current token and `{ "newToken": T2 }`
+  swaps `H` for `SHA-256(T2)` atomically (compare-and-swap on the old hash). The
+  old key stops working at once. Retrying with the same `T2` is idempotent.
+- **Attempts.** Failed authentication per IP (`CF-Connecting-IP`) is counted in
+  `kit_attempts`: 5 free failures per 10 minutes, then a block of 60 s that
+  doubles up to 1 h (`429` with `Retry-After`). Successes never write.
+- **What it does not protect.** Whoever holds the kit holds the store. Losing
+  the kit and the phone together means the cloud copy cannot be recovered. With
+  80 bits and the checksum, a wrong word is caught about 99.5 % of the time;
+  roughly 1 in 256 single-word typos still passes the checksum.
+- **Apply the migration** (new `shop_keys` and `kit_attempts` tables) before
+  deploying the Worker: `npx wrangler d1 execute surtivox-sync --remote --file=./migrations/0001_shop_keys.sql`.
+
 ## Deploy (do this when you're ready to go live)
 
 From `apps/sync-worker/`:

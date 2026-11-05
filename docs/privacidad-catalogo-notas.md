@@ -59,3 +59,9 @@ La búsqueda web se agotó por límite de consultas después de las primeras bú
 8. **Uso de “anónimo”**: resuelto en la etiqueta visible de la app; la explicación de dato seudónimo sigue pendiente de revisión legal.
 9. **Revisión por un abogado colombiano** antes de publicar.
 10. **Publicación**: no enlazar este borrador ni sustituir `landing/privacidad.html` hasta completar las decisiones anteriores.
+
+## Cambio en la llave del respaldo en la nube (kit de recuperación)
+
+- El servidor ya no guarda la llave de respaldo de la tienda: guarda solo una huella SHA-256 de la llave derivada en el teléfono. Las 8 palabras del kit nunca salen del teléfono.
+- `legalText.ts` y las páginas de la landing todavía dicen "el código de tu tienda da acceso a esos datos". Sigue siendo cierto con el kit, pero conviene cambiar el término a "kit de recuperación" en la próxima revisión de los textos, junto con la subida de `LEGAL_VERSION` y la actualización de `privacidad.html` y `terminos.html`. No se modificaron en este cambio.
+- Pendiente de revisión legal: si una huella de la llave cuenta como dato personal y cómo describir la rotación de llaves.
