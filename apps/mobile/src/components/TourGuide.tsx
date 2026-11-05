@@ -28,8 +28,7 @@ interface Rect {
   height: number;
 }
 
-const OVERLAY = 'rgba(4,8,12,0.82)';
-const CARD = '#101820';
+const OVERLAY = 'rgba(6,32,26,0.78)';
 
 const STEPS: Step[] = [
   {
@@ -130,7 +129,7 @@ export function TourGuide({ visible, onClose }: { visible: boolean; onClose: () 
                 width: rect.width + 10,
                 height: rect.height + 10,
                 borderColor: t.accent,
-                boxShadow: '0 0 0 6px rgba(25,184,142,0.22)',
+                boxShadow: '0 0 0 6px rgba(8,127,91,0.28)',
               }]}
             />
           </>
@@ -149,12 +148,12 @@ export function TourGuide({ visible, onClose }: { visible: boolean; onClose: () 
             { opacity: progress, transform: [{ translateY }] },
           ]}
         >
-          <View style={[s.card, { width: cardWidth, borderColor: 'rgba(255,255,255,0.12)' }]}>
+          <View style={[s.card, { width: cardWidth, borderColor: t.line, backgroundColor: t.panel, boxShadow: t.shadowStrong }]}>
             <View style={s.head}>
-              <Text style={s.kicker}>PASO {step + 1} DE {STEPS.length}</Text>
+              <Text style={[s.kicker, { color: t.muted }]}>PASO {step + 1} DE {STEPS.length}</Text>
               <View style={s.dots}>
                 {STEPS.map((_, index) => (
-                  <View key={index} style={[s.dot, { backgroundColor: index === step ? t.accent : 'rgba(255,255,255,0.22)' }]} />
+                  <View key={index} style={[s.dot, { backgroundColor: index === step ? t.accent : t.line }]} />
                 ))}
               </View>
             </View>
@@ -162,13 +161,13 @@ export function TourGuide({ visible, onClose }: { visible: boolean; onClose: () 
             <View style={[s.iconWrap, { backgroundColor: t.accent }]}>
               <Ionicons name={item.icon} size={24} color={t.accentFg} />
             </View>
-            <Text style={s.title}>{item.title}</Text>
-            <Text style={s.text}>{item.text}</Text>
+            <Text style={[s.title, { color: t.fg }]}>{item.title}</Text>
+            <Text style={[s.text, { color: t.fg }]}>{item.text}</Text>
 
             <View style={s.footer}>
               {step > 0 && (
-                <Pressable onPress={() => setStep((value) => value - 1)} style={({ pressed }) => [s.secondary, { opacity: pressed ? 0.7 : 1 }]} accessibilityRole="button">
-                  <Text style={s.secondaryText}>Anterior</Text>
+                <Pressable onPress={() => setStep((value) => value - 1)} style={({ pressed }) => [s.secondary, { borderColor: t.line, opacity: pressed ? 0.7 : 1 }]} accessibilityRole="button">
+                  <Text style={[s.secondaryText, { color: t.fg }]}>Anterior</Text>
                 </Pressable>
               )}
               <Pressable onPress={next} style={({ pressed }) => [s.primary, { backgroundColor: t.accent, opacity: pressed ? 0.8 : 1 }]} accessibilityRole="button">
@@ -187,20 +186,20 @@ const s = StyleSheet.create({
   root: { flex: 1 },
   shade: { position: 'absolute', backgroundColor: OVERLAY },
   ring: { position: 'absolute', borderWidth: 2, borderRadius: 20 },
-  skip: { position: 'absolute', right: 20, paddingVertical: 8, paddingHorizontal: 12, borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.1)' },
+  skip: { position: 'absolute', right: 20, paddingVertical: 8, paddingHorizontal: 12, borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.16)' },
   skipText: { color: '#ffffff', fontWeight: '800', fontSize: 13 },
   tooltipWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center', paddingHorizontal: 20 },
-  card: { borderWidth: 1, borderRadius: radius.xl, padding: 20, backgroundColor: CARD, boxShadow: '0 18px 44px rgba(0,0,0,0.45)' },
+  card: { borderWidth: 1, borderRadius: radius.xl, padding: 20 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  kicker: { color: '#aeb8c4', fontSize: 11, fontWeight: '800', letterSpacing: 0.7 },
+  kicker: { fontSize: 11, fontWeight: '800', letterSpacing: 0.7 },
   dots: { flexDirection: 'row', gap: 5 },
   dot: { width: 7, height: 7, borderRadius: 4 },
   iconWrap: { width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginTop: 16 },
-  title: { color: '#ffffff', fontSize: 22, fontWeight: '800', marginTop: 12 },
-  text: { color: '#d6dde7', fontSize: 15, lineHeight: 22, marginTop: 7 },
+  title: { fontSize: 22, fontWeight: '800', marginTop: 12 },
+  text: { fontSize: 15, lineHeight: 22, marginTop: 7 },
   footer: { flexDirection: 'row', gap: 10, marginTop: 20 },
-  secondary: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.24)', borderRadius: radius.md, paddingVertical: 13, paddingHorizontal: 17, alignItems: 'center', justifyContent: 'center' },
-  secondaryText: { color: '#ffffff', fontWeight: '700', fontSize: 14 },
+  secondary: { borderWidth: 1, borderRadius: radius.md, paddingVertical: 13, paddingHorizontal: 17, alignItems: 'center', justifyContent: 'center' },
+  secondaryText: { fontWeight: '700', fontSize: 14 },
   primary: { flex: 1, flexDirection: 'row', borderRadius: radius.md, paddingVertical: 14, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
   primaryText: { fontWeight: '800', fontSize: 15 },
 });

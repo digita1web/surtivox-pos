@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { brand, light } from '../themeColors';
 
 const LOGO = require('../../assets/icon.png');
 
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0B0E12',
+    backgroundColor: light.bg,
     paddingHorizontal: 24,
   },
   halo: {
@@ -133,14 +134,15 @@ const styles = StyleSheet.create({
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: 'rgba(15, 166, 120, 0.22)',
+    backgroundColor: `${brand.green}24`,
   },
   logoWrap: {
     padding: 10,
     borderRadius: 28,
-    backgroundColor: 'rgba(245, 241, 232, 0.06)',
+    backgroundColor: light.panel,
     borderWidth: 1,
-    borderColor: 'rgba(245, 241, 232, 0.12)',
+    borderColor: light.line,
+    boxShadow: light.shadowCard,
   },
   logo: {
     width: 104,
@@ -157,14 +159,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   name: {
-    color: '#F5F1E8',
+    color: light.fg,
     fontFamily: 'Arial Narrow',
     fontSize: 34,
     fontWeight: '900',
     letterSpacing: -0.8,
   },
   pos: {
-    color: '#0FA678',
+    color: light.accent,
     fontFamily: 'monospace',
     fontSize: 11,
     fontWeight: '700',
@@ -172,7 +174,7 @@ const styles = StyleSheet.create({
   },
   tagline: {
     marginTop: 5,
-    color: '#9EAFA8',
+    color: light.muted,
     fontSize: 12,
     letterSpacing: 0.2,
   },

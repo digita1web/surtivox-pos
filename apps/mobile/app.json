@@ -52,7 +52,7 @@
         {
           "image": "./assets/splash.png",
           "resizeMode": "contain",
-          "backgroundColor": "#0B0E12"
+          "backgroundColor": "#F4F7F5"
         }
       ],
       "expo-asset",
