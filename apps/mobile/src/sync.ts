@@ -17,7 +17,12 @@ import { getDb } from './db';
 import { getStore } from './repos';
 import { writeSafetyBackup } from './backup';
 import { disconnectOn, reusableToken } from './syncState';
-import { syncErrorMessage } from './syncErrors';
+import { SyncHttpError, KEY_CHANGED_MESSAGE, toSyncHttpError } from './syncErrors';
+import {
+  startKitOn, loadKitOn, confirmKitOn, rotateKitOn, hasPendingRotationOn, recoverFromKitOn, kitStatusOn, isKitToken,
+  readKitReminderInputOn, shouldRemindKit, kitReminderText, snoozeKitReminderOn,
+  type KitDeps, type KitInfo, type KitStatus,
+} from './kitOps';
 import { NUMBERED_TABLES, resolveNumberCollision } from './numberCollision';
 
 const OVERLAP_MS = 30_000;
@@ -92,8 +97,24 @@ async function api(base: string, path: string, token: string, init?: RequestInit
   const text = await res.text();
   let body: any = null;
   try { body = text ? JSON.parse(text) : null; } catch { /* non-json */ }
-  if (!res.ok) throw new Error(syncErrorMessage(body?.error, res.status));
+  if (!res.ok) throw toSyncHttpError(body, res.status, res.headers.get('retry-after'));
   return body;
+}
+
+async function sha256Bytes(data: Uint8Array): Promise<Uint8Array> {
+  const input = new Uint8Array(new ArrayBuffer(data.length));
+  input.set(data);
+  return new Uint8Array(await Crypto.digest(Crypto.CryptoDigestAlgorithm.SHA256, input));
+}
+
+function kitDeps(base: string): KitDeps {
+  return {
+    randomBytes: (length) => Crypto.getRandomBytes(length),
+    sha256: sha256Bytes,
+    now: () => Date.now(),
+    request: (path, token, body) => api(base, path, token, { method: 'POST', body: JSON.stringify(body) }),
+    isDefinitiveRefusal: (error) => error instanceof SyncHttpError && error.status >= 400 && error.status < 500 && error.status !== 429,
+  };
 }
 
 /** Bind this store to the token on the server (idempotent). */
@@ -164,32 +185,82 @@ export async function syncNow(): Promise<SyncResult> {
   const store = await getStore();
   if (!store) throw new Error('No hay una tienda para sincronizar');
   const base = state.server_url!;
-  const token = state.token!;
 
-  await register(base, token, store.id);
-  const pushedCursor = await pushChanges(base, token, state.last_pushed_at);
-  const pulledCursor = await pullChanges(base, token, state.last_pulled_at);
-  const at = Date.now();
-  await getDb().runAsync(
-    'UPDATE sync_state SET last_pushed_at = ?, last_pulled_at = ?, last_synced_at = ? WHERE id = 1',
-    [pushedCursor, pulledCursor, at],
-  );
-  return { pushedCursor, pulledCursor, at };
+  try {
+    if (await hasPendingRotationOn(getDb())) await rotateKitOn(getDb(), kitDeps(base));
+    const token = (await getSyncState()).token!;
+    await register(base, token, store.id);
+    const pushedCursor = await pushChanges(base, token, state.last_pushed_at);
+    const pulledCursor = await pullChanges(base, token, state.last_pulled_at);
+    const at = Date.now();
+    await getDb().runAsync(
+      'UPDATE sync_state SET last_pushed_at = ?, last_pulled_at = ?, last_synced_at = ? WHERE id = 1',
+      [pushedCursor, pulledCursor, at],
+    );
+    return { pushedCursor, pulledCursor, at };
+  } catch (error) {
+    if (error instanceof SyncHttpError && error.status === 401) throw new SyncHttpError(KEY_CHANGED_MESSAGE, 401, 'key_changed', null);
+    throw error;
+  }
 }
 
-/** One-tap: pick/keep this shop's code, point at the hosted backend, and sync. */
-export async function turnOnCloudBackup(): Promise<SyncResult> {
+export interface CloudActivation { sync: SyncResult; words: string[] | null }
+
+export async function turnOnCloudBackup(): Promise<CloudActivation> {
   if (!hasHostedSync()) throw new Error('El respaldo en la nube no está configurado en esta compilación.');
   const state = await getSyncState();
-  const token = reusableToken(state.token, newShopCode);
-  await saveSyncConfig(DEFAULT_SYNC_URL, token);
-  return syncNow();
+  let words: string[] | null = null;
+  if (!state.token || !state.token.trim()) words = await startKitOn(getDb(), kitDeps(DEFAULT_SYNC_URL), DEFAULT_SYNC_URL);
+  else await saveSyncConfig(DEFAULT_SYNC_URL, state.token);
+  return { sync: await syncNow(), words };
+}
+
+export async function getKit(): Promise<KitInfo | null> {
+  return loadKitOn(getDb(), { sha256: sha256Bytes });
+}
+
+export async function getKitStatus(): Promise<KitStatus> {
+  return kitStatusOn(getDb());
+}
+
+export async function confirmKit(positions: readonly number[], typed: readonly string[]): Promise<boolean> {
+  return confirmKitOn(getDb(), { sha256: sha256Bytes, now: () => Date.now() }, positions, typed);
+}
+
+export async function changeShopKey(): Promise<string[]> {
+  const state = await getSyncState();
+  if (!isConfigured(state)) throw new Error('Activa primero el respaldo en la nube.');
+  const result = await rotateKitOn(getDb(), kitDeps(state.server_url!));
+  if (result.status !== 'ok') throw new Error('Activa primero el respaldo en la nube.');
+  return result.words;
+}
+
+export async function recoverWithKit(text: string): Promise<number> {
+  if (!hasHostedSync()) throw new Error('El respaldo en la nube no está configurado en esta compilación.');
+  const result = await recoverFromKitOn(
+    getDb(),
+    {
+      sha256: sha256Bytes,
+      now: () => Date.now(),
+      serverUrl: DEFAULT_SYNC_URL,
+      isAuthFailure: (error) => error instanceof SyncHttpError && error.status === 401,
+    },
+    text,
+    (token) => restoreFromCloud(DEFAULT_SYNC_URL, token),
+  );
+  if (result.status === 'invalid') throw new Error(result.message);
+  if (result.status === 'locked') {
+    const seconds = Math.max(1, Math.ceil((result.retryAt - Date.now()) / 1000));
+    throw new Error(`Demasiados intentos. Espera ${seconds >= 60 ? `${Math.ceil(seconds / 60)} min` : `${seconds} s`} e inténtalo de nuevo.`);
+  }
+  return result.restored;
 }
 
 /** Link this device to an existing shop using its code (destructive: replaces local data). */
 export async function linkDeviceByCode(code: string): Promise<number> {
   if (!hasHostedSync()) throw new Error('El respaldo en la nube no está configurado en esta compilación.');
   const token = normalizeCode(code);
+  if (token.length >= 24) return recoverWithKit(code);
   if (token.length < 12) throw new Error('Ese código parece muy corto; revísalo e intenta de nuevo.');
   return restoreFromCloud(DEFAULT_SYNC_URL, token);
 }
@@ -197,7 +268,7 @@ export async function linkDeviceByCode(code: string): Promise<number> {
 /** This shop's code (formatted for display), or null if backup isn't on yet. */
 export async function getShopCode(): Promise<string | null> {
   const s = await getSyncState();
-  return s.token ? formatCode(s.token) : null;
+  return s.token && !isKitToken(s.token) ? formatCode(s.token) : null;
 }
 
 /**
@@ -242,4 +313,14 @@ export async function restoreFromCloud(serverUrl: string, token: string): Promis
   await saveSyncConfig(base, tk);
   await db.runAsync('UPDATE sync_state SET last_pulled_at = ?, last_synced_at = ? WHERE id = 1', [cursor, Date.now()]);
   return applied;
+}
+
+export async function kitReminderNow(): Promise<{ title: string; body: string } | null> {
+  const input = await readKitReminderInputOn(getDb());
+  if (!shouldRemindKit({ now: Date.now(), ...input })) return null;
+  return kitReminderText(input.status);
+}
+
+export async function snoozeKitReminder(): Promise<void> {
+  await snoozeKitReminderOn(getDb(), Date.now() + 2 * 24 * 3_600_000);
 }

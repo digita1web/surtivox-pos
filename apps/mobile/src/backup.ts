@@ -9,6 +9,7 @@ import type { Store } from './repos';
 import { APP_CURRENCY } from './branding';
 import { getDb } from './db';
 import { validateBackupPayload, verifyBackupText } from './backupValidation';
+import { filterBackupRows, restoreDeleteSql } from './backupFilters';
 
 const major = (minor: number, dec: number) => (minor / 10 ** dec).toFixed(dec);
 const stamp = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -78,7 +79,7 @@ async function collectFullBackup(storeName: string): Promise<{ payload: Record<s
   const data: Record<string, unknown[]> = {};
   let rows = 0;
   for (const table of tables) {
-    const list = await db.getAllAsync<Record<string, unknown>>(`SELECT * FROM "${table}"`);
+    const list = filterBackupRows(table, await db.getAllAsync<Record<string, unknown>>(`SELECT * FROM "${table}"`));
     data[table] = list;
     rows += list.length;
   }
@@ -171,9 +172,9 @@ export async function restoreFullBackup(): Promise<RestoreResult | null> {
   await db.execAsync('PRAGMA foreign_keys = OFF;');
   try {
     await db.withTransactionAsync(async () => {
-      for (const table of tableNames) await db.runAsync(`DELETE FROM "${table}"`);
+      for (const table of tableNames) await db.runAsync(restoreDeleteSql(table));
       for (const table of tableNames) {
-        for (const row of payload.tables[table]!) {
+        for (const row of filterBackupRows(table, payload.tables[table]!)) {
           const columns = Object.keys(row);
           if (columns.length === 0) continue;
           const columnList = columns.map((column) => `"${column}"`).join(',');

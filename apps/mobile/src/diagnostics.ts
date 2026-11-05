@@ -1,3 +1,5 @@
+import { redactSecrets } from './redact.ts';
+
 const MAX_ERROR_LENGTH = 300;
 
 export interface StoredError {
@@ -26,7 +28,7 @@ export function truncateErrorMessage(input: unknown): string {
     : typeof input === 'string'
       ? input
       : 'Error desconocido';
-  const clean = raw.replace(/\s+/g, ' ').trim();
+  const clean = redactSecrets(raw.replace(/\s+/g, ' ').trim());
   return clean.slice(0, MAX_ERROR_LENGTH);
 }
 
@@ -42,7 +44,7 @@ export function formatLastError(raw: string | null): string {
     ) {
       return 'Registro de error no disponible.';
     }
-    return `${new Date(parsed.at).toISOString()} · ${parsed.message.slice(0, MAX_ERROR_LENGTH)}`;
+    return `${new Date(parsed.at).toISOString()} · ${redactSecrets(parsed.message).slice(0, MAX_ERROR_LENGTH)}`;
   } catch {
     return 'Registro de error no disponible.';
   }
