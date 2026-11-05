@@ -41,7 +41,7 @@ export default function TabsLayout() {
 
   const label = ({ focused, color, children }: { focused: boolean; color: ColorValue; children: string }) => (
     <View style={{ alignItems: 'center' }}>
-      <Text style={{ color, fontSize: 11.5, fontWeight: focused ? '800' : '600', marginTop: 2 }} numberOfLines={1} maxFontSizeMultiplier={1.2}>{children}</Text>
+      <Text style={{ color, fontSize: 11.5, fontWeight: focused ? '800' : '600', marginTop: 2 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={1.1}>{children}</Text>
       <View style={{ height: 3, width: 30, borderRadius: 2, marginTop: 3, backgroundColor: focused ? color : 'transparent' }} />
     </View>
   );

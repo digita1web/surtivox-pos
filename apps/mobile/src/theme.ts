@@ -1,11 +1,13 @@
 import { useColorScheme } from 'react-native';
 
 import { light, dark } from './themeColors';
+import { APP_APPEARANCE, resolveScheme } from './themeMode';
 
 export type Theme = typeof light;
 
 export function useTheme(): Theme {
-  return useColorScheme() === 'light' ? light : dark;
+  const system = useColorScheme();
+  return resolveScheme(APP_APPEARANCE, system === 'dark' ? 'dark' : system === 'light' ? 'light' : null) === 'dark' ? dark : light;
 }
 
 // Deterministic tile color for a product "image" placeholder (used only when

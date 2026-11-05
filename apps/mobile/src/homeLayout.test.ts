@@ -59,3 +59,11 @@ test('the slogan uses the store tagline when it exists and the brand slogan othe
   assert.equal(brandTagline(' Lo mejor\ndel barrio '), 'Lo mejor del barrio');
   assert.equal(DEFAULT_TAGLINE, 'Tu tienda, siempre contigo');
 });
+
+test('action cards switch to a vertical layout with large system fonts or narrow screens', () => {
+  assert.equal(homeMetrics(411, 1).actionVertical, false);
+  assert.equal(homeMetrics(411, 1.15).actionVertical, true);
+  assert.equal(homeMetrics(411, 1.3).actionVertical, true);
+  assert.equal(homeMetrics(340, 1).actionVertical, true);
+  assert.equal(homeMetrics(360, 1).actionVertical, false);
+});

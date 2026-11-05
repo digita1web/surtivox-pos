@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AppState, View, Text, ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { AppState, Appearance, View, Text, ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -21,7 +21,9 @@ import { installGlobalErrorHandler } from '../src/crashHandler';
 import { truncateErrorMessage } from '../src/diagnostics';
 import { showAlert } from '../src/pos/alert';
 import { useTheme } from '../src/theme';
+import { APP_APPEARANCE, statusBarToneFor, systemSchemeOverride } from '../src/themeMode';
 
+Appearance.setColorScheme(systemSchemeOverride(APP_APPEARANCE));
 SplashScreen.preventAutoHideAsync().catch(() => {});
 installGlobalErrorHandler();
 
@@ -70,7 +72,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="auto" />
+      <StatusBar style={statusBarToneFor(APP_APPEARANCE)} />
       {showIntro ? (
         <LaunchIntro isReady={ready || error !== null} onFinish={() => setShowIntro(false)} />
       ) : error ? (

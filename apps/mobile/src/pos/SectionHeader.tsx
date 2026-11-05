@@ -8,7 +8,7 @@ export function SectionHeader({ title, actionLabel, onAction }: { title: string;
     <View style={s.row}>
       <View style={s.titleRow}>
         <View style={[s.bar, { backgroundColor: t.accentBright }]} />
-        <Text style={[brandType.section, { color: t.fg, flexShrink: 1 }]} numberOfLines={2} maxFontSizeMultiplier={1.25} accessibilityRole="header">{title}</Text>
+        <Text style={[brandType.section, { color: t.fg, flexShrink: 1 }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} maxFontSizeMultiplier={1.25} accessibilityRole="header">{title}</Text>
       </View>
       {actionLabel && onAction ? (
         <Pressable onPress={onAction} accessibilityRole="button" hitSlop={8} style={[s.action, { backgroundColor: t.accentSoft }]}>

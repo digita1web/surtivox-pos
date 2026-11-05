@@ -4,13 +4,14 @@ import { useTheme, brandType, circle, radius, space } from '../theme';
 
 export type ActionTone = 'green' | 'orange';
 
-export function ActionCard({ icon, title, hint, tone, iconSize, chevronSize, onPress }: {
+export function ActionCard({ icon, title, hint, tone, iconSize, chevronSize, vertical = false, onPress }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   hint: string;
   tone: ActionTone;
   iconSize: number;
   chevronSize: number;
+  vertical?: boolean;
   onPress: () => void;
 }) {
   const t = useTheme();
@@ -34,13 +35,13 @@ export function ActionCard({ icon, title, hint, tone, iconSize, chevronSize, onP
           <View style={[s.bandBack, { backgroundColor: glow, opacity: 0.55 }]} />
           <View style={[s.band, { backgroundColor: band }]} />
         </View>
-        <View style={s.row}>
+        <View style={vertical ? s.col : s.row}>
           <View style={[circle(iconSize), { backgroundColor: solid, boxShadow: t.shadow }]}>
             <Ionicons name={icon} size={Math.round(iconSize * 0.52)} color="#FFFFFF" />
           </View>
-          <View style={s.text}>
+          <View style={[s.text, vertical && s.textVertical]}>
             <Text style={[brandType.cardTitle, { color: t.fg }]} numberOfLines={2} maxFontSizeMultiplier={1.3}>{title}</Text>
-            <Text style={[brandType.cardHint, { color: t.muted, marginRight: chevronSize - 2 }]} numberOfLines={3} maxFontSizeMultiplier={1.3}>{hint}</Text>
+            <Text style={[brandType.cardHint, { color: t.muted, marginRight: chevronSize - 2 }]} numberOfLines={4} maxFontSizeMultiplier={1.3}>{hint}</Text>
           </View>
         </View>
         <View pointerEvents="none" style={[circle(chevronSize), s.chevron, { backgroundColor: chevronBackground }]}>
@@ -58,6 +59,8 @@ const s = StyleSheet.create({
   bandBack: { position: 'absolute', left: '-20%', width: '140%', height: 30, bottom: -16, borderRadius: '50%', transform: [{ rotate: '-4deg' }] },
   band: { position: 'absolute', left: '-10%', width: '130%', height: 28, bottom: -17, borderRadius: '50%' },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  col: { alignItems: 'flex-start', gap: space.sm },
+  textVertical: { flex: 0, alignSelf: 'stretch' },
   text: { flex: 1, minWidth: 0 },
   chevron: { position: 'absolute', right: space.sm, bottom: space.lg },
 });

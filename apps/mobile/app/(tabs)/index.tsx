@@ -19,6 +19,7 @@ import { FrequentProductCard } from '../../src/pos/FrequentProductCard';
 import { PromoCard } from '../../src/pos/PromoCard';
 import { SectionHeader } from '../../src/pos/SectionHeader';
 import { homeMetrics } from '../../src/pos/homeLayout';
+import { APP_APPEARANCE, statusBarToneFor } from '../../src/themeMode';
 import { scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { useMoney } from '../../src/pos/ui';
 import { TourGuide } from '../../src/components/TourGuide';
@@ -64,7 +65,7 @@ export default function Home() {
 
   useFocusEffect(useCallback(() => {
     setStatusBarStyle('light');
-    return () => setStatusBarStyle('auto');
+    return () => setStatusBarStyle(statusBarToneFor(APP_APPEARANCE));
   }, []));
 
   const refreshBackupNudge = useCallback(async () => {
@@ -148,10 +149,10 @@ export default function Home() {
       />
       <ScrollView {...scrollProps} style={s.flex} contentContainerStyle={{ paddingHorizontal: m.pad, paddingTop: space.xs, paddingBottom: listInset }}>
         <View style={[s.actions, { gap: m.gap }, m.actionsStacked && s.actionsStacked]}>
-          <ActionCard icon="cart" title="Venta rápida" hint="Vende sin complicaciones" tone="green" iconSize={m.actionIcon} chevronSize={m.actionChevron} onPress={openQuick} />
+          <ActionCard icon="cart" title="Venta rápida" hint="Vende sin complicaciones" tone="green" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={openQuick} />
           {canProducts
-            ? <ActionCard icon="add" title="Agregar producto" hint="Nuevo artículo del catálogo" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} onPress={() => router.push('/add-product')} />
-            : <ActionCard icon="barcode-outline" title="Escanear y vender" hint="Escanea un código de barras" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} onPress={() => router.push('/scan')} />}
+            ? <ActionCard icon="add" title="Agregar producto" hint="Nuevo artículo del catálogo" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={() => router.push('/add-product')} />
+            : <ActionCard icon="barcode-outline" title="Escanear y vender" hint="Escanea un código de barras" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={() => router.push('/scan')} />}
         </View>
 
         <View style={s.sectionGap}>

@@ -3,6 +3,7 @@ export interface HomeMetrics {
   gap: number;
   compact: boolean;
   actionsStacked: boolean;
+  actionVertical: boolean;
   actionIcon: number;
   actionChevron: number;
   headerLogo: number;
@@ -36,6 +37,7 @@ export function homeMetrics(width: number, fontScale = 1): HomeMetrics {
     gap,
     compact,
     actionsStacked: w < 330,
+    actionVertical: fontScale >= 1.15 || w < 360,
     actionIcon: clamp(Math.round(w * 0.125), 44, 60),
     actionChevron: 26,
     headerLogo: compact ? 48 : 64,
