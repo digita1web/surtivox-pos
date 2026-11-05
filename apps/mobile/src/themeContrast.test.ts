@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { brand, light, dark } from './themeColors.ts';
+import { brand, light, dark, TILE_COLORS } from './themeColors.ts';
+import { DEFAULT_ACCENT, ACCENT_PRESETS } from './branding.ts';
 
 function channel(hex: string, index: number): number {
   const v = parseInt(hex.slice(1 + index * 2, 3 + index * 2), 16) / 255;
@@ -115,3 +116,13 @@ for (const [name, theme] of [['claro', light], ['oscuro', dark]] as const) {
     assert.ok(contrast(theme.tabInactive, theme.panel) >= 3, `${name}: tabInactive sobre panel`);
   });
 }
+
+test('el color por defecto de los recibos es el verde de marca', () => {
+  assert.equal(DEFAULT_ACCENT, brand.green.toLowerCase());
+  assert.equal(ACCENT_PRESETS[0], brand.green.toLowerCase());
+});
+
+test('las baldosas de producto sin foto dejan leer las iniciales blancas a 4,5:1', () => {
+  for (const color of TILE_COLORS) assert.ok(contrast('#FFFFFF', color) >= AA, `${color} = ${contrast('#FFFFFF', color).toFixed(2)}`);
+  assert.equal(TILE_COLORS[0], brand.green);
+});

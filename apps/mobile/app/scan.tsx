@@ -188,7 +188,7 @@ export default function Scan() {
           {(['tl', 'tr', 'bl', 'br'] as const).map((c) => <View key={c} style={[st.corner, cornerStyle(c, t.accent)]} />)}
         </View>
         {banner && (
-          <View style={[st.banner, { backgroundColor: banner.ok ? 'rgba(12,166,120,0.96)' : 'rgba(220,38,38,0.96)' }]} pointerEvents={banner.undo ? 'auto' : 'none'}>
+          <View style={[st.banner, { backgroundColor: banner.ok ? 'rgba(8,127,91,0.96)' : 'rgba(220,38,38,0.96)' }]} pointerEvents={banner.undo ? 'auto' : 'none'}>
             <Ionicons name={banner.ok ? 'checkmark-circle' : 'alert-circle'} size={16} color="#fff" />
             <Text style={{ color: '#fff', fontWeight: '700', marginLeft: 6 }}>{banner.text}</Text>
             {banner.undo ? (

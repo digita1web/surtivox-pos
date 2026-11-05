@@ -6,7 +6,7 @@
 import { fromMajorString, type Minor } from '@surtivox/pos-core';
 import type { ReceiptPaper } from './repos';
 
-export const DEFAULT_ACCENT = '#0ca678';
+export const DEFAULT_ACCENT = '#087f5b';
 export const DEFAULT_FOOTER = '¡Gracias por su compra!\n¡Vuelva pronto!';
 export const APP_CURRENCY = { code: 'COP', locale: 'es-CO', decimals: 0 };
 export const CURRENCY_CYCLE = ['COP', 'USD', 'EUR'] as const;
@@ -30,7 +30,7 @@ export function localizedReceiptTerms(input: string | null | undefined): string 
   );
 }
 
-export const ACCENT_PRESETS = ['#0ca678', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#dc2626', '#0891b2', '#111827'];
+export const ACCENT_PRESETS = ['#087f5b', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#dc2626', '#0891b2', '#111827'];
 
 export const PAPER_OPTIONS: { key: ReceiptPaper; label: string; hint: string }[] = [
   { key: 'a4', label: 'Factura A4', hint: 'Página completa, láser / PDF' },

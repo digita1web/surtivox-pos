@@ -1,6 +1,6 @@
 import { useColorScheme } from 'react-native';
 
-import { light, dark } from './themeColors';
+import { light, dark, TILE_COLORS } from './themeColors';
 import { APP_APPEARANCE, resolveScheme } from './themeMode';
 
 export type Theme = typeof light;
@@ -12,11 +12,10 @@ export function useTheme(): Theme {
 
 // Deterministic tile color for a product "image" placeholder (used only when
 // a product has no photo).
-const TILE = ['#0ca678', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#06b6d4', '#14b8a6'];
 export function tileColor(seed: string): string {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
-  return TILE[Math.abs(h) % TILE.length]!;
+  return TILE_COLORS[Math.abs(h) % TILE_COLORS.length]!;
 }
 export function initials(name: string): string {
   const parts = name.trim().split(/\s+/).slice(0, 2);

@@ -22,6 +22,7 @@ import { truncateErrorMessage } from '../src/diagnostics';
 import { showAlert } from '../src/pos/alert';
 import { useTheme } from '../src/theme';
 import { APP_APPEARANCE, statusBarToneFor, systemSchemeOverride } from '../src/themeMode';
+import { light } from '../src/themeColors';
 
 Appearance.setColorScheme(systemSchemeOverride(APP_APPEARANCE));
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -152,12 +153,12 @@ const styles = StyleSheet.create({
 });
 
 const errorStyles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#f2f4f7', padding: 24, justifyContent: 'center' },
-  title: { color: '#0b1420', fontSize: 24, fontWeight: '800', textAlign: 'center' },
-  help: { color: '#555c68', fontSize: 15, lineHeight: 21, textAlign: 'center', marginTop: 10 },
-  primary: { backgroundColor: '#0ca678', borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 22 },
-  primaryText: { color: '#ffffff', fontWeight: '800' },
-  secondary: { borderColor: '#0ca678', borderWidth: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 10 },
-  secondaryText: { color: '#0ca678', fontWeight: '800' },
-  technical: { color: '#5e6a7b', fontSize: 11, textAlign: 'center', marginTop: 20 },
+  root: { flex: 1, backgroundColor: light.bg, padding: 24, justifyContent: 'center' },
+  title: { color: light.fg, fontSize: 24, fontWeight: '800', textAlign: 'center' },
+  help: { color: light.muted, fontSize: 15, lineHeight: 21, textAlign: 'center', marginTop: 10 },
+  primary: { backgroundColor: light.accent, borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 22 },
+  primaryText: { color: light.accentFg, fontWeight: '800' },
+  secondary: { borderColor: light.accent, borderWidth: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 10 },
+  secondaryText: { color: light.accent, fontWeight: '800' },
+  technical: { color: light.faint, fontSize: 11, textAlign: 'center', marginTop: 20 },
 });

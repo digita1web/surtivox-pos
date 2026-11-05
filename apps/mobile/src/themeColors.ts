@@ -47,6 +47,8 @@ const lightTokens = {
   shadowTab: '0 -6px 20px rgba(6,78,59,0.10)',
 };
 
+export const TILE_COLORS = ['#087F5B', '#2563EB', '#7C3AED', '#BE185D', '#B45309', '#B91C1C', '#0E7490', '#0F766E'] as const;
+
 export type Palette = { [K in keyof typeof lightTokens]: string };
 
 export const light: Palette = lightTokens;
