@@ -1,4 +1,5 @@
-const FALLBACK_VERSION = '1.0.1';
+const FALLBACK_VERSION = 'más reciente';
+const PREFERRED_APK = 'Surtivox.apk';
 const RELEASE_API = 'https://api.github.com/repos/digita1web/surtivox-pos/releases/latest';
 const RELEASE_CACHE_KEY = 'surtivox-release-v1';
 const RELEASE_CACHE_TTL = 15 * 60 * 1000;
@@ -17,6 +18,11 @@ function formatBytes(bytes) {
     return `${kilobytes.toFixed(0)} KB`;
   }
   return `${megabytes.toFixed(1).replace('.', ',')} MB`;
+}
+
+function findApk(assets) {
+  const apks = assets.filter((asset) => typeof asset?.name === 'string' && asset.name.toLowerCase().endsWith('.apk'));
+  return apks.find((asset) => asset.name === PREFERRED_APK) || apks[0];
 }
 
 function applyVersion(version) {
@@ -38,7 +44,7 @@ function readCachedRelease() {
     if (cached.release) {
       applyVersion(cached.release.tag_name);
       const assets = Array.isArray(cached.release.assets) ? cached.release.assets : [];
-      const apk = assets.find((asset) => asset?.name === 'app-release.apk');
+      const apk = findApk(assets);
       if (apk) applySize(apk);
     }
     return true;
@@ -60,7 +66,7 @@ async function loadRelease() {
     const release = await response.json();
     applyVersion(release?.tag_name);
     const assets = Array.isArray(release?.assets) ? release.assets : [];
-    const apk = assets.find((asset) => asset?.name === 'app-release.apk');
+    const apk = findApk(assets);
     if (apk) applySize(apk);
     try {
       sessionStorage.setItem(RELEASE_CACHE_KEY, JSON.stringify({
