@@ -12,7 +12,7 @@ const release = (over: Record<string, unknown> = {}) => ({
   draft: false,
   prerelease: false,
   html_url: `${BASE}/releases/tag/v1.2.0`,
-  assets: [{ name: 'app-release.apk', browser_download_url: `${BASE}/releases/download/v1.2.0/app-release.apk` }],
+  assets: [{ name: 'Surtivox.apk', browser_download_url: `${BASE}/releases/download/v1.2.0/Surtivox.apk` }],
   ...over,
 });
 
@@ -63,8 +63,17 @@ test('parseRelease devuelve version, pagina y APK de la release', () => {
   assert.deepEqual(parseRelease(release()), {
     version: 'v1.2.0',
     htmlUrl: `${BASE}/releases/tag/v1.2.0`,
-    apkUrl: `${BASE}/releases/download/v1.2.0/app-release.apk`,
+    apkUrl: `${BASE}/releases/download/v1.2.0/Surtivox.apk`,
   });
+});
+
+test('prefiere Surtivox.apk aunque haya otros APK y acepta cualquier .apk si no esta', () => {
+  const other = { name: 'app-release.apk', browser_download_url: `${BASE}/releases/download/v1.2.0/app-release.apk` };
+  const preferred = { name: 'Surtivox.apk', browser_download_url: `${BASE}/releases/download/v1.2.0/Surtivox.apk` };
+  assert.equal(parseRelease(release({ assets: [other, preferred] }))?.apkUrl, preferred.browser_download_url);
+  assert.equal(parseRelease(release({ assets: [preferred, other] }))?.apkUrl, preferred.browser_download_url);
+  assert.equal(parseRelease(release({ assets: [other] }))?.apkUrl, other.browser_download_url);
+  assert.equal(parseRelease(release({ assets: [{ ...other, name: 'APP.APK' }] }))?.apkUrl, other.browser_download_url);
 });
 
 test('sin APK en la release se queda solo con la pagina', () => {
@@ -105,7 +114,7 @@ test('hay aviso cuando la release es mayor que la version instalada', async () =
   const { deps } = setup();
   const notice = await loadUpdateNotice(deps);
   assert.equal(notice?.version, 'v1.2.0');
-  assert.equal(notice?.apkUrl, `${BASE}/releases/download/v1.2.0/app-release.apk`);
+  assert.equal(notice?.apkUrl, `${BASE}/releases/download/v1.2.0/Surtivox.apk`);
 });
 
 test('no hay aviso si la version instalada es igual o mayor', async () => {

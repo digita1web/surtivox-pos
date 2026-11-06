@@ -1,5 +1,6 @@
 export const UPDATE_REPO = 'digita1web/surtivox-pos';
 export const RELEASES_LATEST_URL = `https://api.github.com/repos/${UPDATE_REPO}/releases/latest`;
+export const PREFERRED_APK_NAME = 'Surtivox.apk';
 export const UPDATE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 export const UPDATE_KEYS = {
@@ -65,14 +66,16 @@ export function parseRelease(body: unknown): ReleaseInfo | null {
   if (!isRepoUrl(data.html_url, REPO_PAGE)) return null;
   let apkUrl: string | null = null;
   if (Array.isArray(data.assets)) {
+    let fallback: string | null = null;
     for (const asset of data.assets) {
       if (typeof asset !== 'object' || asset === null) continue;
       const { name, browser_download_url: url } = asset as Record<string, unknown>;
-      if (typeof name === 'string' && name.toLowerCase().endsWith('.apk') && isRepoUrl(url, `${REPO_PAGE}releases/download/`)) {
-        apkUrl = url;
-        break;
-      }
+      if (typeof name !== 'string' || !name.toLowerCase().endsWith('.apk')) continue;
+      if (!isRepoUrl(url, `${REPO_PAGE}releases/download/`)) continue;
+      if (name === PREFERRED_APK_NAME) { apkUrl = url; break; }
+      if (fallback === null) fallback = url;
     }
+    if (apkUrl === null) apkUrl = fallback;
   }
   return { version: formatVersion(version), htmlUrl: data.html_url, apkUrl };
 }
