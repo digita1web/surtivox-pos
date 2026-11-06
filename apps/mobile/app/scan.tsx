@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, Modal, FlatList, StyleSheet, Vibration } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { type BarcodeScanningResult } from 'expo-camera';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { computeCart, asMinor, asBps } from '@surtivox/pos-core';
 import { getStore, findProductByBarcode, getMarketPricesCache, type Store, type Product } from '../src/repos';
 import { marketEanForLookup } from '../src/marketPrices';
@@ -17,6 +17,7 @@ import { Thumb } from '../src/pos/Thumb';
 import { useTheme, space, radius, type as ty } from '../src/theme';
 import { tracksInventory } from '../src/pos/stockPolicy';
 import { UnknownBarcodeSheet } from '../src/pos/UnknownBarcodeSheet';
+import { useWizardHandoff } from '../src/productWizardHandoff';
 import { ScannerCamera } from '../src/pos/ScannerCamera';
 import { Screen, IconButton, listProps } from '../src/pos/Screen';
 
@@ -50,6 +51,14 @@ export default function Scan() {
     if (bannerTimer.current) clearTimeout(bannerTimer.current);
     bannerTimer.current = setTimeout(() => setBanner(null), ms);
   };
+
+  useFocusEffect(useCallback(() => {
+    const handoff = useWizardHandoff.getState();
+    const message = handoff.takeMessage();
+    const quickCode = handoff.takeQuickSale();
+    if (message) flash(message, true, 4000);
+    if (quickCode) setUnknownCode(quickCode);
+  }, []));
 
   // Rows to show under "Recently added", newest edits first isn't tracked, so
   // we show cart/draft contents (which is what the cashier is building).
@@ -272,6 +281,10 @@ export default function Scan() {
       <UnknownBarcodeSheet
         code={unknownCode}
         onClose={() => setUnknownCode(null)}
+        onStartWizard={(wizardCode) => {
+          setUnknownCode(null);
+          router.push({ pathname: '/product-wizard', params: { code: wizardCode } });
+        }}
         onAdded={(product, _quantity, previousQty) => {
           setUnknownCode(null);
           setSeen((m) => ({ ...m, [product.id]: product }));

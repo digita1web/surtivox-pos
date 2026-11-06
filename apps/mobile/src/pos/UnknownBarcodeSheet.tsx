@@ -41,6 +41,7 @@ interface UnknownBarcodeSheetProps {
   code: string | null;
   onClose: () => void;
   onAdded: (product: Product, quantity: number, previousQty: number) => void;
+  onStartWizard?: (code: string) => void;
 }
 
 function formatPriceInput(value: string): string {
@@ -53,7 +54,7 @@ function parsePrice(value: string): number {
   return parseCurrencyInput(value.replace(/\./g, ''), APP_CURRENCY.code);
 }
 
-export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSheetProps) {
+export function UnknownBarcodeSheet({ code, onClose, onAdded, onStartWizard }: UnknownBarcodeSheetProps) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const money = useMoney();
@@ -294,6 +295,21 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
+            {onStartWizard && code ? (
+              <Pressable
+                onPress={() => onStartWizard(code)}
+                accessibilityRole="button"
+                accessibilityLabel="Registrar este producto paso a paso"
+                style={[s.wizardCard, { borderColor: t.accent, backgroundColor: t.accentSoft }]}
+              >
+                <Ionicons name="list-circle-outline" size={24} color={t.accent} />
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={{ color: t.fg, fontWeight: '800' }} maxFontSizeMultiplier={1.3}>Registrar paso a paso</Text>
+                  <Text style={{ color: t.muted, fontSize: 12 }} maxFontSizeMultiplier={1.3}>Foto, nombre, categoría y precio en 1 minuto</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={t.accent} />
+              </Pressable>
+            ) : null}
             <MarketPricesCompactView prices={prices} />
 
           <Text style={{ color: t.muted, fontSize: 11, fontWeight: '700', marginTop: 6, marginBottom: 2 }}>Tu precio de venta</Text>
@@ -416,6 +432,7 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded }: UnknownBarcodeSh
 }
 
 const s = StyleSheet.create({
+  wizardCard: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderRadius: 14, padding: 12, marginBottom: 8 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
   sheet: { borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingHorizontal: 16, paddingTop: 8, maxHeight: '96%' },
   grabber: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 6 },
