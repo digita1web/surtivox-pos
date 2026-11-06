@@ -2,7 +2,7 @@
   "expo": {
     "name": "Surtivox POS",
     "slug": "digita1web",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "orientation": "portrait",
     "scheme": "surtivoxpos",
     "userInterfaceStyle": "automatic",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "android": {
       "package": "io.surtivox.pos",
-      "versionCode": 8,
+      "versionCode": 9,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B0E12"
