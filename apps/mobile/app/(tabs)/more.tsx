@@ -10,6 +10,7 @@ import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { showAlert } from '../../src/pos/alert';
 import { getLocalSetting, resetAllData, seedColombianCatalog, setLocalSetting, updateAllStoreCurrencies } from '../../src/repos';
 import { clearCatalogQueue } from '../../src/catalog';
+import { UpdateNoticeCard, useUpdateNotice } from '../../src/pos/UpdateNotice';
 import { CURRENCY_CYCLE } from '../../src/branding';
 import { resetAppCurrency, setAppCurrency, useAppCurrency } from '../../src/appCurrency';
 import { SEED_PRODUCTS } from '../../src/seedCatalog';
@@ -18,6 +19,7 @@ import { getReminderCount, resetReminderCount } from '../../src/fiadoReminderSto
 import { AppearanceCard } from '../../src/pos/AppearanceCard';
 
 export default function More() {
+  const update = useUpdateNotice();
   const t = useTheme();
   const listInset = useTabListInset();
   const router = useRouter();
@@ -148,6 +150,7 @@ export default function More() {
     <View style={{ flex: 1, backgroundColor: t.bg }}>
     <TabHeader title="Más" />
     <ScrollView {...scrollProps} style={{ flex: 1 }} contentContainerStyle={{ padding: space.lg, paddingBottom: listInset }}>
+      {update.notice ? <UpdateNoticeCard notice={update.notice} onDismiss={update.dismiss} /> : null}
       <Pressable onPress={() => router.push('/shops')} style={[s.storeCard, { backgroundColor: t.panel, borderColor: t.line }]}>
         {store.logo_uri ? (
           <Image source={{ uri: store.logo_uri }} style={[s.avatar, { backgroundColor: '#fff', borderWidth: 1, borderColor: t.line }]} resizeMode="contain" />

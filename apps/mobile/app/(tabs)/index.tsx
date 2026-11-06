@@ -30,6 +30,7 @@ import { greetingForDate } from '../../src/greeting';
 import { exportFullBackup } from '../../src/backup';
 import { backupReminderText, backupSnoozeUntil, shouldRemindBackup } from '../../src/backupReminder';
 import { showAlert } from '../../src/pos/alert';
+import { UpdateNoticeCard, useUpdateNotice } from '../../src/pos/UpdateNotice';
 import { kitReminderNow, snoozeKitReminder, getSyncState, isConfigured, hasHostedSync } from '../../src/sync';
 import { RECOVER_CARD_ACTION, RECOVER_CARD_TITLE, showRecoverCardOnHome } from '../../src/recoverAccess';
 
@@ -56,6 +57,7 @@ export default function Home() {
   const [backupNudge, setBackupNudge] = useState<{ lastBackupAt: number | null } | null>(null);
   const [backupBusy, setBackupBusy] = useState(false);
   const [recoveryMissing, setRecoveryMissing] = useState(false);
+  const update = useUpdateNotice();
   const [cloudConnected, setCloudConnected] = useState(false);
   const [kitNudge, setKitNudge] = useState<{ title: string; body: string } | null>(null);
   const me = useSession((state) => state.staff);
@@ -259,6 +261,8 @@ export default function Home() {
             </View>
           </Pressable>
         ) : null}
+
+        {update.notice ? <UpdateNoticeCard notice={update.notice} onDismiss={update.dismiss} /> : null}
 
         {kitNudge && can(role, 'sync') ? (
           <Pressable onPress={() => router.push('/cloud-sync')} accessibilityRole="button" style={[s.backupNudge, { backgroundColor: t.panel, borderColor: t.warn }]}>
