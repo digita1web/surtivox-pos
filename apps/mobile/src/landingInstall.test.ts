@@ -7,6 +7,7 @@ const html = readFileSync(new URL('index.html', dir), 'utf8');
 const css = readFileSync(new URL('styles.css', dir), 'utf8');
 const script = readFileSync(new URL('app.js', dir), 'utf8');
 
+const EXPECTED_QR_URL = 'https://digita1web.github.io/surtivox-pos/#instala';
 const APK = 'https://github.com/digita1web/surtivox-pos/releases/latest/download/Surtivox.apk';
 const section = html.slice(html.indexOf('<section class="section section-get"'), html.indexOf('</section>', html.indexOf('<section class="section section-get"')));
 
@@ -51,6 +52,25 @@ test('el QR es un archivo propio, sin referencias externas, y solo se muestra en
   assert.match(css, /\.get-qr\s*\{[^}]*display:\s*none/);
   assert.match(css, /@media \(min-width: 900px\)\s*\{\s*\.get-qr\s*\{\s*display:\s*block/);
   assert.match(section, /<img src="assets\/qr-descarga\.svg"[^>]*alt="Código QR/);
+});
+
+test('el QR fija la URL esperada de la landing con el ancla #instala', () => {
+  const svg = readFileSync(new URL('assets/qr-descarga.svg', dir), 'utf8');
+  const readme = readFileSync(new URL('README.md', dir), 'utf8');
+  assert.match(svg, /<title id="qr-title">Código QR para descargar Surtivox<\/title>/);
+  assert.ok(svg.includes(`<desc id="qr-desc">Apunta la cámara del celular a este código para abrir ${EXPECTED_QR_URL}</desc>`));
+  assert.match(svg, /aria-labelledby="qr-title qr-desc"/);
+  assert.ok(readme.includes(EXPECTED_QR_URL));
+  assert.ok(html.includes('<link rel="canonical" href="https://digita1web.github.io/surtivox-pos/">'));
+  assert.ok(EXPECTED_QR_URL.startsWith('https://digita1web.github.io/surtivox-pos/'));
+  assert.ok(!EXPECTED_QR_URL.includes('?'));
+});
+
+test('el QR tiene zona de silencio de 4 modulos y modulos oscuros sobre fondo blanco', () => {
+  const svg = readFileSync(new URL('assets/qr-descarga.svg', dir), 'utf8');
+  assert.match(svg, /<rect width="45" height="45" fill="#FFFFFF"\/>/);
+  assert.match(svg, /<path d="M4 4h7v1h-7z/);
+  assert.match(svg, /fill="#102A24"/);
 });
 
 test('la ilustracion usa el icono propio de la app', () => {
