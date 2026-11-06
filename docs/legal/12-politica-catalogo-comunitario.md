@@ -54,7 +54,7 @@ Al enviar un nombre y una presentación permites a Surtivox almacenarlos, reprod
 | Cuándo se envía | "cuando escribas o corrijas el nombre de un producto con código de barras" | Solo desde la hoja de producto desconocido al escanear ([UnknownBarcodeSheet.tsx:134-162](../../apps/mobile/src/pos/UnknownBarcodeSheet.tsx#L134-L162)); es el único punto que llama a `enqueueContribution` |
 | Consulta | Sugería que la función solo actúa si el tendero acepta | La **consulta** (`/catalog/lookup`) ocurre sin consentimiento ([catalog.ts:46-73](../../apps/mobile/src/catalog.ts#L46-L73)); solo el **envío** exige aceptación |
 | Caché | No decía | 30 días si se encontró, 3 si no ([catalogCore.ts:1-2](../../apps/mobile/src/catalogCore.ts#L1-L2)) |
-| Cola al apagar | "Se borra la cola local" | Cierto ([more.tsx:246](../../apps/mobile/app/(tabs)/more.tsx#L246)) |
+| Cola al apagar | "Se borra la cola local" | Cierto ([more.tsx:246](../../apps/mobile/app/%28tabs%29/more.tsx#L246)) |
 | Limpieza | 7 días | Cierto para `contribution_limits`; el cron no se ha verificado en producción; `catalog_votes` no se limpia |
 | Correo | Un correo concreto en el texto | Se reemplaza por marcador hasta que el dueño confirme el canal oficial de reclamos |
 | Retiro de aportes | "pendiente de definición" | Sigue sin existir; ver [92-brechas-tecnicas-a-cerrar.md](92-brechas-tecnicas-a-cerrar.md) |

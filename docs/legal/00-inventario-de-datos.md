@@ -13,7 +13,7 @@ Convenciones: las rutas son relativas a la raíz del repo. **NV** = no verificad
 | La app hace **consultas a internet aunque no actives nada**: actualizaciones (Expo), código de barras (Open Food Facts y catálogo de Surtivox) y precios de referencia. | [apps/mobile/app.json:75-79](../../apps/mobile/app.json#L75-L79), [lookup.ts:45](../../apps/mobile/src/pos/lookup.ts#L45), [catalog.ts:73](../../apps/mobile/src/catalog.ts#L73), [marketPrices.ts:121](../../apps/mobile/src/marketPrices.ts#L121) |
 | Con el respaldo en la nube, **datos de clientes del tendero (nombre, teléfono, correo, dirección, notas) y su deuda de fiado se envían en claro** al servidor. | [packages/database/src/sync.ts:50-52](../../packages/database/src/sync.ts#L50-L52), `customer_ledger` en la misma lista |
 | **No existe ninguna ruta del servidor para borrar datos** de una tienda ni para retirar una contribución al catálogo. | [apps/sync-worker/src/index.ts](../../apps/sync-worker/src/index.ts) (solo `register`, `push`, `pull`, `rotate`), [apps/catalog-worker/src/index.ts:186-192](../../apps/catalog-worker/src/index.ts#L186-L192) |
-| "Borrar todos los datos de la app" borra el teléfono y la llave local, **no** el servidor. | [repos.ts:1325-1338](../../apps/mobile/src/repos.ts#L1325-L1338), [more.tsx:64](../../apps/mobile/app/(tabs)/more.tsx#L64) |
+| "Borrar todos los datos de la app" borra el teléfono y la llave local, **no** el servidor. | [repos.ts:1325-1338](../../apps/mobile/src/repos.ts#L1325-L1338), [more.tsx:64](../../apps/mobile/app/%28tabs%29/more.tsx#L64) |
 | No hay analítica, publicidad ni SDK de telemetría. | Búsqueda de `sentry`, `analytics`, `firebase`, `crashlytics`, `amplitude`, `mixpanel` en `package.json`, `app.json`, `src` y `app`: sin coincidencias de uso real. |
 | Permisos de Android: cámara, internet, almacenamiento (solo hasta Android 12), vibración y una superposición. **No hay ubicación, contactos, micrófono ni notificaciones.** | [AndroidManifest.xml:2-8](../../apps/mobile/android/app/src/main/AndroidManifest.xml#L2-L8) |
 
@@ -55,7 +55,7 @@ Convenciones: las rutas son relativas a la raíz del repo. **NV** = no verificad
 
 | Aspecto | Realidad en el código |
 |---|---|
-| Consentimiento | Pregunta en el primer arranque y en [UnknownBarcodeSheet.tsx:139-160](../../apps/mobile/src/pos/UnknownBarcodeSheet.tsx#L139-L160); interruptor en Más → Privacidad ([more.tsx:242-245](../../apps/mobile/app/(tabs)/more.tsx#L242-L245)). Clave `catalog_opt_in` (`'1'`/`'0'`). Nunca preseleccionado. |
+| Consentimiento | Pregunta en el primer arranque y en [UnknownBarcodeSheet.tsx:139-160](../../apps/mobile/src/pos/UnknownBarcodeSheet.tsx#L139-L160); interruptor en Más → Privacidad ([more.tsx:242-245](../../apps/mobile/app/%28tabs%29/more.tsx#L242-L245)). Clave `catalog_opt_in` (`'1'`/`'0'`). Nunca preseleccionado. |
 | Qué se envía | `install_id` (UUID aleatorio de la instalación, [catalog.ts:34](../../apps/mobile/src/catalog.ts#L34)), y por ítem: código de barras, nombre y presentación ([catalog.ts:143-160](../../apps/mobile/src/catalog.ts#L143-L160)). Hasta 20 ítems por envío. |
 | Identificador pseudónimo | `contributor_hash = SHA-256(CATALOG_SALT + install_id)` ([catalog-worker index.ts:69-73](../../apps/catalog-worker/src/index.ts#L69-L73)). Lo que se guarda es el hash, no el `install_id`. |
 | Qué conserva el servidor | `catalog_votes` (código, nombre normalizado, nombre visible, presentación, hash, fecha), `catalog_products` (ganador por consenso), `contribution_limits` (hash, día, conteo). |

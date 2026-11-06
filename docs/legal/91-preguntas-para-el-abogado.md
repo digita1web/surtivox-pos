@@ -1,0 +1,25 @@
+# 91 · Preguntas para el abogado
+
+> **BORRADOR — requiere revisión de abogado colombiano antes de publicarse.**
+> Preguntas sin respuesta; no contienen conclusiones. Contexto técnico en [00-inventario-de-datos.md](00-inventario-de-datos.md) y normativo en [01-marco-normativo.md](01-marco-normativo.md).
+
+1. **Figura jurídica del dueño.** ¿Conviene que Surtivox POS lo ofrezca una persona natural (Mateo Castro) o una sociedad? ¿Cómo cambia eso la responsabilidad, el RNBD, el contrato con los tenderos y la licencia? ¿Hace falta constituir una empresa antes de distribuir?
+2. **Responsable o encargado.** Para los datos de clientes, proveedores y personal que registra el tendero, ¿Surtivox es **encargado** (el tendero es responsable) o también **responsable**? ¿Qué consecuencias tiene cada caso sobre la política, la autorización y las respuestas a titulares?
+3. **Clientes del tendero y su autorización.** La app guarda nombre, teléfono, correo, dirección y notas de clientes del tendero, y las envía a Cloudflare si activa la nube. ¿Basta la cláusula que obliga al tendero a pedir la autorización, o debe la app mostrar un aviso o capturar un consentimiento? ¿Sirve el texto sugerido de [11 §7](11-terminos-y-condiciones.md)? ¿Qué pasa con las notas de texto libre (posibles datos sensibles)?
+4. **Fiados y deudas.** ¿Registrar el nombre de un cliente y lo que debe activa la Ley 1266 de 2008 (dato "comercial/crediticio"), o queda dentro del uso interno del negocio? ¿Cambia algo porque el dato se aloja en un servidor de un tercero?
+5. **RNBD.** Según la figura del dueño, ¿está obligado a inscribir alguna base? ¿Cuál es el umbral vigente en pesos para 2026 y quién cuenta como responsable obligado (Surtivox, los tenderos o ninguno)? ¿Qué plazo y qué información?
+6. **Transferencia y transmisión internacional.** Cloudflare (D1, Workers), Expo y Google tratan datos fuera de Colombia. ¿Qué contrato o cláusulas hacen falta con cada uno? ¿Basta el DPA de Cloudflare v6.4 tal como se acepta en una cuenta común? ¿Importa la región de D1 si no se puede escoger? ¿Debe pedirse autorización expresa al titular por la transferencia?
+7. **Evidencia de aceptación electrónica.** Hoy solo se guarda la versión y la fecha en el teléfono. ¿Qué evidencia hay que conservar para probar la aceptación (Ley 527 de 1999 y Ley 1581)? ¿Debe Surtivox tener copia del lado del servidor?
+8. **Retracto en suscripciones.** Cuando se active el cobro por Google Play, ¿aplica el derecho de retracto de la Ley 1480 y sus reformas a una suscripción de software? ¿Quién responde, Google o el titular? ¿Qué texto debe mostrarse?
+9. **Edad mínima y menores.** ¿Qué edad mínima debe exigirse a quien usa la app? ¿Qué hacer si un tendero registra datos de menores (por ejemplo, un empleado menor de edad o un cliente que es menor)?
+10. **Cláusulas de responsabilidad.** ¿Qué limitaciones son válidas para una app de punto de venta que puede perder datos? ¿Qué debe decirse sobre errores de cálculo, copias de seguridad y pérdida del kit de recuperación?
+11. **Jurisdicción y ley aplicable.** ¿Qué foro y qué ley deben fijarse, y cómo se concilia con los términos de Google Play y de Cloudflare?
+12. **Derechos y eliminación en el servidor.** Hoy no existe borrado del servidor ni retiro de aportes al catálogo. ¿Es aceptable un proceso manual por correo mientras se construye la herramienta? ¿Con qué plazos? ¿La "tienda" creada en la nube cuenta como "cuenta" para la política de eliminación de cuenta de Google Play?
+13. **Aportes al catálogo.** Los aportes se guardan con una huella seudónima. ¿Es dato personal? ¿Se puede conservar un aporte ya publicado por consenso tras una solicitud de supresión? ¿Qué licencia debe tener el aporte?
+14. **Incidentes de seguridad.** ¿Cuándo y a quién hay que informar una violación de seguridad? ¿Qué debe contener el protocolo?
+15. **Licencia propietaria y software de terceros.** La app usa código MIT (OpenPocket POS y Expo) y datos de Open Food Facts. ¿Es compatible la licencia propietaria con los avisos de terceros? ¿Qué debe publicarse?
+16. **Preguntas pendientes de la nota previa** (`docs/privacidad-catalogo-notas.md`): responsable del tratamiento, oficial de protección de datos, plazo de retención de votos y hashes.
+17. **Reformas en trámite.** Hay proyectos de reforma de la Ley 1581 radicados en 2025 y 2026 (no verificados como aprobados). ¿Cómo debe prepararse la política para no tener que reescribirla?
+18. **Si una tienda real usa la app antes de tener todo listo.** ¿Qué mínimos deben cumplirse para un piloto con pocas tiendas conocidas (aceptación expresa, consentimiento escrito de los tenderos, acuerdo de encargo, aviso a sus clientes)? ¿Qué riesgo asume el dueño si no están completos?
+19. **Marketing y la web.** ¿Qué debe decir la página de descarga (landing) sobre datos y privacidad para ser coherente con la app, y qué pasa con la versión desactualizada de los textos de la landing frente a los de la app?
+20. **Notificación a tenderos de cambios.** Cuando cambien los términos o la política, ¿es suficiente que la app pida aceptarlos de nuevo, o hay que avisar por otro medio a quienes no abran la app?
