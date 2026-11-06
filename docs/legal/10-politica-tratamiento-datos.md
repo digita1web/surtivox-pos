@@ -12,7 +12,7 @@
 - **Nombre o razón social:** `[[POR COMPLETAR: nombre completo o razón social]]`
 - **Identificación (cédula o NIT):** `[[POR COMPLETAR: documento]]`
 - **Domicilio:** `[[POR COMPLETAR: dirección y ciudad]]`
-- **Correo para consultas y reclamos:** `[[POR COMPLETAR: correo oficial de reclamos; la app hoy usa el valor de LEGAL_CONTACT]]`
+- **Correo para consultas y reclamos:** pragramademateo@gmail.com
 - **Teléfono:** `[[POR COMPLETAR: teléfono de contacto]]`
 - **Persona o área que atiende los derechos de los titulares:** `[[POR COMPLETAR: nombre del cargo o persona]]`
 
@@ -56,7 +56,7 @@ Al aceptar los términos y activar cada servicio opcional, el usuario autoriza e
 ## 5. Derechos de los titulares
 Conocer, actualizar y rectificar tus datos; pedir prueba de la autorización; ser informado del uso que se les ha dado; presentar quejas ante la Superintendencia de Industria y Comercio; revocar la autorización o pedir la supresión de los datos; y acceder gratuitamente a ellos (Ley 1581 de 2012, art. 8, y Decreto 1377 de 2013).
 
-**Cómo ejercerlos:** escribe a `[[POR COMPLETAR: correo de reclamos]]` indicando tu nombre, el dato y lo que pides.
+**Cómo ejercerlos:** escribe a pragramademateo@gmail.com indicando tu nombre, el dato y lo que pides.
 
 **Plazos** (Ley 1581 de 2012, arts. 14 y 15, según la fuente consultada, a verificar por el abogado):
 - **Consultas:** respuesta en máximo **10 días hábiles**; si no es posible, se informa el motivo y una nueva fecha que no excede **5 días hábiles** más.

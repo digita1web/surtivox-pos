@@ -9,7 +9,7 @@
 Al usar Surtivox POS aceptas estos términos, la política de tratamiento de datos y la licencia del software. Si no estás de acuerdo, no uses la aplicación. La aceptación se guarda en tu teléfono con la versión del texto y la fecha. `[[POR COMPLETAR: decisión del abogado sobre evidencia de aceptación fuera del teléfono]]`
 
 ## 2. Quién ofrece el servicio
-`[[POR COMPLETAR: nombre o razón social, documento, domicilio y correo del titular de Surtivox POS]]`. Surtivox POS es una aplicación de punto de venta para tiendas que funciona sin conexión.
+`[[POR COMPLETAR: nombre o razón social, documento y domicilio del titular de Surtivox POS]]`. Correo: pragramademateo@gmail.com. Surtivox POS es una aplicación de punto de venta para tiendas que funciona sin conexión.
 
 ## 3. Licencia de uso
 Se te concede una licencia **no exclusiva, intransferible y revocable** para usar la aplicación en tus dispositivos para tu negocio. El código, el diseño y la infraestructura son propiedad exclusiva del titular; está prohibido copiarlos, distribuirlos, descompilarlos o revenderlos sin autorización escrita. El aviso de la licencia MIT de OpenPocket POS y el de Expo se conservan en `LICENSES/`. `[[POR COMPLETAR: confirmar con el abogado el alcance de la licencia propietaria frente a los avisos de terceros]]`
@@ -55,7 +55,7 @@ Surtivox POS, su nombre y su diseño son del titular. Los datos que registras so
 Puedes dejar de usar la app y borrar tus datos locales cuando quieras. El titular puede suspender el respaldo en la nube por uso indebido o por terminar el modo de pruebas, avisándote `[[POR COMPLETAR: plazo de aviso]]`. Al terminar, `[[POR COMPLETAR: qué pasa con los datos del servidor; hoy no existe borrado automático]]`.
 
 ## 13. Cambios y contacto
-Si estos términos cambian de forma importante, la app te pedirá aceptarlos de nuevo. Contacto: `[[POR COMPLETAR: correo y teléfono]]`.
+Si estos términos cambian de forma importante, la app te pedirá aceptarlos de nuevo. Contacto: pragramademateo@gmail.com `[[POR COMPLETAR: teléfono]]`.
 
 ## 14. Ley aplicable y jurisdicción
 Colombia. `[[POR COMPLETAR: jurisdicción y foro definidos por el abogado]]`

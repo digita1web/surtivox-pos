@@ -144,7 +144,7 @@ proceso privado descrito en [SECURITY.md](SECURITY.md).
 **Software Propietario - Todos los derechos reservados por Mateo Castro.** Consulta [LICENSE](LICENSE).
 Queda prohibida la copia, distribución, modificación o uso comercial sin autorización
 por escrito del titular. Para una licencia comercial escribe a
-[contacto3rillodivino@gmail.com](mailto:contacto3rillodivino@gmail.com).
+[pragramademateo@gmail.com](mailto:pragramademateo@gmail.com).
 
 El código base inicial fue heredado de OpenPocket POS (licencia MIT); su aviso
 original se conserva en [LICENSES/MIT_LICENSE.txt](LICENSES/MIT_LICENSE.txt).

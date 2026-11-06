@@ -91,7 +91,7 @@ Implementado sin desplegar: llave de 8 palabras generada en el teléfono, huella
 ## Asistente de producto desconocido (2026-11-06)
 
 - **Sin probar en dispositivo:** pantallas, teclado, cámara del sistema, reanudación tras cierre real de la app y fuentes grandes. Solo hay pruebas de lógica, wiring y empaquetado.
-- **Correo en el User-Agent de Open Food Facts:** se usa `LEGAL_CONTACT` ([legalText.ts](apps/mobile/src/legalText.ts)). Hay que confirmar que ese es el correo que se quiere exponer a un tercero en cada consulta; si no, cambiarlo en un solo lugar ([lookup.ts](apps/mobile/src/pos/lookup.ts)). Sin correo, el User-Agent sale sin contacto y no cumple el formato pedido.
+- **Correo en el User-Agent de Open Food Facts:** se usa `LEGAL_CONTACT` ([legalText.ts](apps/mobile/src/legalText.ts)). El dueño confirmó `pragramademateo@gmail.com` como correo público de contacto (2026-11-06). Si cambia, se modifica solo `LEGAL_CONTACT`. Sin correo, el User-Agent sale sin contacto y no cumple el formato pedido.
 - **Fotos de Open Food Facts sin atribución por foto:** la hoja de producto desconocido y el alta manual siguen descargando la imagen de esa fuente como foto del producto. La atribución está solo en Más → Licencias; no hay marca de origen por foto.
 - **La hoja y el alta manual siguen precargando nombre e imagen de terceros** (el asistente no lo hace). Si se quiere eliminar esa precarga, es un cambio aparte.
 - **Caché de Open Food Facts:** la consulta del alta manual ahora tiene caché de sesión de 12 horas en memoria; la persistente (`barcode_lookups`) solo la usa la hoja.

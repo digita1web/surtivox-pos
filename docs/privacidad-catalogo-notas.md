@@ -8,7 +8,7 @@ Se leyó el flujo real en:
 
 - `apps/catalog-worker/src/index.ts`: recibe código, nombre, presentación e `install_id`; calcula un hash con sal; guarda votos, límite diario y productos publicados.
 - `apps/mobile/src/catalog.ts`: crea el `install_id`, envía la cola, cachea resultados y no incluye precios, ventas, clientes ni `store_id`.
-- `landing/privacidad.html`: correo oficial `contacto3rillodivino@gmail.com` y alcance actual de la política.
+- `landing/privacidad.html`: correo oficial `pragramademateo@gmail.com` y alcance actual de la política.
 - `apps/mobile/src/pos/UnknownBarcodeSheet.tsx`: nombre solo se aporta si fue editado; “Ahora no” guarda `catalog_opt_in = 0`; “Sí, ayudar” guarda `1`.
 
 La búsqueda web se agotó por límite de consultas después de las primeras búsquedas. Las normas colombianas se contrastaron directamente en las páginas oficiales de Función Pública. Treinta quedó sin verificación.

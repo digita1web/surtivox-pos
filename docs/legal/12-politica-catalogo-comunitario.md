@@ -39,7 +39,7 @@ El catálogo funciona en servidores de **Cloudflare** (`[[POR COMPLETAR: región
 - **Votos y producto publicado:** `[[POR COMPLETAR: plazo de retención; hoy el código no los borra]]`.
 
 ## 9. Cómo dejar de participar y qué pasa con lo enviado
-Al apagar el interruptor, se **dejan de enviar** aportes y se **vacía la cola** de pendientes de tu teléfono. **Lo que ya enviaste o ya se publicó no se borra automáticamente.** Puedes pedir información, corrección o supresión de un aporte escribiendo a `[[POR COMPLETAR: correo de reclamos]]`. `[[POR COMPLETAR: confirmar cómo se atenderá; hoy el servidor no tiene una función para retirar un aporte, y como solo guarda una huella, el responsable necesitaría el identificador de tu instalación para encontrarlo]]`. El efecto de retirar un aporte sobre un nombre ya publicado por consenso está pendiente de decisión.
+Al apagar el interruptor, se **dejan de enviar** aportes y se **vacía la cola** de pendientes de tu teléfono. **Lo que ya enviaste o ya se publicó no se borra automáticamente.** Puedes pedir información, corrección o supresión de un aporte escribiendo a pragramademateo@gmail.com. `[[POR COMPLETAR: confirmar cómo se atenderá; hoy el servidor no tiene una función para retirar un aporte, y como solo guarda una huella, el responsable necesitaría el identificador de tu instalación para encontrarlo]]`. El efecto de retirar un aporte sobre un nombre ya publicado por consenso está pendiente de decisión.
 
 ## 10. Regla para el tendero
 Aporta solo **nombres de productos**. No escribas nombres de personas, teléfonos, direcciones, correos ni datos de clientes o de tu tienda. Si el nombre de un producto contiene un dato personal, no lo envíes.

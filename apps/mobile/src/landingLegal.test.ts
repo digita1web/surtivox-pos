@@ -43,6 +43,6 @@ for (const page of pages) {
   test(`${page.file} muestra la misma version que la app y no contradice la licencia`, () => {
     assert.ok(html.includes(`${page.versionLabel}: ${LEGAL_VERSION}`));
     assert.doesNotMatch(article, /\bMIT\b|código abierto|open source/i);
-    assert.ok(article.includes('mailto:contacto3rillodivino@gmail.com'));
+    assert.ok(article.includes('mailto:pragramademateo@gmail.com'));
   });
 }

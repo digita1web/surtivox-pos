@@ -1,4 +1,4 @@
-export const LEGAL_CONTACT = 'contacto3rillodivino@gmail.com';
+export const LEGAL_CONTACT = 'pragramademateo@gmail.com';
 
 export interface LegalSection {
   title: string;

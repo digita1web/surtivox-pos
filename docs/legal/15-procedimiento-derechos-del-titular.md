@@ -4,7 +4,7 @@
 > Describe cómo debería atender el dueño las solicitudes, **con los plazos de la Ley 1581 de 2012** según la fuente consultada (https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?i=49981, arts. 14 y 15, abierta el 2026-11-06) y el Decreto 1377 de 2013 (https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?i=53646, arts. 9, 18, 21). El abogado debe cotejarlos. **Hoy el servidor no tiene herramientas de borrado**: la sección 6 dice qué habría que construir.
 
 ## 1. Responsable del procedimiento
-`[[POR COMPLETAR: persona o área designada (art. 23 Decreto 1377)]]`. Canal: `[[POR COMPLETAR: correo de reclamos]]`. Registro de solicitudes: `[[POR COMPLETAR: dónde se llevan, por ejemplo una hoja de cálculo privada]]`.
+`[[POR COMPLETAR: persona o área designada (art. 23 Decreto 1377)]]`. Canal: pragramademateo@gmail.com. Registro de solicitudes: `[[POR COMPLETAR: dónde se llevan, por ejemplo una hoja de cálculo privada]]`.
 
 ## 2. Tipos de solicitud y plazos
 

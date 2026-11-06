@@ -103,7 +103,7 @@ La Ley 1581 de 2012 reconoce, entre otros, los derechos a conocer, actualizar, r
 
 Para ejercer estos derechos o hacer una consulta sobre este catálogo, escribe al correo oficial que ya aparece en la política de privacidad de Surtivox POS:
 
-**contacto3rillodivino@gmail.com**
+**pragramademateo@gmail.com**
 
 No se inventa aquí una dirección física ni un procedimiento con plazos que todavía no hayan sido aprobados. El responsable deberá definir el área o persona que atienda estas solicitudes y el procedimiento aplicable antes de publicar la política.
 

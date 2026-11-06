@@ -1,7 +1,7 @@
 # 90 · Pendientes del dueño (marcadores `[[POR COMPLETAR]]`)
 
 > **BORRADOR — requiere revisión de abogado colombiano antes de publicarse.**
-> Total: **52 marcadores `[[POR COMPLETAR]]`** y **3 marcadores `[[ESCENARIO A o B]]`** en los documentos 10 a 15 (documentos 00 y 01 no los llevan). Columna **Bloquea**: sí = no se puede publicar sin ese dato.
+> Total: **48 marcadores `[[POR COMPLETAR]]`** y **3 marcadores `[[ESCENARIO A o B]]`** en los documentos 10 a 15 (documentos 00 y 01 no los llevan). Columna **Bloquea**: sí = no se puede publicar sin ese dato.
 
 ## A. Identificación del responsable (datos que solo tú conoces)
 
@@ -11,7 +11,7 @@
 | Cédula o NIT | 10 §1; 11 §2 | **Sí** |
 | Domicilio (dirección y ciudad) | 10 §1; 11 §2 | **Sí** (contenido mínimo, art. 13 Decreto 1377) |
 | Teléfono de contacto | 10 §1; 11 §13 | **Sí** |
-| Correo oficial de reclamos (hoy la app usa el de `LEGAL_CONTACT`; hay que confirmarlo) | 10 §1 y §5; 12 §9; 15 §1; 11 §13 | **Sí** |
+| ~~Correo oficial de reclamos y de contacto~~ **Resuelto:** pragramademateo@gmail.com (2026-11-06), el mismo de `LEGAL_CONTACT` | 10 §1 y §5; 12 §9; 15 §1; 11 §2 y §13 | Resuelto |
 | Persona o área que atiende los derechos | 10 §1; 15 §1 | **Sí** (art. 23 Decreto 1377) |
 | Dónde se lleva el registro de solicitudes | 15 §1 | No |
 
