@@ -1,10 +1,24 @@
 import * as FileSystem from 'expo-file-system/legacy';
+import Constants from 'expo-constants';
 import { newId } from '../id';
+import { LEGAL_CONTACT } from '../legalText';
+import { buildOffUserAgent, createOffCache } from '../offClient';
 
 const DIR = FileSystem.documentDirectory + 'products/';
 const LOOKUP_TIMEOUT_MS = 2500;
 const EAN_PATTERN = /^\d{8,14}$/;
 const SCALE_PATTERN = /^2\d{11,12}$/;
+const SESSION_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+
+const sessionCache = createOffCache<BarcodeLookupOutcome>(SESSION_CACHE_TTL_MS, () => Date.now());
+
+function offUserAgent(): string {
+  return buildOffUserAgent({
+    name: Constants.expoConfig?.name ?? 'SurtivoxPOS',
+    version: Constants.expoConfig?.version ?? null,
+    contact: LEGAL_CONTACT,
+  });
+}
 
 export interface BarcodeInfo {
   name?: string;
@@ -24,6 +38,8 @@ export async function lookupBarcode(
 ): Promise<BarcodeLookupOutcome> {
   const code = barcode.trim();
   if (!EAN_PATTERN.test(code) || SCALE_PATTERN.test(code)) return { status: 'not_found' };
+  const cached = sessionCache.get(code);
+  if (cached) return cached;
 
   const controller = new AbortController();
   let timedOut = false;
@@ -44,22 +60,33 @@ export async function lookupBarcode(
     const res = await fetch(
       `https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,brands,image_front_url,image_url`,
       {
-        headers: { 'User-Agent': 'SurtivoxPOS/1.0 (offline POS)' },
+        headers: { 'User-Agent': offUserAgent() },
         signal: controller.signal,
       },
     );
-    if (res.status === 404) return { status: 'not_found' };
+    if (res.status === 404) {
+      sessionCache.set(code, { status: 'not_found' });
+      return { status: 'not_found' };
+    }
     if (!res.ok) return { status: 'error', kind: 'http' };
 
     const json: any = await res.json();
-    if (json.status !== 1 || !json.product) return { status: 'not_found' };
+    if (json.status !== 1 || !json.product) {
+      sessionCache.set(code, { status: 'not_found' });
+      return { status: 'not_found' };
+    }
     const p = json.product;
     const brand = typeof p.brands === 'string' ? p.brands.split(',')[0]?.trim() : '';
     const title = typeof p.product_name === 'string' ? p.product_name.trim() : '';
     const name = [brand, title].filter(Boolean).join(' ') || undefined;
     const imageUrl = p.image_front_url || p.image_url || undefined;
-    if (!name && !imageUrl) return { status: 'not_found' };
-    return { status: 'found', info: { name, imageUrl } };
+    if (!name && !imageUrl) {
+      sessionCache.set(code, { status: 'not_found' });
+      return { status: 'not_found' };
+    }
+    const found: BarcodeLookupOutcome = { status: 'found', info: { name, imageUrl } };
+    sessionCache.set(code, found);
+    return found;
   } catch {
     return { status: 'error', kind: timedOut ? 'timeout' : 'offline' };
   } finally {

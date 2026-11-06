@@ -27,13 +27,15 @@ export default function Licenses() {
 
       <Text style={title}>Open Food Facts</Text>
       <Text style={body}>
-        La app puede consultar nombres, marcas e imágenes de productos en Open Food Facts. Los datos de Open Food Facts están disponibles bajo la Open Database License (ODbL) 1.0.
+        La app puede consultar nombres, marcas e imágenes de productos en Open Food Facts, un proyecto colaborativo. Su base de datos está disponible bajo la Open Database License (ODbL) 1.0, el contenido individual de la base bajo la Database Contents License (DbCL) y las fotos de productos bajo la licencia Creative Commons Attribution-ShareAlike (CC BY-SA).
+        {'\n\n'}
+        Atribución: datos de Open Food Facts (https://openfoodfacts.org). Si una foto de producto de esta fuente se guarda en tu tienda, su autoría es de Open Food Facts y de quienes la aportaron.
         {'\n\n'}
         Sitio: https://world.openfoodfacts.org
         {'\n'}
-        Licencia: https://opendatacommons.org/licenses/odbl/1-0/
+        Licencia de la base: https://opendatacommons.org/licenses/odbl/1-0/
         {'\n\n'}
-        Las imágenes y marcas de productos pertenecen a sus respectivos titulares. Surtivox POS no modifica precios, inventario ni ventas a partir de esos datos externos.
+        Las consultas salen de tu teléfono y se guardan en él para no repetirlas. Los datos de esta fuente no se mezclan con el catálogo comunitario de Surtivox ni se envían como aportes de tu tienda. Las imágenes y marcas de productos pertenecen a sus respectivos titulares. Surtivox POS no modifica precios, inventario ni ventas a partir de esos datos externos.
       </Text>
     </Screen>
   );

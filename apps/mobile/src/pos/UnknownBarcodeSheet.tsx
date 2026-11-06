@@ -35,6 +35,7 @@ import { MarketPricesCompactView } from './MarketPricesCompact';
 import { implicitMarkupBps, markupsForLast } from './marginMemory';
 import { CATALOG_URL, enqueueContribution, flushOutbox } from '../catalog';
 import { isGenericCatalogName } from '../catalogCore';
+import { sameProductName } from '../offClient';
 import { showAlert } from './alert';
 
 interface UnknownBarcodeSheetProps {
@@ -136,6 +137,7 @@ export function UnknownBarcodeSheet({ code, onClose, onAdded, onStartWizard }: U
   const offerContribution = async (productName: string) => {
     if (!nameTouched.current || !CATALOG_URL.trim()) return;
     if (!productName.trim() || isGenericCatalogName(productName)) return;
+    if (resolveHint?.name && sameProductName(productName, resolveHint.name)) return;
     try {
       const optIn = await getLocalSetting('catalog_opt_in');
       if (optIn === '0') return;
