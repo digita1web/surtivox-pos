@@ -10,7 +10,7 @@ import {
 const sha256: Sha256 = async (data) => new Uint8Array(createHash('sha256').update(data).digest());
 
 const phonetic = (word: string) => word
-  .replace(/qu/g, 'k').replace(/ce/g, 'se').replace(/ci/g, 'si').replace(/c/g, 'k').replace(/z/g, 's')
+  .replace(/ch/g, 'x').replace(/qu/g, 'k').replace(/ce/g, 'se').replace(/ci/g, 'si').replace(/c/g, 'k').replace(/z/g, 's')
   .replace(/v/g, 'b').replace(/ll/g, 'y').replace(/h/g, '').replace(/w/g, 'b')
   .replace(/g(?=[ei])/g, 'j').replace(/gu/g, 'g');
 
@@ -40,6 +40,64 @@ test('no hay homofonos obvios entre las palabras', () => {
 
 test('la lista no contiene palabras de la lista de exclusion', () => {
   for (const word of FORBIDDEN) assert.ok(!KIT_WORDS.includes(word), word);
+});
+
+const REPLACED: readonly [number, string, string][] = [
+  [34, 'agonia', 'nectar'],
+  [221, 'bestia', 'arveja'],
+  [244, 'bomba', 'raqueta'],
+  [262, 'bribon', 'banano'],
+  [288, 'burro', 'perejil'],
+  [398, 'chusma', 'almohada'],
+  [486, 'crisis', 'vainilla'],
+  [587, 'disparo', 'sardina'],
+  [656, 'enano', 'cacerola'],
+  [664, 'enfermo', 'piruleta'],
+  [808, 'fracaso', 'tiburon'],
+  [812, 'fraude', 'sorbete'],
+  [892, 'gordura', 'borrego'],
+  [893, 'gorila', 'parque'],
+  [948, 'hedor', 'zancudo'],
+  [954, 'herida', 'sifon'],
+  [956, 'hernia', 'tobogan'],
+  [989, 'horror', 'polilla'],
+  [1039, 'infierno', 'pinguino'],
+  [1057, 'inyectar', 'grosella'],
+  [1080, 'jeringa', 'abanico'],
+  [1259, 'marrano', 'alfombra'],
+  [1265, 'matadero', 'puchero'],
+  [1346, 'mono', 'nogal'],
+  [1351, 'morena', 'kiwi'],
+  [1357, 'mota', 'cobertor'],
+  [1369, 'mula', 'chimenea'],
+  [1371, 'mulo', 'cilantro'],
+  [1401, 'navaja', 'tucan'],
+  [1409, 'negra', 'galpon'],
+  [1472, 'odiar', 'pelicano'],
+  [1473, 'odio', 'jaguar'],
+  [1542, 'pajaro', 'calabaza'],
+  [1575, 'pelar', 'yuca'],
+  [1586, 'perico', 'chaqueta'],
+  [1629, 'polvo', 'cangrejo'],
+  [1687, 'rata', 'crayon'],
+  [1732, 'robo', 'lulo'],
+  [1750, 'ruina', 'tornillo'],
+  [1813, 'simio', 'pepino'],
+];
+
+test('las 40 palabras sensibles fueron sustituidas en el mismo indice y no queda ninguna de las viejas', () => {
+  assert.equal(REPLACED.length, 40);
+  assert.equal(KIT_WORDS.length, 2048);
+  for (const [index, oldWord, newWord] of REPLACED) {
+    assert.equal(KIT_WORDS[index], newWord, `${index}`);
+    assert.ok(!KIT_WORDS.includes(oldWord), oldWord);
+  }
+  assert.equal(new Set(REPLACED.map(([index]) => index)).size, 40);
+});
+
+test('la lista ya no esta ordenada alfabeticamente a proposito para no mover los indices', () => {
+  const sorted = [...KIT_WORDS].sort();
+  assert.notDeepEqual([...KIT_WORDS], sorted);
 });
 
 test('ida y vuelta con 1000 llaves aleatorias', async () => {
