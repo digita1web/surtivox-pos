@@ -71,6 +71,20 @@ clientes.
 | ☁️ **Respaldo en la nube** *(opcional)* | Respalda tu negocio y sincroniza entre dispositivos. Vender sin conexión sigue siendo gratis. |
 | 🌙 **Modo oscuro** | Tema claro y oscuro en toda la app. |
 
+## Asistente de producto desconocido
+
+Al escanear un código que no está en la tienda, la hoja de producto desconocido ofrece **Registrar paso a paso**:
+
+1. Bienvenida, con el código y las acciones "Empezar" y "Vender ahora sin registrar" (reabre la hoja para usar la venta única existente).
+2. Foto frontal opcional, que se queda en el teléfono.
+3. Nombre (obligatorio), marca y tamaño.
+4. Categoría, entre las que ya tiene la tienda.
+5. Precio (obligatorio), con los precios de referencia como ayuda.
+
+El avance se guarda como borrador en `local_settings` (clave `product_wizard_draft:<código>`, 7 días) y se puede continuar o empezar de nuevo al volver a escanear el código. Al crear el producto se agrega a la venta. Marca y tamaño se componen dentro del nombre porque el modelo de producto no tiene esos campos.
+
+Al catálogo comunitario solo se envían código, nombre (con la marca) y presentación (el tamaño), y únicamente si el usuario aceptó participar en el catálogo; sin consentimiento no sale nada. La lógica está en `apps/mobile/src/productWizard*.ts` y la pantalla en `apps/mobile/app/product-wizard.tsx`.
+
 ## Planes
 
 - **POS offline — gratis para siempre.** Vender, inventario, personal, recibos
