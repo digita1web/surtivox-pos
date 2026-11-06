@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  UPDATE_CHECK_INTERVAL_MS, UPDATE_KEYS, compareVersions, decideNotice, dismissUpdate, isCheckDue, loadUpdateNotice,
-  parseRelease, parseVersion, type UpdateDeps, type UpdateSettings,
+  UPDATE_CHECK_INTERVAL_MS, UPDATE_KEYS, checkUpdateNow, classifyResponse, compareVersions, decideNotice, describeUpdateResult,
+  dismissUpdate, installedLabel, isCheckDue, loadUpdateNotice, parseRelease, parseVersion, type UpdateDeps, type UpdateSettings,
 } from './appUpdate.ts';
 
 const BASE = 'https://github.com/digita1web/surtivox-pos';
@@ -161,16 +161,40 @@ test('una respuesta mal formada o un prerelease no producen aviso', async () => 
   assert.equal(await loadUpdateNotice(setup({ fetchLatest: async () => ({ status: 200, body: 'no es json' }) }).deps), null);
 });
 
-test('un error HTTP transitorio conserva el aviso anterior y uno 404 lo quita', async () => {
+test('un 404 quita el aviso anterior y un 5xx conserva el aviso sin marcar el limite', async () => {
   let status = 200;
-  const { deps, tick } = setup({ fetchLatest: async () => ({ status, body: status === 200 ? release() : {} }) });
+  const { deps, tick, settings, calls } = setup({ fetchLatest: async () => ({ status, body: status === 200 ? release() : {} }) });
   assert.equal((await loadUpdateNotice(deps))?.version, 'v1.2.0');
-  status = 403;
+  status = 500;
   tick(UPDATE_CHECK_INTERVAL_MS);
+  const before = settings.data.get(UPDATE_KEYS.lastCheckAt);
   assert.equal((await loadUpdateNotice(deps))?.version, 'v1.2.0');
+  assert.equal(settings.data.get(UPDATE_KEYS.lastCheckAt), before);
   status = 404;
-  tick(UPDATE_CHECK_INTERVAL_MS);
   assert.equal(await loadUpdateNotice(deps), null);
+  assert.equal(calls(), 3);
+});
+
+test('un 403 por limite de la API no marca las 24 horas y la siguiente apertura reintenta', async () => {
+  let status = 403;
+  const { deps, settings, calls } = setup({ fetchLatest: async () => ({ status, body: status === 200 ? release() : { message: 'rate limit' } }) });
+  assert.equal(await loadUpdateNotice(deps), null);
+  assert.equal(settings.data.has(UPDATE_KEYS.lastCheckAt), false);
+  status = 429;
+  assert.equal(await loadUpdateNotice(deps), null);
+  assert.equal(settings.data.has(UPDATE_KEYS.lastCheckAt), false);
+  status = 200;
+  assert.equal((await loadUpdateNotice(deps))?.version, 'v1.2.0');
+  assert.equal(calls(), 3);
+  assert.ok(settings.data.has(UPDATE_KEYS.lastCheckAt));
+});
+
+test('clasifica las respuestas de GitHub', () => {
+  assert.equal(classifyResponse(200), 'ok');
+  assert.equal(classifyResponse(404), 'not_found');
+  assert.equal(classifyResponse(403), 'rate_limited');
+  assert.equal(classifyResponse(429), 'rate_limited');
+  for (const status of [301, 400, 500, 502, 503]) assert.equal(classifyResponse(status), 'invalid', String(status));
 });
 
 test('un aviso descartado no se repite, pero una version aun mayor si avisa', async () => {
@@ -225,4 +249,103 @@ test('la consulta no manda token, identificador de instalacion ni datos de la ti
   const code = source('./updateCheck.ts');
   assert.doesNotMatch(code, /install_id|getInstallId|authorization|token|store/i);
   assert.match(code, /RELEASES_LATEST_URL/);
+});
+
+test('Buscar actualizacion ignora el limite de 24 horas y consulta ahora', async () => {
+  const { deps, calls } = setup();
+  await loadUpdateNotice(deps);
+  await loadUpdateNotice(deps);
+  assert.equal(calls(), 1);
+  const result = await checkUpdateNow(deps);
+  assert.equal(calls(), 2);
+  assert.equal(result.status, 'available');
+});
+
+test('resultado: hay una version nueva con el boton de descarga', async () => {
+  const result = await checkUpdateNow(setup({ installed: '1.1.2', fetchLatest: async () => ({ status: 200, body: release({ tag_name: 'v1.1.3' }) }) }).deps);
+  assert.equal(result.status, 'available');
+  const message = describeUpdateResult(result);
+  assert.equal(message.headline, 'Hay una versión nueva (v1.1.3)');
+  assert.equal(message.installedLine, 'Versión instalada: v1.1.2');
+  assert.equal(message.notice?.version, 'v1.1.3');
+  assert.ok(message.notice?.apkUrl);
+});
+
+test('resultado: tienes la ultima version, con la version instalada siempre visible', async () => {
+  const result = await checkUpdateNow(setup({ installed: '1.2.0' }).deps);
+  const message = describeUpdateResult(result);
+  assert.equal(message.headline, 'Tienes la última versión (v1.2.0)');
+  assert.equal(message.installedLine, 'Versión instalada: v1.2.0');
+  assert.equal(message.notice, null);
+  const ahead = describeUpdateResult(await checkUpdateNow(setup({ installed: '1.9.0' }).deps));
+  assert.equal(ahead.headline, 'Tienes la última versión (v1.9.0)');
+});
+
+test('resultado: sin conexion', async () => {
+  const message = describeUpdateResult(await checkUpdateNow(setup({ fetchLatest: async () => { throw new Error('sin red'); } }).deps));
+  assert.equal(message.headline, 'Sin conexión');
+  assert.equal(message.installedLine, 'Versión instalada: v1.0.3');
+});
+
+test('resultado: GitHub limito las consultas y el limite de 24 h no se marca', async () => {
+  for (const status of [403, 429]) {
+    const { deps, settings } = setup({ fetchLatest: async () => ({ status, body: {} }) });
+    const message = describeUpdateResult(await checkUpdateNow(deps));
+    assert.equal(message.headline, 'GitHub limitó las consultas, intenta más tarde');
+    assert.equal(settings.data.has(UPDATE_KEYS.lastCheckAt), false);
+  }
+});
+
+test('resultado: respuesta no valida para cuerpo mal formado, prerelease y errores 5xx', async () => {
+  const bodies = [{ status: 200, body: { tag_name: 'nightly' } }, { status: 200, body: 'no es json' }, { status: 200, body: release({ prerelease: true }) }, { status: 500, body: {} }];
+  for (const response of bodies) {
+    const message = describeUpdateResult(await checkUpdateNow(setup({ fetchLatest: async () => response }).deps));
+    assert.equal(message.headline, 'Respuesta no válida', JSON.stringify(response).slice(0, 40));
+  }
+});
+
+test('resultado: sin releases publicadas (404) cuenta como la ultima version', async () => {
+  const message = describeUpdateResult(await checkUpdateNow(setup({ installed: '1.1.2', fetchLatest: async () => ({ status: 404, body: {} }) }).deps));
+  assert.equal(message.headline, 'Tienes la última versión (v1.1.2)');
+});
+
+test('si la version instalada no se puede leer, lo dice y no afirma nada', async () => {
+  const message = describeUpdateResult(await checkUpdateNow(setup({ installed: null }).deps));
+  assert.equal(message.headline, 'No se pudo leer la versión instalada');
+  assert.equal(message.installedLine, 'Versión instalada: no disponible');
+  assert.equal(installedLabel('basura'), null);
+  assert.equal(installedLabel('1.1.2'), 'v1.1.2');
+});
+
+test('la busqueda manual muestra la version aunque este descartada', async () => {
+  const { deps, settings } = setup();
+  settings.data.set(UPDATE_KEYS.dismissed, 'v1.2.0');
+  assert.equal(await loadUpdateNotice(deps), null);
+  assert.equal((await checkUpdateNow(deps)).status, 'available');
+});
+
+test('una busqueda manual exitosa marca el limite para que el aviso automatico no repita la consulta', async () => {
+  const { deps, calls } = setup();
+  await checkUpdateNow(deps);
+  await loadUpdateNotice(deps);
+  assert.equal(calls(), 1);
+});
+
+test('una busqueda manual fallida no marca el limite y el aviso automatico reintenta', async () => {
+  let status = 403;
+  const { deps, calls } = setup({ fetchLatest: async () => ({ status, body: status === 200 ? release() : {} }) });
+  assert.equal((await checkUpdateNow(deps)).status, 'error');
+  status = 200;
+  assert.equal((await loadUpdateNotice(deps))?.version, 'v1.2.0');
+  assert.equal(calls(), 2);
+});
+
+test('el boton esta en Mas, muestra la version instalada y no envia datos', () => {
+  assert.match(source('../app/(tabs)/more.tsx'), /<UpdateCheckCard \/>/);
+  const card = source('./pos/UpdateNotice.tsx');
+  assert.match(card, /accessibilityLabel="Buscar actualización"/);
+  assert.match(card, /Versión instalada: \$\{installedVersionText\(\)\}/);
+  const code = source('./updateCheck.ts');
+  assert.doesNotMatch(code, /install_id|getInstallId|authorization|token|store/i);
+  assert.match(code, /checkUpdateNow\(deps\(\)\)/);
 });

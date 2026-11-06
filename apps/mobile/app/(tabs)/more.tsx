@@ -10,7 +10,7 @@ import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { showAlert } from '../../src/pos/alert';
 import { getLocalSetting, resetAllData, seedColombianCatalog, setLocalSetting, updateAllStoreCurrencies } from '../../src/repos';
 import { clearCatalogQueue } from '../../src/catalog';
-import { UpdateNoticeCard, useUpdateNotice } from '../../src/pos/UpdateNotice';
+import { UpdateCheckCard, UpdateNoticeCard, useUpdateNotice } from '../../src/pos/UpdateNotice';
 import { CURRENCY_CYCLE } from '../../src/branding';
 import { resetAppCurrency, setAppCurrency, useAppCurrency } from '../../src/appCurrency';
 import { SEED_PRODUCTS } from '../../src/seedCatalog';
@@ -259,6 +259,7 @@ export default function More() {
           <Item t={t} icon="pulse-outline" label="Diagnóstico" onPress={() => router.push('/diagnostics')} last />
         </Group>
       </View>
+      <UpdateCheckCard />
 
       <Text style={[s.section, { color: t.muted }]}>GESTIÓN</Text>
       <Group t={t}>

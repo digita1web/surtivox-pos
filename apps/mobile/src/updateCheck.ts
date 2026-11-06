@@ -2,7 +2,8 @@ import Constants from 'expo-constants';
 import { getDb } from './db';
 import { getLocalSetting, setLocalSetting } from './repos';
 import {
-  RELEASES_LATEST_URL, dismissUpdate, loadUpdateNotice, type UpdateDeps, type UpdateNotice, type UpdateSettings,
+  RELEASES_LATEST_URL, checkUpdateNow, dismissUpdate, installedLabel, loadUpdateNotice,
+  type UpdateCheckResult, type UpdateDeps, type UpdateNotice, type UpdateSettings,
 } from './appUpdate';
 
 const REQUEST_TIMEOUT_MS = 6000;
@@ -44,4 +45,12 @@ export function checkForUpdate(): Promise<UpdateNotice | null> {
 
 export function dismissUpdateNotice(notice: UpdateNotice): Promise<void> {
   return dismissUpdate(settings, notice);
+}
+
+export function checkForUpdateNow(): Promise<UpdateCheckResult> {
+  return checkUpdateNow(deps());
+}
+
+export function installedVersionText(): string {
+  return installedLabel(Constants.expoConfig?.version ?? null) ?? 'no disponible';
 }
