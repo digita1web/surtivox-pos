@@ -27,3 +27,9 @@ test('restaurar no borra el kit del dispositivo ni deja entrar uno ajeno', () =>
   assert.deepEqual(rows, [{ key: 'appearance', value: 'light' }, { key: KIT_KEYS.entropy, value: 'propio' }]);
   assert.equal(restoreDeleteSql('products'), 'DELETE FROM "products"');
 });
+
+test('los borradores del asistente no viajan en las copias ni se pisan al restaurar', () => {
+  const rows = [{ key: 'product_wizard_draft:7701234567897', value: '{}' }, { key: 'appearance', value: 'dark' }];
+  assert.deepEqual(filterBackupRows('local_settings', rows), [{ key: 'appearance', value: 'dark' }]);
+  assert.match(restoreDeleteSql('local_settings'), /NOT LIKE 'product_wizard_draft:%'/);
+});
