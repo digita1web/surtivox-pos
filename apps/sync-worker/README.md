@@ -60,6 +60,7 @@ worker never receives or stores the words or the entropy behind them.
   the kit and the phone together means the cloud copy cannot be recovered. With
   80 bits and the checksum, a wrong word is caught about 99.5 % of the time;
   roughly 1 in 256 single-word typos still passes the checksum.
+- **Word list change.** 40 words of the list in `packages/pos-core/src/recoveryWords.ts` were replaced in place (same index). A kit created with the previous list that contains any of those words can no longer be recovered with the new list; test kits must be replaced with "Cambiar llave" and the new kit saved. The server is unaffected: it stores only the key hash.
 - **Apply the migration** (new `shop_keys` and `kit_attempts` tables) before
   deploying the Worker: `npx wrangler d1 execute surtivox-sync --remote --file=./migrations/0001_shop_keys.sql`.
 
