@@ -2,149 +2,156 @@
 
 # Surtivox POS
 
-**Un punto de venta offline que vive en tu bolsillo.**
+**Punto de venta offline para tiendas de barrio.**
 
-Maneja tu negocio desde tu Android o iPhone — vende, imprime recibos, controla
-el inventario y consulta tus ganancias, sin cuenta y sin necesidad de internet.
-Respaldo en la nube opcional y sincronización entre dispositivos.
+Vende y controla tu tienda desde un teléfono Android. El inventario, los fiados
+y los reportes se guardan en el dispositivo; el respaldo en la nube es opcional.
+No necesitas crear una cuenta para empezar.
 
 [![CI](https://github.com/digita1web/surtivox-pos/actions/workflows/ci.yml/badge.svg)](https://github.com/digita1web/surtivox-pos/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/digita1web/surtivox-pos/actions/workflows/codeql.yml/badge.svg)](https://github.com/digita1web/surtivox-pos/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/digita1web/surtivox-pos/badge)](https://securityscorecards.dev/viewer/?uri=github.com/digita1web/surtivox-pos)
 [![Licencia: Propietaria](https://img.shields.io/badge/Licencia-Propietaria-c0392b.svg)](LICENSE)
-![Plataforma](https://img.shields.io/badge/plataforma-Android%20%7C%20iOS-0fa678)
+![Plataforma](https://img.shields.io/badge/plataforma-Android-0fa678)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
 ![Hecho con Expo](https://img.shields.io/badge/hecho%20con-Expo-1f6feb?logo=expo&logoColor=white)
 
-[**Sitio web**](https://github.com/digita1web/surtivox-pos) · [**Funciones**](#funciones) · [**Documentación**](docs/)
+[**Sitio web**](https://digita1web.github.io/surtivox-pos/) · [**Descarga**](#descarga) · [**Funciones**](#funciones) · [**Documentación**](docs/)
 
-**Software Propietario - Todos los derechos reservados por Mateo Castro**
+**Software propietario - Todos los derechos reservados por Mateo Castro**
 
 </div>
 
 ---
 
-<div align="center">
-  <img src="docs/screenshots/01-home.png" width="24%" alt="Panel de inicio" />
-  <img src="docs/screenshots/02-products.png" width="24%" alt="Catálogo de productos" />
-  <img src="docs/screenshots/03-checkout.png" width="24%" alt="Cobro" />
-  <img src="docs/screenshots/05-reports.png" width="24%" alt="Reportes" />
-</div>
+## Plataforma
+
+Surtivox POS se distribuye hoy como **APK para Android**. El APK se publica en
+GitHub Releases y el proceso de compilación está documentado en
+[RELEASING.md](RELEASING.md).
+
+## Descarga
+
+- [Landing de Surtivox POS](https://digita1web.github.io/surtivox-pos/)
+- [Descargar Surtivox.apk](https://github.com/digita1web/surtivox-pos/releases/latest/download/Surtivox.apk)
+
+Si el navegador avisa que el archivo puede ser dañino, toca **Descargar de todos modos**.
 
 <div align="center">
-  <img src="docs/screenshots/04-sale-detail.png" width="24%" alt="Detalle de venta y devoluciones" />
-  <img src="docs/screenshots/06-sales.png" width="24%" alt="Historial de ventas" />
-  <img src="docs/screenshots/07-staff-lock.png" width="24%" alt="Inicio de sesión del personal" />
-  <img src="docs/screenshots/08-cart-products.png" width="24%" alt="Armado del carrito" />
+  <img src="landing/assets/qr-descarga.svg" width="160" alt="Código QR para abrir la página de descarga de Surtivox POS" />
 </div>
 
 ---
 
-## Por qué Surtivox
+<div align="center">
+  <img src="docs/screenshots/01-inicio.png" width="46%" alt="Pantalla de inicio con ventas del día, accesos rápidos y productos frecuentes" />
+  <img src="docs/screenshots/02-productos.png" width="46%" alt="Pantalla de productos con búsqueda, filtros de stock y aviso de producto por completar" />
+  <br />
+  <img src="docs/screenshots/03-ventas.png" width="46%" alt="Pantalla de ventas con filtros por periodo y total del día" />
+  <img src="docs/screenshots/04-mas-respaldo.png" width="46%" alt="Pantalla Más con la opción de respaldo en la nube" />
+</div>
 
-La mayoría de las apps de punto de venta asumen una conexión confiable, una
-suscripción mensual y una cuenta de comerciante antes de registrar una sola
-venta. Surtivox asume lo contrario: un teléfono, un tendero y una fila de
-clientes.
-
-- **Funciona en cualquier lugar.** Cada venta, producto y reporte se guarda en
-  el dispositivo con SQLite. Nunca se necesita conexión para vender.
-- **Sin cuenta para empezar.** Instala, ponle nombre a tu negocio y vende. El
-  registro no es un muro delante del producto.
-- **Los importes son exactos.** Todos los montos se guardan en unidades
-  menores enteras (centavos), nunca en punto flotante. Impuestos, descuentos y
-  cambio son exactos.
-- **Tus datos son tuyos.** Tus datos permanecen en tu
-  dispositivo salvo que decidas respaldarlos.
+---
 
 ## Funciones
 
-| | |
-|---|---|
-| 🧾 **Cobro rápido** | Agrega productos o escanea códigos de barras al carrito; efectivo, tarjeta, transferencia o crédito de tienda; cambio y sugerencias de efectivo. |
-| 📦 **Inventario** | Fotos reales de productos, categorías, SKU, códigos de barras, alertas de stock bajo por producto y avisos de agotado. |
-| 📷 **Escaneo de códigos** | Escanea para vender o agregar un producto, con búsqueda en Open Food Facts que completa nombre e imagen y se guarda localmente para usarla sin conexión. |
-| 👥 **Personal y roles** | PIN para dueño, gerente y cajero; cada venta queda asociada al cajero que la realizó, en pantalla y en el recibo. |
-| 🖨️ **Recibos y facturas** | Recibos personalizables (térmico de 58/80 mm o A4); imprime por Bluetooth, Wi-Fi o USB, o comparte una factura PDF. |
-| 📊 **Reportes** | Ventas diarias, semanales y mensuales, ganancia bruta, devoluciones, descuentos, medios de pago y productos más vendidos. |
-| 🏪 **Múltiples tiendas** | Maneja varias tiendas separadas en un mismo dispositivo, cada una con sus productos, personal, recibos y libros. |
-| ☁️ **Respaldo en la nube** *(opcional)* | Respalda tu negocio y sincroniza entre dispositivos. Vender sin conexión sigue siendo gratis. |
-| 🌙 **Modo oscuro** | Tema claro y oscuro en toda la app. |
+- **Ventas y cobro:** agrega productos o escanea códigos de barras; cobra en
+  efectivo, tarjeta, transferencia, billeteras o fiado. Calcula el cambio y
+  descuenta el inventario.
+- **Inventario:** fotos de productos, categorías, SKU, códigos de barras,
+  alertas de stock bajo y avisos de agotado.
+- **Fiados:** clientes con saldo calculado a partir de un libro de movimientos;
+  ventas a crédito, abonos y devoluciones a la cuenta del cliente.
+- **Reportes:** consulta hoy, 7 días y 30 días; ventas, ganancia bruta,
+  devoluciones, descuentos, métodos de pago y productos más vendidos.
+- **Escáner y alta guiada:** escanea para vender o agregar un producto. Si el
+  código no está registrado, la app ofrece registrarlo paso a paso con foto
+  opcional, nombre, marca, tamaño, categoría y precio.
+- **Recibos:** recibos de 58 mm, 80 mm y A4 mediante el servicio de impresión del sistema o PDF.
+- **Precios de referencia:** cuando hay conexión, consulta precios de
+  supermercados en COP como ayuda para fijar el precio. No cambia precios,
+  inventario ni ventas.
+- **Catálogo comunitario opcional:** si aceptas participar, la app puede
+  aportar código, nombre y presentación de productos nuevos. Sin tu
+  consentimiento no se envían aportes.
+- **Respaldo en la nube opcional:** respalda y sincroniza la tienda entre
+  dispositivos. Al activarlo se crea un kit de recuperación de 8 palabras.
+  Hoy el respaldo está en modo de prueba.
+- **Modo sin internet:** se vende sin internet; la consulta de productos, el catálogo y los precios de referencia necesitan conexión.
 
-## Asistente de producto desconocido
+También incluye personal con PIN y roles, varias tiendas en el mismo teléfono y
+tema claro u oscuro.
 
-Al escanear un código que no está en la tienda, la hoja de producto desconocido ofrece **Registrar paso a paso**:
+## Cómo se protege la información
 
-1. Bienvenida, con el código y las acciones "Empezar" y "Vender ahora sin registrar" (reabre la hoja para usar la venta única existente).
-2. Foto frontal opcional, que se queda en el teléfono.
-3. Nombre (obligatorio), marca y tamaño.
-4. Categoría, entre las que ya tiene la tienda.
-5. Precio (obligatorio), con los precios de referencia como ayuda.
+- Los datos de la tienda, las ventas, los productos, los clientes y los fiados
+  se guardan localmente en SQLite.
+- El respaldo en la nube es opcional. Si no lo activas, la tienda no se sube al
+  servicio de sincronización; las fotos de productos tampoco se sincronizan.
+- Los aportes al catálogo comunitario solo se envían si activaste la
+  participación. Incluyen código, nombre, presentación y un identificador
+  aleatorio de la instalación; no incluyen precios, ventas, clientes ni el
+  nombre de la tienda.
+- La consulta de un código desconocido envía únicamente el código a Open Food
+  Facts y al catálogo comunitario para buscar coincidencias. Los precios de
+  referencia también se consultan con el código de barras. Como en cualquier
+  conexión, el servicio que responde puede ver la dirección IP.
+- No se encontró analítica en la app.
 
-El avance se guarda como borrador en `local_settings` (clave `product_wizard_draft:<código>`, 7 días) y se puede continuar o empezar de nuevo al volver a escanear el código. Al crear el producto se agrega a la venta. Marca y tamaño se componen dentro del nombre porque el modelo de producto no tiene esos campos.
+## Fuentes de datos y atribuciones
 
-Al catálogo comunitario solo se envían código, nombre (con la marca) y presentación (el tamaño), y únicamente si el usuario aceptó participar en el catálogo; sin consentimiento no sale nada. La lógica está en `apps/mobile/src/productWizard*.ts` y la pantalla en `apps/mobile/app/product-wizard.tsx`.
+La app puede consultar nombres, marcas e imágenes de productos en
+[Open Food Facts](https://world.openfoodfacts.org). Su base de datos está
+disponible bajo la
+[Open Database License (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/1-0/),
+el contenido individual bajo la Database Contents License (DbCL) y las fotos de
+productos bajo Creative Commons Attribution-ShareAlike (CC BY-SA). Las imágenes
+y marcas de productos pertenecen a sus respectivos titulares. Surtivox POS no
+modifica precios, inventario ni ventas a partir de esos datos externos.
 
-## Planes
+La pantalla **Licencias y atribuciones** de la app reúne estos avisos.
 
-- **POS offline — gratis para siempre.** Vender, inventario, personal, recibos
-  y reportes no tienen costo y nunca necesitan conexión.
-- **Respaldo en la nube — opcional.** Copia de seguridad automática y
-  sincronización entre dispositivos; puedes cancelar cuando quieras.
+## Desarrollo
 
-## Tecnología
+Surtivox POS es un monorepo con pnpm. Requiere Node ≥ 22 y pnpm 10.
 
-React Native (Expo + Expo Router) · TypeScript · SQLite · Zustand ·
-monorepo con pnpm + Turborepo · Cloudflare Worker + D1 para sincronización
-opcional · suscripciones dentro de la app mediante Google Play / App Store
-(expo-iap).
-
+```text
+apps/
+  mobile/           # app Expo + React Native para Android
+  sync-worker/      # respaldo/sincronización y precios de referencia
+  catalog-worker/   # catálogo comunitario
+  payments-worker/  # worker de pagos
+packages/
+  pos-core/         # dinero, precios, ganancias y kit de recuperación
+  database/         # esquema SQLite, migraciones y sincronización
+  types/            # tipos compartidos
 ```
-surtivox-pos/
-  apps/
-    mobile/        # la app Expo (pantallas, repositorios, stores)
-    sync-worker/   # backend opcional de sincronización con Cloudflare Worker + D1
-  packages/
-    pos-core/      # motor de dinero + precios + ganancias (unidades menores enteras, con tests)
-    database/      # esquema SQLite, migraciones solo hacia adelante, metadatos de sincronización
-    types/         # tipos compartidos de dominio y sincronización
-  docs/            # arquitectura, base de datos, roadmap, capturas
-```
-
-## Ejecutar en local
-
-Requiere Node ≥ 22 y pnpm 10.
 
 ```bash
 pnpm install
-pnpm test                     # ejecuta las suites de pos-core y database
-
-cd apps/mobile
-npx expo run:android          # o: npx expo run:ios (build de desarrollo; cámara y código de barras requieren nativo)
+pnpm test           # pruebas de los paquetes y workers
+./scripts/verify.sh # typecheck y pruebas de apps/mobile
 ```
 
-En el primer inicio configurarás tu negocio en dos pasos (nombre + recibo) y
-ya podrás vender.
+El release de Android se explica en [RELEASING.md](RELEASING.md). La
+configuración de desarrollo y las reglas de arquitectura están en
+[docs/development.md](docs/development.md) y
+[docs/architecture.md](docs/architecture.md).
 
-Consulta [docs/development.md](docs/development.md) para la configuración
-completa y [docs/architecture.md](docs/architecture.md) para las reglas de
-capas.
+## Contacto y seguridad
 
-## Reportar errores y vulnerabilidades
-
-¿Encontraste un error o tienes una idea? Abre un issue en
+Para errores o ideas, abre un issue en
 [github.com/digita1web/surtivox-pos/issues](https://github.com/digita1web/surtivox-pos/issues).
-Revisamos los reportes con regularidad.
+Contacto: [pragramademateo@gmail.com](mailto:pragramademateo@gmail.com).
 
 Para una **vulnerabilidad de seguridad**, no abras un issue público; sigue el
 proceso privado descrito en [SECURITY.md](SECURITY.md).
 
 ## Licencia
 
-**Software Propietario - Todos los derechos reservados por Mateo Castro.** Consulta [LICENSE](LICENSE).
-Queda prohibida la copia, distribución, modificación o uso comercial sin autorización
-por escrito del titular. Para una licencia comercial escribe a
-[pragramademateo@gmail.com](mailto:pragramademateo@gmail.com).
+**Software propietario. © 2026 Mateo Castro (Surtivox POS). Todos los derechos
+reservados.** Consulta [LICENSE](LICENSE). Para una licencia comercial, usa el
+canal indicado en ese archivo.
 
 El código base inicial fue heredado de OpenPocket POS (licencia MIT); su aviso
 original se conserva en [LICENSES/MIT_LICENSE.txt](LICENSES/MIT_LICENSE.txt).
