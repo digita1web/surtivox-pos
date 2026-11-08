@@ -1,6 +1,6 @@
 # Deuda técnica
 
-Estado: **v1.0.3 beta de pruebas internas** (`versionCode` 6). No es un lanzamiento comercial. Este archivo es la lista de pendientes para la v1.0.4. Cada punto indica si fue **verificado** en el código o es una **hipótesis**.
+Estado: **v1.1.4, pruebas con tiendas piloto** (`versionCode` 10, [app.json](apps/mobile/app.json)). No es un lanzamiento comercial. Este archivo es la lista de pendientes. Cada punto indica si fue **verificado** en el código o es una **hipótesis**. Última revisión: 2026-11-08.
 
 ## Decisiones tomadas para la beta
 
@@ -159,9 +159,35 @@ Implementado sin desplegar: llave de 8 palabras generada en el teléfono, huella
 - Textos técnicos y en inglés en errores del servidor sin traducir fuera de los códigos conocidos ([syncErrors.ts](apps/mobile/src/syncErrors.ts)).
 - Accesibilidad: sin revisar con fuente al 200 % ni en pantallas pequeñas.
 
+## Dinero, facturas y fechas (2026-11-08)
+
+Cerrado en esta revisión, con prueba en `apps/mobile/src` (`checkoutSale.test.ts`, `processReturn.test.ts`, `customerPayment.test.ts`, `saleDoubleTap.test.ts`, `returnDiscount.test.ts`, `returnMethods.test.ts`, `reportProfit.test.ts`, `reportPayments.test.ts`, `effectiveLines.test.ts`, `localTime.test.ts`, `numberCollision.test.ts`):
+
+- **Descuento general mal repartido.** *Cerrado.* Las devoluciones y la utilidad usan el valor efectivo de cada renglón (total de la venta repartido por mayor resto, [effectiveLines.ts](apps/mobile/src/effectiveLines.ts)); lo guardado y lo que se sincroniza no cambió. Las devoluciones anteriores al arreglo conservan el valor que se reembolsó entonces.
+- **Devolución en efectivo de una venta fiada.** *Cerrado.* Una venta fiada solo se devuelve a la cuenta del cliente; una venta pagada, por el mismo medio o a la cuenta (Nequi y Daviplata como transferencia, porque la base solo admite `cash`, `card`, `bank` y `account`).
+- **Abono mayor que la deuda.** *Cerrado.* Se rechaza dentro de una transacción contra el saldo del libro.
+- **Doble toque y número de factura.** *Cerrado.* Guarda con `useRef` en Cobrar y Abonar, operaciones idénticas simultáneas rechazadas y distintas puestas en fila ([serialQueue.ts](apps/mobile/src/serialQueue.ts)), y `INV-n` calculado dentro de la transacción con el mayor sufijo. El defecto real no era una factura repetida sino un error de la restricción única (`UNIQUE sales.store_id, sales.invoice_no`) que bloqueaba toda venta nueva cuando un número traído de otro teléfono dejaba el conteo por debajo del mayor.
+- **Renombre por número repetido.** *Cerrado.* `resolveNumberCollision` sube `updated_at` y `version` de la fila local renombrada para que el cambio se envíe.
+- **Abonos en el reporte.** *Cerrado.* Tarjeta aparte "Abonos de fiados recibidos"; no se suman a ventas ni a utilidad. El libro no guarda el medio de pago del abono.
+- **Fechas del CSV y del nombre del respaldo.** *Cerrado.* Hora local del teléfono ([localTime.ts](apps/mobile/src/localTime.ts)).
+
+Abierto, descubierto o confirmado en esta auditoría:
+
+- **Ajuste manual de stock.** No existe: los únicos movimientos son `opening_stock`, `sale`, `sale_return` y `purchase`. Un conteo físico no se puede corregir.
+- **Anulación y devolución dobles con dos teléfonos.** `voidSaleOn` y `assertReturnable` solo miran la base local; dos teléfonos que anulan o devuelven lo mismo antes de sincronizar reponen stock y acreditan saldo dos veces. Hacen falta ids determinísticos (por ejemplo `void:<sale_item_id>`) en los movimientos y asientos de anulación.
+- **Categorías sin borrado lógico** (`categories` no tiene `deleted_at`).
+- **Sincronización automática.** `syncNow` solo se llama desde [cloud-sync.tsx](apps/mobile/app/cloud-sync.tsx) con el botón; la pantalla promete "Respaldo automático".
+- **Transacciones no exclusivas.** `anular` no pasa por la fila de [serialQueue.ts](apps/mobile/src/serialQueue.ts), y la descarga de la nube o la restauración corren con `foreign_keys` apagado en la única conexión mientras puede entrar una venta.
+- **No existe la fiada parcial:** una venta fiada carga todo el total a la cuenta e ignora el monto recibido.
+- **Cantidades enteras:** no hay venta por peso ni por fracción ([pricing.ts](packages/pos-core/src/pricing.ts)).
+- **Descuento por renglón:** la venta no lo admite; solo hay descuento general.
+- **Devoluciones previas al arreglo** que reembolsaron el valor sin descuento no se corrigen.
+- **Fechas en ISO/UTC** que siguen en [diagnostics.ts](apps/mobile/src/diagnostics.ts) (texto de soporte) y en nombres de copias internas de `safety/`.
+- **Sin probar en teléfono:** doble toque real, impresión del recibo con los valores nuevos y cambio de zona horaria del teléfono.
+
 ## Tests que faltan
 
-- Parte de escritura de `processReturn` (hoy solo se prueba `assertReturnable`).
+- ~~Parte de escritura de `processReturn`~~ (cubierta el 2026-11-08 con SQLite en memoria; ver la sección de dinero).
 - `restoreFromCloud` con un fallo a mitad de la carga.
 - `restoreFullBackup` con un respaldo parcial y con claves foráneas rotas.
 - Handler completo de `POST /pagos/crear` (400, 401, 503, 201).
