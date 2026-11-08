@@ -10,9 +10,10 @@ import { APP_CURRENCY } from './branding';
 import { getDb } from './db';
 import { validateBackupPayload, verifyBackupText } from './backupValidation';
 import { filterBackupRows, restoreDeleteSql } from './backupFilters';
+import { localDateStamp, localDateTimeText } from './localTime';
 
 const major = (minor: number, dec: number) => (minor / 10 ** dec).toFixed(dec);
-const stamp = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
+const stamp = () => localDateStamp(Date.now());
 
 async function writeAndShare(filename: string, csv: string): Promise<void> {
   const uri = FileSystem.cacheDirectory + filename;
@@ -37,7 +38,7 @@ export async function exportSales(store: Store): Promise<number> {
   const dec = APP_CURRENCY.decimals;
   const rows = await salesExportRows(store.id);
   const body = rows.map((r) => [
-    r.invoice_no, new Date(r.sold_at).toISOString(), r.product, String(r.quantity),
+    r.invoice_no, localDateTimeText(r.sold_at), r.product, String(r.quantity),
     major(r.unit_price, dec), major(r.line_total, dec), major(r.grand_total, dec),
   ]);
   const csv = toCsv(['invoice', 'date', 'product', 'quantity', 'unit_price', 'line_total', 'sale_total'], body);
