@@ -3,20 +3,16 @@
  * @surtivox/pos-core; screens never compute totals themselves.
  */
 import {
-  computeCart,
-  settlePayments,
-  roundHalfAwayFromZero,
-  asMinor,
-  asBps,
   suggestReorder,
-  type CartLineInput,
   type Minor,
   type SalesPoint,
 } from '@surtivox/pos-core';
 import { getDb } from './db';
 import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';
-import { voidSaleOn, assertReturnable } from './saleOps';
+import { voidSaleOn } from './saleOps';
+import { checkoutSaleOn, recordCustomerPaymentOn, type CheckoutLine, type CheckoutOptions, type Receipt } from './checkoutOps';
+import { getSaleOn, processReturnOn, type SaleDetail, type ReturnPick, type RefundMethod, type ReturnReceipt } from './returnOps';
 import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
 import { createInFlightRequests, fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceProviderError, type MarketPriceResult } from './marketPrices';
 import { type Role, hashPin, verifyPin } from './roles';
@@ -94,7 +90,8 @@ export interface Product {
   isQuick?: boolean; // true for ad-hoc "quick sale" lines with no catalog product
 }
 
-export type PaymentMethod = 'cash' | 'card' | 'wallet' | 'bank' | 'credit';
+export type { PaymentMethod, CheckoutProduct, CheckoutLine, CheckoutOptions, Receipt } from './checkoutOps';
+export type { SaleHeader, SaleItemRow, SaleDetail, RefundMethod, ReturnPick, ReturnReceipt } from './returnOps';
 
 const PRODUCT_SELECT = `
   SELECT p.id, p.name, p.barcode, p.image_uri, p.selling_price, p.cost_price, p.tax_bps,
@@ -607,118 +604,12 @@ export async function refreshMarketPrices(ean: string, force = false): Promise<M
   });
 }
 
-export interface CheckoutLine {
-  product: Product;
-  quantity: number;
-}
-
-export interface Receipt {
-  invoiceNo: string;
-  paymentMethod: PaymentMethod;
-  lines: { name: string; quantity: number; lineTotal: Minor }[];
-  subtotal: Minor;
-  discountTotal: Minor;
-  taxTotal: Minor;
-  grandTotal: Minor;
-  received: Minor;
-  change: Minor;
-  soldAt: number;
-}
-
-export interface CheckoutOptions {
-  paymentMethod: PaymentMethod;
-  received: Minor;                 // for card/bank pass grandTotal; ignored for credit
-  discountBps?: number;            // optional whole-order discount, basis points
-  customerId?: string | null;      // required for credit sales; optional otherwise
-  staffId?: string | null;         // who rang up the sale (null on legacy/unlocked stores)
-}
-
-/**
- * Atomic checkout: computes totals with pos-core, then writes sale + items
- * (with snapshots) + payment + negative stock movements in ONE transaction.
- * Throws (and rolls back) if cash payment is insufficient. Quick-sale lines
- * (isQuick) record product_id = NULL and create no stock movement.
- *
- * Credit sales record no payment row (nothing tendered) and add a +grandTotal
- * ledger entry against the customer; the balance is derived from the ledger.
- */
 export async function checkoutSale(
   storeId: string,
   lines: CheckoutLine[],
   opts: CheckoutOptions,
 ): Promise<Receipt> {
-  const db = getDb();
-  const isCredit = opts.paymentMethod === 'credit';
-  if (isCredit && !opts.customerId) throw new Error('Selecciona un cliente para una venta fiada');
-
-  const cartInputs: CartLineInput[] = lines.map((l) => ({
-    unitPrice: asMinor(l.product.selling_price),
-    quantity: l.quantity,
-    taxBps: asBps(l.product.tax_bps),
-  }));
-  const cartDiscount = opts.discountBps && opts.discountBps > 0
-    ? ({ kind: 'percent', bps: asBps(opts.discountBps) } as const)
-    : ({ kind: 'none' } as const);
-  const totals = computeCart(cartInputs, cartDiscount);
-  const settlement = isCredit
-    ? settlePayments(totals.grandTotal, [], { allowUnderpayment: true })
-    : settlePayments(totals.grandTotal, [{ amount: opts.received }]); // throws if short
-
-  const now = Date.now();
-  const saleId = newId();
-  const countRow = await db.getFirstAsync<{ c: number }>('SELECT COUNT(*) AS c FROM sales WHERE store_id=?', [storeId]);
-  const invoiceNo = `INV-${String((countRow?.c ?? 0) + 1).padStart(4, '0')}`;
-
-  await db.withTransactionAsync(async () => {
-    await db.runAsync(
-      `INSERT INTO sales (id,store_id,invoice_no,customer_id,staff_id,status,subtotal,discount_total,tax_total,grand_total,sold_at,created_at,updated_at,device_id,version)
-       VALUES (?,?,?,?,?,'completed',?,?,?,?,?,?,?,?,1)`,
-      [saleId, storeId, invoiceNo, opts.customerId ?? null, opts.staffId ?? null, totals.subtotal, totals.discountTotal, totals.taxTotal, totals.grandTotal, now, now, now, DEVICE_ID],
-    );
-    for (let i = 0; i < lines.length; i++) {
-      const l = lines[i]!;
-      const line = totals.lines[i]!;
-      const productId = l.product.isQuick ? null : l.product.id;
-      await db.runAsync(
-        `INSERT INTO sale_items (id,sale_id,product_id,product_name_snapshot,sku_snapshot,unit_cost,unit_price,quantity,discount,tax,line_total,created_at,device_id)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-        [newId(), saleId, productId, l.product.name, null, l.product.cost_price, l.product.selling_price, l.quantity, line.discount, line.tax, line.lineTotal, now, DEVICE_ID],
-      );
-      if (productId && (l.product.track_inventory ?? 1) === 1) {
-        await db.runAsync(
-          `INSERT INTO stock_movements (id,store_id,product_id,type,quantity_delta,reference_type,reference_id,created_at,device_id)
-           VALUES (?,?,?,'sale',?, 'sale', ?, ?, ?)`,
-          [newId(), storeId, productId, -l.quantity, saleId, now, DEVICE_ID],
-        );
-      }
-    }
-    if (isCredit) {
-      // Nothing tendered — charge the customer's account via the ledger.
-      await db.runAsync(
-        `INSERT INTO customer_ledger (id,store_id,customer_id,type,amount,reference_type,reference_id,created_at,device_id)
-         VALUES (?,?,?,'sale',?, 'sale', ?, ?, ?)`,
-        [newId(), storeId, opts.customerId ?? null, totals.grandTotal, saleId, now, DEVICE_ID],
-      );
-    } else {
-      await db.runAsync(
-        `INSERT INTO payments (id,sale_id,type,amount,created_at,device_id) VALUES (?,?,?,?,?,?)`,
-        [newId(), saleId, opts.paymentMethod, totals.grandTotal, now, DEVICE_ID],
-      );
-    }
-  });
-
-  return {
-    invoiceNo,
-    paymentMethod: opts.paymentMethod,
-    lines: lines.map((l, i) => ({ name: l.product.name, quantity: l.quantity, lineTotal: totals.lines[i]!.lineTotal })),
-    subtotal: totals.subtotal,
-    discountTotal: totals.discountTotal,
-    taxTotal: totals.taxTotal,
-    grandTotal: totals.grandTotal,
-    received: opts.received,
-    change: settlement.change,
-    soldAt: now,
-  };
+  return checkoutSaleOn(getDb(), { newId, deviceId: DEVICE_ID }, storeId, lines, opts);
 }
 
 export async function salesCount(): Promise<number> {
@@ -861,12 +752,7 @@ export async function customerLedger(customerId: string, limit = 100): Promise<L
 export async function recordCustomerPayment(
   storeId: string, customerId: string, amount: Minor, note?: string,
 ): Promise<void> {
-  if (amount <= 0) throw new Error('El pago debe ser mayor que cero');
-  await getDb().runAsync(
-    `INSERT INTO customer_ledger (id,store_id,customer_id,type,amount,reference_type,note,created_at,device_id)
-     VALUES (?,?,?,'payment',?, 'manual', ?, ?, ?)`,
-    [newId(), storeId, customerId, -amount, note?.trim() || null, Date.now(), DEVICE_ID],
-  );
+  await recordCustomerPaymentOn(getDb(), { newId, deviceId: DEVICE_ID }, storeId, customerId, amount, note);
 }
 
 export interface OutstandingTotal { totalOwed: number; customersWithBalance: number }
@@ -1069,124 +955,14 @@ export async function getReorderSuggestions(storeId: string): Promise<ReorderRow
 
 /* ------------------------------- returns -------------------------------- */
 
-export interface SaleHeader {
-  id: string; invoice_no: string; customer_id: string | null;
-  subtotal: number; discount_total: number; tax_total: number; grand_total: number;
-  sold_at: number; status: string; payment_method: string;
-  staff_name: string | null; // who rang up the sale, null on legacy/unlocked sales
-}
-export interface SaleItemRow {
-  id: string; product_id: string | null; name: string;
-  unit_price: number; unit_cost: number; quantity: number; tax: number; line_total: number;
-  track_inventory?: number | null;
-  returned: number; // units already returned across prior returns
-}
-export interface SaleDetail { header: SaleHeader; items: SaleItemRow[]; refundedTotal: number }
-
 export async function getSale(saleId: string): Promise<SaleDetail | null> {
-  const db = getDb();
-  const header = await db.getFirstAsync<SaleHeader>(
-    `SELECT sales.id, invoice_no, customer_id, subtotal, discount_total, tax_total, grand_total, sold_at, status,
-            COALESCE((SELECT type FROM payments WHERE sale_id = sales.id LIMIT 1), 'credit') AS payment_method,
-            (SELECT name FROM staff WHERE staff.id = sales.staff_id) AS staff_name
-     FROM sales WHERE sales.id = ?`, [saleId],
-  );
-  if (!header) return null;
-  const items = await db.getAllAsync<SaleItemRow>(
-    `SELECT si.id, si.product_id, si.product_name_snapshot AS name,
-            si.unit_price, si.unit_cost, si.quantity, si.tax, si.line_total,
-            p.track_inventory,
-            COALESCE((SELECT SUM(ri.quantity) FROM return_items ri WHERE ri.sale_item_id = si.id), 0) AS returned
-     FROM sale_items si LEFT JOIN products p ON p.id = si.product_id
-     WHERE si.sale_id = ?`, [saleId],
-  );
-  const r = await db.getFirstAsync<{ total: number }>(
-    `SELECT COALESCE(SUM(grand_total),0) AS total FROM returns WHERE sale_id = ?`, [saleId],
-  );
-  return { header, items, refundedTotal: r?.total ?? 0 };
+  return getSaleOn(getDb(), saleId);
 }
 
-export type RefundMethod = 'cash' | 'card' | 'bank' | 'account';
-export interface ReturnPick { saleItemId: string; quantity: number }
-export interface ReturnReceipt {
-  saleInvoice: string; refundMethod: RefundMethod;
-  lines: { name: string; quantity: number; lineTotal: Minor }[];
-  subtotal: Minor; taxTotal: Minor; grandTotal: Minor; createdAt: number;
-}
-
-/**
- * Process a return atomically: writes returns + return_items, restores stock
- * via positive 'sale_return' movements, and for an "account" refund reduces the
- * customer's balance with a negative ledger entry. Refund amounts are prorated
- * from each original line's snapshot so partial returns stay exact.
- */
 export async function processReturn(
   storeId: string, saleId: string, picks: ReturnPick[], refundMethod: RefundMethod, reason?: string,
 ): Promise<ReturnReceipt> {
-  const db = getDb();
-  const detail = await getSale(saleId);
-  if (!detail) throw new Error('No se encontró la venta');
-  if (detail.header.status !== 'completed') throw new Error('No se puede devolver una venta anulada');
-  if (refundMethod === 'account' && !detail.header.customer_id) {
-    throw new Error('Esta venta no tiene cliente para devolver a su cuenta');
-  }
-
-  const now = Date.now();
-  const returnId = newId();
-  const rows: { pick: ReturnPick; item: SaleItemRow; refundLine: number; refundTax: number }[] = [];
-  for (const pick of picks) {
-    if (pick.quantity <= 0) continue;
-    const item = detail.items.find((i) => i.id === pick.saleItemId);
-    if (!item) throw new Error('No se encontró el artículo en la venta');
-    const remaining = item.quantity - item.returned;
-    if (pick.quantity > remaining) throw new Error(`No puedes devolver más de ${remaining} de ${item.name}`);
-    // prorate from the original line snapshot so partial returns are exact
-    const refundLine = roundHalfAwayFromZero((item.line_total * pick.quantity) / item.quantity);
-    const refundTax = roundHalfAwayFromZero((item.tax * pick.quantity) / item.quantity);
-    rows.push({ pick, item, refundLine, refundTax });
-  }
-  if (rows.length === 0) throw new Error('Selecciona al menos un artículo para devolver');
-
-  const grandTotal = rows.reduce((n, r) => n + r.refundLine, 0);
-  const taxTotal = rows.reduce((n, r) => n + r.refundTax, 0);
-  const subtotal = grandTotal - taxTotal;
-
-  await db.withTransactionAsync(async () => {
-    await assertReturnable(db, saleId, rows.map((r) => ({ saleItemId: r.item.id, name: r.item.name, soldQuantity: r.item.quantity, quantity: r.pick.quantity })));
-    await db.runAsync(
-      `INSERT INTO returns (id,store_id,sale_id,customer_id,refund_method,subtotal,tax_total,grand_total,reason,created_at,updated_at,device_id,version)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1)`,
-      [returnId, storeId, saleId, detail.header.customer_id ?? null, refundMethod, subtotal, taxTotal, grandTotal, reason?.trim() || null, now, now, DEVICE_ID],
-    );
-    for (const { pick, item, refundLine, refundTax } of rows) {
-      await db.runAsync(
-        `INSERT INTO return_items (id,return_id,sale_item_id,product_id,product_name_snapshot,unit_cost,unit_price,quantity,tax,line_total,created_at,device_id)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
-        [newId(), returnId, item.id, item.product_id, item.name, item.unit_cost, item.unit_price, pick.quantity, refundTax, refundLine, now, DEVICE_ID],
-      );
-      if (item.product_id && item.track_inventory !== 0) {
-        await db.runAsync(
-          `INSERT INTO stock_movements (id,store_id,product_id,type,quantity_delta,reference_type,reference_id,created_at,device_id)
-           VALUES (?,?,?,'sale_return',?, 'return', ?, ?, ?)`,
-          [newId(), storeId, item.product_id, pick.quantity, returnId, now, DEVICE_ID],
-        );
-      }
-    }
-    if (refundMethod === 'account') {
-      await db.runAsync(
-        `INSERT INTO customer_ledger (id,store_id,customer_id,type,amount,reference_type,reference_id,created_at,device_id)
-         VALUES (?,?,?,'refund',?, 'return', ?, ?, ?)`,
-        [newId(), storeId, detail.header.customer_id, -grandTotal, returnId, now, DEVICE_ID],
-      );
-    }
-  });
-
-  return {
-    saleInvoice: detail.header.invoice_no,
-    refundMethod,
-    lines: rows.map((r) => ({ name: r.item.name, quantity: r.pick.quantity, lineTotal: r.refundLine as Minor })),
-    subtotal: subtotal as Minor, taxTotal: taxTotal as Minor, grandTotal: grandTotal as Minor, createdAt: now,
-  };
+  return processReturnOn(getDb(), { newId, deviceId: DEVICE_ID }, storeId, saleId, picks, refundMethod, reason);
 }
 
 /* ---------------------------- suppliers/purchases ----------------------- */
