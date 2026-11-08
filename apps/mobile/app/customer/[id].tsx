@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, Modal, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -129,13 +129,15 @@ function PaymentModal({ visible, onClose, onSubmit, t, max, decimals }: {
   const insets = useSafeAreaInsets();
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
+  const submitting = useRef(false);
   const parsed = (() => { try { return amount ? fromMajorString(amount, decimals) : asMinor(0); } catch { return asMinor(0); } })();
   const valid = parsed > 0 && parsed <= max;
 
   const submit = async () => {
-    if (!valid || busy) return;
+    if (!valid || busy || submitting.current) return;
+    submitting.current = true;
     setBusy(true);
-    try { await onSubmit(parsed); setAmount(''); } finally { setBusy(false); }
+    try { await onSubmit(parsed); setAmount(''); } finally { submitting.current = false; setBusy(false); }
   };
 
   return (

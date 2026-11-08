@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, Modal, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,6 +46,7 @@ export function CheckoutSheet() {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const submitting = useRef(false);
   const money = useMoney();
 
   if (!store) return null;
@@ -85,6 +86,8 @@ export function CheckoutSheet() {
   };
 
   const performCheckout = async () => {
+    if (submitting.current) return;
+    submitting.current = true;
     setBusy(true);
     try {
       const receipt = await checkoutSale(store.id, lines, {
@@ -97,6 +100,7 @@ export function CheckoutSheet() {
     } catch (e) {
       showAlert('No se pudo completar la venta', e instanceof Error ? e.message : String(e));
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   };

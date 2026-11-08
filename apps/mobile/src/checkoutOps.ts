@@ -1,5 +1,6 @@
 import { computeCart, settlePayments, asMinor, asBps, type CartLineInput, type Minor } from '@surtivox/pos-core';
 import type { SaleOpsDatabase, SaleOpsIds } from './saleOps.ts';
+import { runGuarded } from './serialQueue.ts';
 
 export type PaymentMethod = 'cash' | 'card' | 'wallet' | 'bank' | 'credit';
 
@@ -39,13 +40,36 @@ export interface CheckoutOptions {
   staffId?: string | null;
 }
 
-export async function checkoutSaleOn(
+export function checkoutSaleOn(
   db: SaleOpsDatabase,
   ids: SaleOpsIds,
   storeId: string,
   lines: CheckoutLine[],
   opts: CheckoutOptions,
   now: number = Date.now(),
+): Promise<Receipt> {
+  const key = JSON.stringify([
+    'sale', storeId, opts.paymentMethod, opts.received, opts.discountBps ?? 0, opts.customerId ?? null,
+    lines.map((l) => [l.product.id, l.product.name, l.product.selling_price, l.quantity]),
+  ]);
+  return runGuarded(key, 'Esta venta ya se está registrando. Espera un momento.', () => performCheckout(db, ids, storeId, lines, opts, now));
+}
+
+export async function nextInvoiceNumber(db: Pick<SaleOpsDatabase, 'getFirstAsync'>, storeId: string): Promise<string> {
+  const row = await db.getFirstAsync<{ n: number | null }>(
+    "SELECT MAX(CAST(SUBSTR(invoice_no, 5) AS INTEGER)) AS n FROM sales WHERE store_id=? AND invoice_no LIKE 'INV-%'",
+    [storeId],
+  );
+  return `INV-${String((row?.n ?? 0) + 1).padStart(4, '0')}`;
+}
+
+async function performCheckout(
+  db: SaleOpsDatabase,
+  ids: SaleOpsIds,
+  storeId: string,
+  lines: CheckoutLine[],
+  opts: CheckoutOptions,
+  now: number,
 ): Promise<Receipt> {
   const isCredit = opts.paymentMethod === 'credit';
   if (isCredit && !opts.customerId) throw new Error('Selecciona un cliente para una venta fiada');
@@ -64,10 +88,10 @@ export async function checkoutSaleOn(
     : settlePayments(totals.grandTotal, [{ amount: opts.received }]);
 
   const saleId = ids.newId();
-  const countRow = await db.getFirstAsync<{ c: number }>('SELECT COUNT(*) AS c FROM sales WHERE store_id=?', [storeId]);
-  const invoiceNo = `INV-${String((countRow?.c ?? 0) + 1).padStart(4, '0')}`;
+  let invoiceNo = '';
 
   await db.withTransactionAsync(async () => {
+    invoiceNo = await nextInvoiceNumber(db, storeId);
     await db.runAsync(
       `INSERT INTO sales (id,store_id,invoice_no,customer_id,staff_id,status,subtotal,discount_total,tax_total,grand_total,sold_at,created_at,updated_at,device_id,version)
        VALUES (?,?,?,?,?,'completed',?,?,?,?,?,?,?,?,1)`,
@@ -118,7 +142,7 @@ export async function checkoutSaleOn(
   };
 }
 
-export async function recordCustomerPaymentOn(
+export function recordCustomerPaymentOn(
   db: SaleOpsDatabase,
   ids: SaleOpsIds,
   storeId: string,
@@ -127,7 +151,20 @@ export async function recordCustomerPaymentOn(
   note?: string,
   now: number = Date.now(),
 ): Promise<void> {
-  if (amount <= 0) throw new Error('El pago debe ser mayor que cero');
+  if (amount <= 0) return Promise.reject(new Error('El pago debe ser mayor que cero'));
+  const key = JSON.stringify(['payment', storeId, customerId, amount]);
+  return runGuarded(key, 'Este abono ya se está registrando. Espera un momento.', () => insertPayment(db, ids, storeId, customerId, amount, note, now));
+}
+
+async function insertPayment(
+  db: SaleOpsDatabase,
+  ids: SaleOpsIds,
+  storeId: string,
+  customerId: string,
+  amount: Minor,
+  note: string | undefined,
+  now: number,
+): Promise<void> {
   await db.runAsync(
     `INSERT INTO customer_ledger (id,store_id,customer_id,type,amount,reference_type,note,created_at,device_id)
      VALUES (?,?,?,'payment',?, 'manual', ?, ?, ?)`,

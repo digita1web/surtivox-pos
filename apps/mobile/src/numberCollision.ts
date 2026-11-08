@@ -45,6 +45,7 @@ export async function resolveNumberCollision(
   table: string,
   column: string,
   row: Record<string, unknown>,
+  now: number = Date.now(),
 ): Promise<void> {
   const id = row.id;
   const storeId = row.store_id;
@@ -61,5 +62,8 @@ export async function resolveNumberCollision(
     return;
   }
   const renamed = await freeNumber(db, table, column, storeId, number, existing.id);
-  await db.runAsync(`UPDATE "${table}" SET "${column}"=? WHERE id=?`, [renamed, existing.id]);
+  await db.runAsync(
+    `UPDATE "${table}" SET "${column}"=?, updated_at=?, version=version+1 WHERE id=?`,
+    [renamed, now, existing.id],
+  );
 }

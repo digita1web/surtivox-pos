@@ -31,13 +31,13 @@ function addSale(db: DatabaseSync, id: string, invoice: string, createdAt: numbe
     .run(id, invoice, createdAt, createdAt, createdAt);
 }
 
-async function pull(db: DatabaseSync, rows: Row[]): Promise<void> {
+async function pull(db: DatabaseSync, rows: Row[], now?: number): Promise<void> {
   const a = adapter(db);
   const t = SYNC_TABLES.find((x) => x.name === 'sales')!;
   const numbered = NUMBERED_TABLES.find((n) => n.table === 'sales')!;
   db.exec('PRAGMA foreign_keys = OFF;');
   for (const row of rows) {
-    await resolveNumberCollision(a, numbered.table, numbered.column, row);
+    await resolveNumberCollision(a, numbered.table, numbered.column, row, now);
     db.prepare(upsertSql(t)).run(...(rowValues(t, row) as Param[]));
   }
 }
@@ -105,4 +105,39 @@ test('the same collision without resolution would abort the pull', () => {
   const t = SYNC_TABLES.find((x) => x.name === 'sales')!;
   const [row] = pushed(b);
   assert.throws(() => a.prepare(upsertSql(t)).run(...(rowValues(t, row!) as Param[])), /UNIQUE/);
+});
+
+const snapshot = (db: DatabaseSync) => (db.prepare('SELECT id, invoice_no, updated_at, version FROM sales ORDER BY id').all() as Row[])
+  .map((r) => `${r.id}:${r.invoice_no}:${r.updated_at}:${r.version}`);
+
+test('renaming the local row bumps updated_at and version so the new number is pushed', async () => {
+  const b = device();
+  addSale(b, 'bbbb2222', 'INV-0005', 2000);
+  const x = { id: 'aaaa1111', store_id: 's1', invoice_no: 'INV-0005', status: 'completed', subtotal: 100, discount_total: 0, tax_total: 0, grand_total: 100, sold_at: 1000, created_at: 1000, updated_at: 1000, device_id: 'd', version: 1 };
+  await pull(b, [x], 9_000_000);
+  const renamed = (b.prepare("SELECT invoice_no, updated_at, version FROM sales WHERE id='bbbb2222'").get() as { invoice_no: string; updated_at: number; version: number });
+  assert.deepEqual({ ...renamed }, { invoice_no: 'INV-0005-BBBB', updated_at: 9_000_000, version: 2 });
+  const toPush = pushed(b).filter((r) => Number(r.updated_at) > 5000).map((r) => r.id);
+  assert.deepEqual(toPush, ['bbbb2222']);
+});
+
+test('the rename reaches the other device and the exchange settles with no further renames', async () => {
+  const a = device();
+  const b = device();
+  addSale(a, 'aaaa1111', 'INV-0005', 1000);
+  addSale(b, 'bbbb2222', 'INV-0005', 2000);
+  let clock = 9_000_000;
+  const exchange = async () => {
+    await pull(a, pushed(b), clock++);
+    await pull(b, pushed(a), clock++);
+  };
+  await exchange();
+  await exchange();
+  const settledA = snapshot(a);
+  const settledB = snapshot(b);
+  for (let i = 0; i < 4; i++) await exchange();
+  assert.deepEqual(snapshot(a), settledA);
+  assert.deepEqual(snapshot(b), settledB);
+  assert.deepEqual(numbers(a), numbers(b));
+  assert.deepEqual(numbers(a), ['aaaa1111:INV-0005', 'bbbb2222:INV-0005-BBBB']);
 });
