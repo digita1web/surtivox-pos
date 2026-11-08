@@ -1,4 +1,5 @@
-import { roundHalfAwayFromZero, type Minor } from '@surtivox/pos-core';
+import type { Minor } from '@surtivox/pos-core';
+import { computeReturnRefunds } from './effectiveLines.ts';
 import { assertReturnable, type SaleOpsDatabase, type SaleOpsIds } from './saleOps.ts';
 
 export interface SaleHeader {
@@ -12,6 +13,8 @@ export interface SaleItemRow {
   unit_price: number; unit_cost: number; quantity: number; tax: number; line_total: number;
   track_inventory?: number | null;
   returned: number;
+  refunded: number;
+  refunded_tax: number;
 }
 export interface SaleDetail { header: SaleHeader; items: SaleItemRow[]; refundedTotal: number }
 
@@ -35,7 +38,9 @@ export async function getSaleOn(db: SaleOpsDatabase, saleId: string): Promise<Sa
     `SELECT si.id, si.product_id, si.product_name_snapshot AS name,
             si.unit_price, si.unit_cost, si.quantity, si.tax, si.line_total,
             p.track_inventory,
-            COALESCE((SELECT SUM(ri.quantity) FROM return_items ri WHERE ri.sale_item_id = si.id), 0) AS returned
+            COALESCE((SELECT SUM(ri.quantity) FROM return_items ri WHERE ri.sale_item_id = si.id), 0) AS returned,
+            COALESCE((SELECT SUM(ri.line_total) FROM return_items ri WHERE ri.sale_item_id = si.id), 0) AS refunded,
+            COALESCE((SELECT SUM(ri.tax) FROM return_items ri WHERE ri.sale_item_id = si.id), 0) AS refunded_tax
      FROM sale_items si LEFT JOIN products p ON p.id = si.product_id
      WHERE si.sale_id = ?`, [saleId],
   );
@@ -63,16 +68,21 @@ export async function processReturnOn(
   }
 
   const returnId = ids.newId();
-  const rows: { pick: ReturnPick; item: SaleItemRow; refundLine: number; refundTax: number }[] = [];
+  const wanted = new Map<string, number>();
   for (const pick of picks) {
     if (pick.quantity <= 0) continue;
+    wanted.set(pick.saleItemId, (wanted.get(pick.saleItemId) ?? 0) + pick.quantity);
+  }
+  const merged: ReturnPick[] = [...wanted].map(([saleItemId, quantity]) => ({ saleItemId, quantity }));
+  const shares = computeReturnRefunds(detail.header.grand_total, detail.items, merged);
+  const rows: { pick: ReturnPick; item: SaleItemRow; refundLine: number; refundTax: number }[] = [];
+  for (const pick of merged) {
     const item = detail.items.find((i) => i.id === pick.saleItemId);
     if (!item) throw new Error('No se encontró el artículo en la venta');
     const remaining = item.quantity - item.returned;
     if (pick.quantity > remaining) throw new Error(`No puedes devolver más de ${remaining} de ${item.name}`);
-    const refundLine = roundHalfAwayFromZero((item.line_total * pick.quantity) / item.quantity);
-    const refundTax = roundHalfAwayFromZero((item.tax * pick.quantity) / item.quantity);
-    rows.push({ pick, item, refundLine, refundTax });
+    const share = shares.find((x) => x.id === item.id)!;
+    rows.push({ pick, item, refundLine: share.line, refundTax: share.tax });
   }
   if (rows.length === 0) throw new Error('Selecciona al menos un artículo para devolver');
 

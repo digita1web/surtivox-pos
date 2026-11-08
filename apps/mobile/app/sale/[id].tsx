@@ -3,7 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { showAlert } from '../../src/pos/alert';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { roundHalfAwayFromZero, asMinor, type Minor } from '@surtivox/pos-core';
+import { asMinor, type Minor } from '@surtivox/pos-core';
+import { computeReturnRefunds } from '../../src/effectiveLines';
 import { getSale, processReturn, type SaleDetail, type RefundMethod } from '../../src/repos';
 import { useSession, useRole } from '../../src/session';
 import { can } from '../../src/roles';
@@ -38,11 +39,8 @@ export default function SaleDetailScreen() {
 
   const refundPreview = useMemo(() => {
     if (!detail) return 0;
-    return detail.items.reduce((sum, it) => {
-      const q = picks[it.id] ?? 0;
-      if (q <= 0) return sum;
-      return sum + roundHalfAwayFromZero((it.line_total * q) / it.quantity);
-    }, 0);
+    const picked = Object.entries(picks).map(([saleItemId, quantity]) => ({ saleItemId, quantity }));
+    return computeReturnRefunds(detail.header.grand_total, detail.items, picked).reduce((sum, share) => sum + share.line, 0);
   }, [detail, picks]);
 
   const anySelected = refundPreview > 0;

@@ -12,6 +12,7 @@ import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';
 import { voidSaleOn } from './saleOps';
 import { checkoutSaleOn, recordCustomerPaymentOn, type CheckoutLine, type CheckoutOptions, type Receipt } from './checkoutOps';
+import { reportSummaryOn, type ReportSummary } from './reportOps';
 import { getSaleOn, processReturnOn, type SaleDetail, type ReturnPick, type RefundMethod, type ReturnReceipt } from './returnOps';
 import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
 import { createInFlightRequests, fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceProviderError, type MarketPriceResult } from './marketPrices';
@@ -771,43 +772,10 @@ export async function outstandingCredit(storeId: string): Promise<OutstandingTot
 
 /* -------------------------------- reports ------------------------------- */
 
-export interface ReportSummary {
-  totalSales: number;   // grand totals (incl. tax) in range
-  transactions: number;
-  itemsSold: number;    // net of returns
-  grossProfit: number;  // net revenue (excl. tax) − cost snapshots, net of returns
-  discountTotal: number;
-  refundTotal: number;  // money refunded in range
-}
+export type { ReportSummary } from './reportOps';
 
 export async function reportSummary(storeId: string, since: number): Promise<ReportSummary> {
-  const db = getDb();
-  const s = await db.getFirstAsync<{ total: number; txns: number; disc: number }>(
-    `SELECT COALESCE(SUM(grand_total),0) AS total, COUNT(*) AS txns, COALESCE(SUM(discount_total),0) AS disc
-     FROM sales WHERE store_id=? AND status='completed' AND sold_at>=?`, [storeId, since],
-  );
-  const it = await db.getFirstAsync<{ items: number; profit: number }>(
-    `SELECT COALESCE(SUM(si.quantity),0) AS items,
-            COALESCE(SUM((si.line_total - si.tax) - si.unit_cost * si.quantity),0) AS profit
-     FROM sale_items si JOIN sales s ON s.id = si.sale_id
-     WHERE s.store_id=? AND s.status='completed' AND s.sold_at>=?`, [storeId, since],
-  );
-  // Returns net out items sold and profit, and total up refunds paid.
-  const ret = await db.getFirstAsync<{ refund: number; items: number; profit: number }>(
-    `SELECT COALESCE(SUM(ri.line_total),0) AS refund,
-            COALESCE(SUM(ri.quantity),0) AS items,
-            COALESCE(SUM((ri.line_total - ri.tax) - ri.unit_cost * ri.quantity),0) AS profit
-     FROM return_items ri JOIN returns r ON r.id = ri.return_id
-     WHERE r.store_id=? AND r.created_at>=?`, [storeId, since],
-  );
-  return {
-    totalSales: s?.total ?? 0,
-    transactions: s?.txns ?? 0,
-    discountTotal: s?.disc ?? 0,
-    refundTotal: ret?.refund ?? 0,
-    itemsSold: (it?.items ?? 0) - (ret?.items ?? 0),
-    grossProfit: (it?.profit ?? 0) - (ret?.profit ?? 0),
-  };
+  return reportSummaryOn(getDb(), storeId, since);
 }
 
 export interface PaymentSlice { type: string; amount: number }
