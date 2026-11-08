@@ -63,3 +63,13 @@ export async function reportSummaryOn(db: SaleOpsDatabase, storeId: string, sinc
     grossProfit: profit - (ret?.profit ?? 0),
   };
 }
+
+export interface PaymentsReceived { total: number; count: number }
+
+export async function paymentsReceivedOn(db: SaleOpsDatabase, storeId: string, since: number): Promise<PaymentsReceived> {
+  const row = await db.getFirstAsync<{ total: number; n: number }>(
+    `SELECT COALESCE(-SUM(amount),0) AS total, COUNT(*) AS n
+     FROM customer_ledger WHERE store_id=? AND type='payment' AND created_at>=?`, [storeId, since],
+  );
+  return { total: row?.total ?? 0, count: row?.n ?? 0 };
+}

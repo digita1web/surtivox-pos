@@ -12,7 +12,7 @@ import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';
 import { voidSaleOn } from './saleOps';
 import { checkoutSaleOn, recordCustomerPaymentOn, type CheckoutLine, type CheckoutOptions, type Receipt } from './checkoutOps';
-import { reportSummaryOn, type ReportSummary } from './reportOps';
+import { reportSummaryOn, paymentsReceivedOn, type ReportSummary, type PaymentsReceived } from './reportOps';
 import { getSaleOn, processReturnOn, type SaleDetail, type ReturnPick, type RefundMethod, type ReturnReceipt } from './returnOps';
 import { seedColombianCatalog as runSeedCatalog, type SeedResult } from './seedCatalog';
 import { createInFlightRequests, fetchMarketPrices, isMarketPricesStale, marketPricesRefreshFailureStatus, MarketPricesError, type MarketPriceErrorKind, type MarketPriceProviderError, type MarketPriceResult } from './marketPrices';
@@ -776,6 +776,12 @@ export type { ReportSummary } from './reportOps';
 
 export async function reportSummary(storeId: string, since: number): Promise<ReportSummary> {
   return reportSummaryOn(getDb(), storeId, since);
+}
+
+export type { PaymentsReceived } from './reportOps';
+
+export async function paymentsReceived(storeId: string, since: number): Promise<PaymentsReceived> {
+  return paymentsReceivedOn(getDb(), storeId, since);
 }
 
 export interface PaymentSlice { type: string; amount: number }

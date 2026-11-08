@@ -7,8 +7,8 @@ import { Chip, ChipRow } from '../src/pos/kit';
 import { Ionicons } from '@expo/vector-icons';
 import { asMinor } from '@surtivox/pos-core';
 import {
-  reportSummary, paymentBreakdown, bestSellers, lowStockProducts, outstandingCredit,
-  type ReportSummary, type PaymentSlice, type BestSeller, type LowStockItem, type OutstandingTotal,
+  reportSummary, paymentBreakdown, paymentsReceived, bestSellers, lowStockProducts, outstandingCredit,
+  type ReportSummary, type PaymentsReceived, type PaymentSlice, type BestSeller, type LowStockItem, type OutstandingTotal,
 } from '../src/repos';
 import { useSession } from '../src/session';
 import { useMoney } from '../src/pos/ui';
@@ -44,6 +44,7 @@ export default function Reports() {
   const [range, setRange] = useState<Range>('today');
   const [summary, setSummary] = useState<ReportSummary>({ totalSales: 0, transactions: 0, itemsSold: 0, grossProfit: 0, discountTotal: 0, refundTotal: 0 });
   const [payments, setPayments] = useState<PaymentSlice[]>([]);
+  const [received, setReceived] = useState<PaymentsReceived>({ total: 0, count: 0 });
   const [sellers, setSellers] = useState<BestSeller[]>([]);
   const [lowStock, setLowStock] = useState<LowStockItem[]>([]);
   const [credit, setCredit] = useState<OutstandingTotal>({ totalOwed: 0, customersWithBalance: 0 });
@@ -52,6 +53,7 @@ export default function Reports() {
     const s = since(r);
     reportSummary(store.id, s).then(setSummary);
     paymentBreakdown(store.id, s).then(setPayments);
+    paymentsReceived(store.id, s).then(setReceived);
     bestSellers(store.id, s).then(setSellers);
     lowStockProducts(store.id).then(setLowStock);
     outstandingCredit(store.id).then(setCredit);
@@ -91,6 +93,10 @@ export default function Reports() {
           <Stat t={t} icon="wallet-outline" label="Ventas netas" value={money(asMinor(summary.totalSales - summary.refundTotal))} tint={t.accent} />
         </View>
 
+        <Text style={{ color: t.muted, fontSize: 12, marginTop: 10 }}>
+          Las ventas incluyen las fiadas. Los abonos que reciben los clientes se muestran aparte.
+        </Text>
+
         {/* payment methods */}
         <Text style={[s.section, { color: t.fg }]}>Métodos de pago</Text>
         <View style={[s.card, { backgroundColor: t.panel, borderColor: t.line }]}>
@@ -109,6 +115,21 @@ export default function Reports() {
               </View>
             );
           })}
+        </View>
+
+        {/* customer payments (abonos) */}
+        <Text style={[s.section, { color: t.fg }]}>Abonos de fiados recibidos</Text>
+        <View style={[s.card, { backgroundColor: t.panel, borderColor: t.line }]}>
+          <View style={s.payRow}>
+            <Ionicons name="cash-outline" size={18} color={t.ok} />
+            <Text style={{ color: t.fg, fontWeight: '600', flex: 1, marginLeft: 8 }}>
+              {received.count} abono{received.count === 1 ? '' : 's'}
+            </Text>
+            <Text style={{ color: t.fg, fontWeight: '800', fontSize: 16 }}>{money(asMinor(received.total))}</Text>
+          </View>
+          <Text style={{ color: t.muted, fontSize: 12, marginTop: 6 }}>
+            Dinero que los clientes pagaron de deudas anteriores. No está sumado a las ventas ni a la ganancia.
+          </Text>
         </View>
 
         {/* best sellers */}
