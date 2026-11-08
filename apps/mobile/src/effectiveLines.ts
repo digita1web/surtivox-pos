@@ -89,3 +89,30 @@ export function computeReturnRefunds(
   }
   return shares;
 }
+
+export type RefundChoice = 'cash' | 'card' | 'bank' | 'account';
+
+export function allowedRefundMethods(paymentMethod: string, hasCustomer: boolean): RefundChoice[] {
+  if (paymentMethod === 'credit') return hasCustomer ? ['account'] : [];
+  const direct: RefundChoice = paymentMethod === 'cash' ? 'cash' : paymentMethod === 'card' ? 'card' : 'bank';
+  return hasCustomer ? [direct, 'account'] : [direct];
+}
+
+const PAID_WITH: Record<string, string> = {
+  cash: 'efectivo',
+  card: 'tarjeta',
+  bank: 'transferencia',
+  wallet: 'Nequi o Daviplata',
+};
+
+export function refundMethodError(paymentMethod: string, hasCustomer: boolean): string {
+  if (paymentMethod === 'credit') {
+    return hasCustomer
+      ? 'Esta venta fue fiada y no se ha pagado en caja: la devolución solo se puede abonar a la cuenta del cliente.'
+      : 'Esta venta fue fiada y no tiene cliente: no se puede devolver.';
+  }
+  const label = PAID_WITH[paymentMethod] ?? 'otro medio';
+  return hasCustomer
+    ? `Esta venta se pagó con ${label}: devuelve por ese medio o a la cuenta del cliente.`
+    : `Esta venta se pagó con ${label}: la devolución debe hacerse por ese medio.`;
+}

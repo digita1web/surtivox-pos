@@ -1,5 +1,5 @@
 import type { Minor } from '@surtivox/pos-core';
-import { computeReturnRefunds } from './effectiveLines.ts';
+import { allowedRefundMethods, computeReturnRefunds, refundMethodError } from './effectiveLines.ts';
 import { assertReturnable, type SaleOpsDatabase, type SaleOpsIds } from './saleOps.ts';
 
 export interface SaleHeader {
@@ -65,6 +65,10 @@ export async function processReturnOn(
   if (detail.header.status !== 'completed') throw new Error('No se puede devolver una venta anulada');
   if (refundMethod === 'account' && !detail.header.customer_id) {
     throw new Error('Esta venta no tiene cliente para devolver a su cuenta');
+  }
+  const allowed = allowedRefundMethods(detail.header.payment_method, Boolean(detail.header.customer_id));
+  if (!allowed.includes(refundMethod)) {
+    throw new Error(refundMethodError(detail.header.payment_method, Boolean(detail.header.customer_id)));
   }
 
   const returnId = ids.newId();

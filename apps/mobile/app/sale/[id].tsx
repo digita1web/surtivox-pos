@@ -4,7 +4,7 @@ import { showAlert } from '../../src/pos/alert';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { asMinor, type Minor } from '@surtivox/pos-core';
-import { computeReturnRefunds } from '../../src/effectiveLines';
+import { allowedRefundMethods, computeReturnRefunds } from '../../src/effectiveLines';
 import { getSale, processReturn, type SaleDetail, type RefundMethod } from '../../src/repos';
 import { useSession, useRole } from '../../src/session';
 import { can } from '../../src/roles';
@@ -44,16 +44,21 @@ export default function SaleDetailScreen() {
   }, [detail, picks]);
 
   const anySelected = refundPreview > 0;
-  const methods = detail?.header.customer_id ? METHODS : METHODS.filter((m) => m.key !== 'account');
+  const allowed = detail ? allowedRefundMethods(detail.header.payment_method, Boolean(detail.header.customer_id)) : [];
+  const isWallet = detail?.header.payment_method === 'wallet';
+  const methods = METHODS
+    .filter((m) => allowed.includes(m.key))
+    .map((m) => (isWallet && m.key === 'bank' ? { ...m, label: 'Nequi / Daviplata' } : m));
+  const activeMethod: RefundMethod | null = allowed.includes(method) ? method : (allowed[0] ?? null);
 
   const submit = async () => {
-    if (!detail || !anySelected || busy) return;
+    if (!detail || !anySelected || busy || !activeMethod) return;
     setBusy(true);
     try {
       const list = Object.entries(picks).filter(([, q]) => q > 0).map(([saleItemId, quantity]) => ({ saleItemId, quantity }));
-      const r = await processReturn(store.id, detail.header.id, list, method);
-      const methodLabel = METHODS.find((m) => m.key === method)?.label ?? method;
-      showAlert('Devolución procesada', `Se devolvieron ${money(r.grandTotal)} por ${method === 'account' ? 'la cuenta del cliente' : methodLabel}.`);
+      const r = await processReturn(store.id, detail.header.id, list, activeMethod);
+      const methodLabel = methods.find((m) => m.key === activeMethod)?.label ?? activeMethod;
+      showAlert('Devolución procesada', `Se devolvieron ${money(r.grandTotal)} por ${activeMethod === 'account' ? 'la cuenta del cliente' : methodLabel}.`);
       refresh();
     } catch (e) {
       showAlert('No se pudo procesar la devolución', e instanceof Error ? e.message : String(e));
@@ -166,9 +171,15 @@ export default function SaleDetailScreen() {
       {showReturns && (
         <>
           <Text style={[ty.h2, s.section, { color: t.fg }]}>Método de devolución</Text>
+          {header.payment_method === 'credit' && (
+            <View style={[s.noteRow, { backgroundColor: t.accentSoft, marginTop: 0, marginBottom: space.sm }]}>
+              <Ionicons name="information-circle-outline" size={16} color={t.muted} />
+              <Text style={[ty.small, { color: t.muted, marginLeft: space.sm, flex: 1 }]}>Esta venta se fió: la devolución se abona a la cuenta del cliente y no sale dinero de la caja.</Text>
+            </View>
+          )}
           <View style={s.methods}>
             {methods.map((m) => {
-              const on = method === m.key;
+              const on = activeMethod === m.key;
               return (
                 <Pressable key={m.key} onPress={() => setMethod(m.key)}
                   style={[s.method, { borderColor: on ? t.accent : t.line, backgroundColor: on ? t.accentSoft : t.panel }]}>
