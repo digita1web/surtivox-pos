@@ -137,7 +137,15 @@ function PaymentModal({ visible, onClose, onSubmit, t, max, decimals }: {
     if (!valid || busy || submitting.current) return;
     submitting.current = true;
     setBusy(true);
-    try { await onSubmit(parsed); setAmount(''); } finally { submitting.current = false; setBusy(false); }
+    try {
+      await onSubmit(parsed);
+      setAmount('');
+    } catch (e) {
+      showAlert('No se pudo registrar el abono', e instanceof Error ? e.message : String(e));
+    } finally {
+      submitting.current = false;
+      setBusy(false);
+    }
   };
 
   return (

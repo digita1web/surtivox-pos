@@ -151,7 +151,7 @@ export function recordCustomerPaymentOn(
   note?: string,
   now: number = Date.now(),
 ): Promise<void> {
-  if (amount <= 0) return Promise.reject(new Error('El pago debe ser mayor que cero'));
+  if (!Number.isSafeInteger(amount) || amount <= 0) return Promise.reject(new Error('El pago debe ser un número entero mayor que cero'));
   const key = JSON.stringify(['payment', storeId, customerId, amount]);
   return runGuarded(key, 'Este abono ya se está registrando. Espera un momento.', () => insertPayment(db, ids, storeId, customerId, amount, note, now));
 }
@@ -165,9 +165,18 @@ async function insertPayment(
   note: string | undefined,
   now: number,
 ): Promise<void> {
-  await db.runAsync(
-    `INSERT INTO customer_ledger (id,store_id,customer_id,type,amount,reference_type,note,created_at,device_id)
-     VALUES (?,?,?,'payment',?, 'manual', ?, ?, ?)`,
-    [ids.newId(), storeId, customerId, -amount, note?.trim() || null, now, ids.deviceId],
-  );
+  await db.withTransactionAsync(async () => {
+    const row = await db.getFirstAsync<{ balance: number }>(
+      'SELECT COALESCE(SUM(amount),0) AS balance FROM customer_ledger WHERE customer_id=?',
+      [customerId],
+    );
+    const balance = row?.balance ?? 0;
+    if (balance <= 0) throw new Error('Este cliente no tiene deuda pendiente.');
+    if (amount > balance) throw new Error('El abono no puede ser mayor que lo que el cliente debe.');
+    await db.runAsync(
+      `INSERT INTO customer_ledger (id,store_id,customer_id,type,amount,reference_type,note,created_at,device_id)
+       VALUES (?,?,?,'payment',?, 'manual', ?, ?, ?)`,
+      [ids.newId(), storeId, customerId, -amount, note?.trim() || null, now, ids.deviceId],
+    );
+  });
 }
