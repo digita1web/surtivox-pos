@@ -13,24 +13,34 @@ permissions:
 
 jobs:
   test:
-    name: Tests (pos-core + database)
+    name: Tipos y tests (monorepo)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           version: 10.17.1
 
-      # Node 24 runs the TypeScript test files directly (native type stripping),
-      # matching local dev. `node --test` lives in packages/*/package.json.
+      # Node 22 is the minimum the repo declares (engines) and what the
+      # Android build uses. It runs the TypeScript test files directly
+      # (native type stripping). `node --test` lives in packages/*/package.json.
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 24
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests
+      - name: Typecheck and tests for apps/mobile
+        run: bash scripts/verify.sh
+
+      - name: Typecheck every package
+        run: pnpm -r typecheck
+
+      - name: Tests for packages and workers
         run: pnpm test
