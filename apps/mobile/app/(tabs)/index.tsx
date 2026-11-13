@@ -12,7 +12,7 @@ import { useSession, useRole } from '../../src/session';
 import { can } from '../../src/roles';
 import { useCheckoutUI } from '../../src/checkoutUI';
 import { useCart } from '../../src/cart';
-import { useCloudEntitlement } from '../../src/subscription';
+import { useCloudConnected } from '../../src/useCloudConnected';
 import { HomeHeader } from '../../src/pos/HomeHeader';
 import { ActionCard } from '../../src/pos/ActionCard';
 import { FrequentProductCard } from '../../src/pos/FrequentProductCard';
@@ -31,7 +31,7 @@ import { exportFullBackup } from '../../src/backup';
 import { backupReminderText, backupSnoozeUntil, shouldRemindBackup } from '../../src/backupReminder';
 import { showAlert } from '../../src/pos/alert';
 import { UpdateNoticeCard, useUpdateNotice } from '../../src/pos/UpdateNotice';
-import { kitReminderNow, snoozeKitReminder, getSyncState, isConfigured, hasHostedSync } from '../../src/sync';
+import { kitReminderNow, snoozeKitReminder, hasHostedSync } from '../../src/sync';
 import { RECOVER_CARD_ACTION, RECOVER_CARD_TITLE, showRecoverCardOnHome } from '../../src/recoverAccess';
 
 export default function Home() {
@@ -48,7 +48,7 @@ export default function Home() {
   const salesVersion = useCheckoutUI((s) => s.salesVersion);
   const role = useRole();
   const canProducts = can(role, 'products');
-  const cloud = useCloudEntitlement();
+  const cloud = useCloudConnected();
   const [stats, setStats] = useState<TodayStats>({ totalSales: 0, orders: 0, itemsSold: 0 });
   const [strip, setStrip] = useState<Product[]>([]);
   const [alerts, setAlerts] = useState<LowStockItem[]>([]);
@@ -58,7 +58,6 @@ export default function Home() {
   const [backupBusy, setBackupBusy] = useState(false);
   const [recoveryMissing, setRecoveryMissing] = useState(false);
   const update = useUpdateNotice();
-  const [cloudConnected, setCloudConnected] = useState(false);
   const [kitNudge, setKitNudge] = useState<{ title: string; body: string } | null>(null);
   const me = useSession((state) => state.staff);
   const staffTotal = useSession((state) => state.staffCount);
@@ -114,7 +113,6 @@ export default function Home() {
     cloud.refresh();
     void refreshBackupNudge();
     kitReminderNow().then(setKitNudge).catch(() => setKitNudge(null));
-    getSyncState().then((state) => setCloudConnected(isConfigured(state))).catch(() => setCloudConnected(false));
   }, [store.id, salesVersion, cloud.refresh, refreshBackupNudge, me?.role, staffTotal]));
 
   const saveBackup = async () => {
@@ -172,7 +170,7 @@ export default function Home() {
             : <ActionCard icon="barcode-outline" title="Escanear y vender" hint="Escanea un código de barras" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={() => router.push('/scan')} />}
         </View>
 
-        {showRecoverCardOnHome({ hosted: hasHostedSync(), canSync: can(role, 'sync'), cloudConnected, productCount: strip.length, orderCount: stats.orders }) ? (
+        {showRecoverCardOnHome({ hosted: hasHostedSync(), canSync: can(role, 'sync'), cloudConnected: cloud.active, productCount: strip.length, orderCount: stats.orders }) ? (
           <Pressable
             onPress={() => router.push('/recover')}
             accessibilityRole="button"

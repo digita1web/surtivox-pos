@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession, useRole } from '../../src/session';
 import { can, ROLE_LABEL } from '../../src/roles';
-import { useCloudEntitlement } from '../../src/subscription';
+import { useCloudConnected } from '../../src/useCloudConnected';
 import { useTheme, initials, space, type Theme } from '../../src/theme';
 import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { showAlert } from '../../src/pos/alert';
@@ -30,7 +30,7 @@ export default function More() {
   const signOut = useSession((s) => s.signOut);
   const reload = useSession((s) => s.load);
   const role = useRole();
-  const cloud = useCloudEntitlement();
+  const cloud = useCloudConnected();
   const [reminderCount, setReminderCount] = useState(0);
   const [resetting, setResetting] = useState(false);
   const [seeding, setSeeding] = useState(false);
