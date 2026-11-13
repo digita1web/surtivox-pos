@@ -11,6 +11,7 @@ import { SyncHttpError } from '../src/syncErrors';
 import type { KitStatus } from '../src/kitOps';
 import { RECOVER_CARD_ACTION, RECOVER_CARD_TITLE, RECOVER_REPLACE_WARNING, recoverEntryOnCloudScreen } from '../src/recoverAccess';
 import { getLocalSetting } from '../src/repos';
+import { DEVELOPER_MODE_KEY, isDeveloperMode } from '../src/developerMode';
 import { newId } from '../src/id';
 import { CLOUD_NOTICE } from '../src/legalText';
 import { useSession } from '../src/session';
@@ -31,7 +32,7 @@ export default function CloudSync() {
   const [busy, setBusy] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
-    getLocalSetting('developer_mode').then((value) => setDeveloperMode(value === '1')).catch(() => {});
+    getLocalSetting(DEVELOPER_MODE_KEY).then((value) => setDeveloperMode(isDeveloperMode(value))).catch(() => {});
     getKitStatus().then(setKitStatus).catch(() => {});
     getSyncState().then((s) => {
       setState(s);

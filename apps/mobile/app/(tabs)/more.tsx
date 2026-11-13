@@ -8,6 +8,7 @@ import { useCloudEntitlement } from '../../src/subscription';
 import { useTheme, initials, space, type Theme } from '../../src/theme';
 import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { showAlert } from '../../src/pos/alert';
+import { DEVELOPER_MODE_KEY, isDeveloperMode, writeDeveloperMode } from '../../src/developerMode';
 import { getLocalSetting, resetAllData, seedColombianCatalog, setLocalSetting, updateAllStoreCurrencies } from '../../src/repos';
 import { clearCatalogQueue } from '../../src/catalog';
 import { UpdateCheckCard, UpdateNoticeCard, useUpdateNotice } from '../../src/pos/UpdateNotice';
@@ -43,7 +44,7 @@ export default function More() {
     cloud.refresh();
     getReminderCount().then(setReminderCount);
     getLocalSetting('catalog_opt_in').then((value) => setCatalogOptIn(value === '1')).catch(() => {});
-    getLocalSetting('developer_mode').then((value) => setDeveloperMode(value === '1')).catch(() => {});
+    getLocalSetting(DEVELOPER_MODE_KEY).then((value) => setDeveloperMode(isDeveloperMode(value))).catch(() => {});
   }, [cloud.refresh]));
 
   const runReset = async () => {
@@ -98,16 +99,28 @@ export default function More() {
     ]);
   };
 
+  const turnOffDeveloperMode = () => showAlert('Modo desarrollador', 'La configuración técnica del respaldo en la nube está visible. ¿Desactivarla?', [
+    { text: 'Cancelar', style: 'cancel' as const },
+    { text: 'Desactivar', onPress: () => {
+      writeDeveloperMode(setLocalSetting, false)
+        .then(() => setDeveloperMode(false))
+        .catch(() => showAlert('No se pudo desactivar', 'Intenta de nuevo.'));
+    } },
+  ]);
+
   const tapVersion = () => {
-    if (developerMode) return;
+    if (developerMode) { turnOffDeveloperMode(); return; }
     versionTaps.current += 1;
     if (versionTimer.current) clearTimeout(versionTimer.current);
     versionTimer.current = setTimeout(() => { versionTaps.current = 0; }, 1500);
     if (versionTaps.current < 7) return;
     versionTaps.current = 0;
-    setDeveloperMode(true);
-    void setLocalSetting('developer_mode', '1').catch(() => {});
-    showAlert('Modo desarrollador activado', 'La configuración técnica está disponible en Respaldo en la nube.');
+    writeDeveloperMode(setLocalSetting, true)
+      .then(() => {
+        setDeveloperMode(true);
+        showAlert('Modo desarrollador activado', 'La configuración técnica está disponible en Respaldo en la nube. Toca la versión otra vez para desactivarla.');
+      })
+      .catch(() => showAlert('No se pudo activar', 'Intenta de nuevo.'));
   };
 
   const currencyIndex = CURRENCY_CYCLE.findIndex((code) => code === appCode);
