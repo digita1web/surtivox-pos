@@ -6,6 +6,7 @@ import { useSession, useRole } from '../../src/session';
 import { can, ROLE_LABEL } from '../../src/roles';
 import { useCloudConnected } from '../../src/useCloudConnected';
 import { installedVersionFooter } from '../../src/updateCheck';
+import { cloudCardSubtitle } from '../../src/cloudCardText';
 import { useTheme, initials, space, type Theme } from '../../src/theme';
 import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { showAlert } from '../../src/pos/alert';
@@ -231,7 +232,7 @@ export default function More() {
                 {cloud.active ? 'Respaldo en la nube · Activo' : 'Respaldo en la nube · Opcional'}
               </Text>
               <Text style={{ color: t.muted, fontSize: 13, marginTop: 1 }}>
-                {cloud.active ? 'Tu negocio está respaldado y sincronizado' : 'Respalda y sincroniza tu negocio entre dispositivos'}
+                {cloudCardSubtitle(cloud.active, cloud.syncedAt)}
               </Text>
             </View>
             {cloud.active
