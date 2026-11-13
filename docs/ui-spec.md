@@ -44,9 +44,7 @@ Pantallas (Expo Router en `app/`), componentes del punto de venta (`src/pos/`) y
 
 ## Cámara
 
-`src/pos/cameraMachine.ts` define las fases `idle`, `starting`, `ready`, `retrying`, `failed`, `denied` y `blocked`. La cámara se libera al perder el foco o pasar a segundo plano. `ScannerCamera.tsx` aplica esa máquina y lo usa `app/scan.tsx` (escáner de ventas).
-
-Excepción conocida: `ScanModal.tsx` usa `CameraView` directo, sin la máquina (sin reintentos ni liberación al pasar a segundo plano), y lo abren `app/(tabs)/products.tsx` y `app/add-product.tsx`. Una pantalla nueva con cámara debe usar `ScannerCamera`.
+`src/pos/cameraMachine.ts` define las fases `idle`, `starting`, `ready`, `retrying`, `failed`, `denied` y `blocked`. La cámara se libera al perder el foco o pasar a segundo plano. `ScannerCamera.tsx` aplica esa máquina y es el único componente que usa `CameraView` o `useCameraPermissions`; lo vigila `src/pos/cameraWiring.test.ts`. Lo usan `app/scan.tsx` (escáner de ventas) y `ScanModal.tsx` (lectura de un solo código, abierto desde `app/(tabs)/products.tsx` y `app/add-product.tsx`). Una pantalla nueva con cámara debe usar `ScannerCamera`.
 
 ## Pruebas
 
