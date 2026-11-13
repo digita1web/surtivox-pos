@@ -9,7 +9,8 @@ import type { Store } from './repos';
 import { APP_CURRENCY } from './branding';
 import { getDb } from './db';
 import { validateBackupPayload, verifyBackupText } from './backupValidation';
-import { filterBackupRows, restoreDeleteSql } from './backupFilters';
+import { filterBackupRows } from './backupFilters';
+import { applyBackupOn } from './restoreOps';
 import { localDateStamp, localDateTimeText } from './localTime';
 
 const major = (minor: number, dec: number) => (minor / 10 ** dec).toFixed(dec);
@@ -169,25 +170,7 @@ export async function restoreFullBackup(): Promise<RestoreResult | null> {
     throw new Error('No se pudo crear la copia de seguridad antes de restaurar. No se modificó nada.');
   }
 
-  let rows = 0;
-  await db.execAsync('PRAGMA foreign_keys = OFF;');
-  try {
-    await db.withTransactionAsync(async () => {
-      for (const table of tableNames) await db.runAsync(restoreDeleteSql(table));
-      for (const table of tableNames) {
-        for (const row of filterBackupRows(table, payload.tables[table]!)) {
-          const columns = Object.keys(row);
-          if (columns.length === 0) continue;
-          const columnList = columns.map((column) => `"${column}"`).join(',');
-          const params = columns.map((column) => row[column] as string | number | null);
-          await db.runAsync(`INSERT INTO "${table}" (${columnList}) VALUES (${columns.map(() => '?').join(',')})`, params);
-          rows++;
-        }
-      }
-    });
-  } finally {
-    await db.execAsync('PRAGMA foreign_keys = ON;');
-  }
+  const rows = await applyBackupOn(db, payload.tables);
   return { tables: tableNames.length, rows };
 }
 
