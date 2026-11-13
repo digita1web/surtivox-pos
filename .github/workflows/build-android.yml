@@ -77,6 +77,10 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Validar que la etiqueta coincide con app.json
+        if: github.ref_type == 'tag'
+        run: node scripts/check-release-tag.mjs "${GITHUB_REF_NAME}"
+
       - name: Setup Java
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
@@ -156,7 +160,34 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease --no-daemon --build-cache
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            ARCHS="arm64-v8a,armeabi-v7a"
+          else
+            ARCHS="arm64-v8a"
+          fi
+          echo "Arquitecturas: ${ARCHS}"
+          ./gradlew assembleRelease --no-daemon --build-cache -PreactNativeArchitectures="${ARCHS}"
+
+      - name: Verificar las arquitecturas del APK
+        run: |
+          set -euo pipefail
+          APK=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          AAPT2=$(ls "${ANDROID_HOME}"/build-tools/*/aapt2 | sort -V | tail -n 1)
+          ACTUAL=$("${AAPT2}" dump badging "${APK}" | grep -m1 '^native-code:' | sed 's/^native-code: //')
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            EXPECTED="'arm64-v8a' 'armeabi-v7a'"
+          else
+            EXPECTED="'arm64-v8a'"
+          fi
+          echo "Arquitecturas del APK: ${ACTUAL}"
+          if [ "${ACTUAL}" != "${EXPECTED}" ]; then
+            echo "::error::Se esperaba ${EXPECTED} y el APK trae ${ACTUAL}"
+            exit 1
+          fi
+          echo '### Arquitecturas del APK' >> "$GITHUB_STEP_SUMMARY"
+          echo "${ACTUAL}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verificar la firma del APK
         env:
