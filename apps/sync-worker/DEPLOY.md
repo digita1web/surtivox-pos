@@ -25,7 +25,8 @@ pnpm db:create
 ```
 
 **3. Paste the printed `database_id`** into [`wrangler.toml`](./wrangler.toml),
-replacing `REPLACE_WITH_D1_DATABASE_ID`:
+replacing the `database_id` it currently has (the repo already ships a configured
+`database_id`; only change it if you create a new database):
 
 ```toml
 [[d1_databases]]

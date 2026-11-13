@@ -2,16 +2,19 @@
 
 ## Prerequisites
 
-- Node ≥ 22 (developed on Node 26)
+- Node ≥ 22 (CI and the Android build use Node 22)
 - pnpm 10 (`corepack enable` then `corepack use pnpm@10`)
 
 ## Install & test
 
 ```bash
 pnpm install
-pnpm test        # every package
-pnpm typecheck   # tsc across packages (needs the typescript devDependency)
+pnpm test        # packages and workers (apps/mobile has no test script)
+pnpm typecheck   # tsc across every workspace package
+bash scripts/verify.sh   # apps/mobile: tsc + tests; run before each commit
 ```
+
+CI runs all three (`.github/workflows/ci.yml`).
 
 Run a single package's tests directly — no build, no test framework, just
 Node's built-in runner and type-stripping:
@@ -27,7 +30,7 @@ ways, both of which compile on the fly:
 
 - **Node** (tests, tooling) strips types natively — that is why relative
   imports use explicit `.ts` extensions.
-- **Metro** (the Expo app, next slice) transpiles TypeScript already.
+- **Metro** (the Expo app) transpiles TypeScript already.
 
 A `tsc`/`tsup` build is only added when we publish packages to npm, which we
 don't for an app-internal monorepo. Add it then, not now.
@@ -44,7 +47,8 @@ don't for an app-internal monorepo. Add it then, not now.
 
 ```
 packages/<domain>/src/...      # pure domain logic + tests
-apps/mobile/services/...       # orchestration (transactions, repos)
-apps/mobile/hooks/...          # React bindings
+apps/mobile/src/*Ops.ts        # orchestration: transactions, with the db injected
+apps/mobile/src/repos.ts       # SQL queries
+apps/mobile/src/pos/...        # POS components
 apps/mobile/app/...            # Expo Router screens
 ```

@@ -28,6 +28,15 @@ Idempotent: applied ids are tracked in `_migrations`, each migration runs in
 its own transaction, and re-running applies only what is pending. Safe to call
 on every app start.
 
+## Applied migrations
+
+`0000_init`, `0001_customers`, `0002_returns`, `0003_suppliers`, `0004_staff`,
+`0005_sync`, `0006_store_profile`, `0007_shops`, `0008_market_prices`,
+`0009_barcode_lookups`, `0010_local_settings`, `0011_catalog_client`. The
+authoritative list is `packages/database/src/migrations/`. `sync_state`,
+`local_settings`, `catalog_outbox` and `catalog_cache` are device-only and are
+not synced.
+
 ## V0.1 tables (migration `0000_init`)
 
 | table            | purpose                                            |

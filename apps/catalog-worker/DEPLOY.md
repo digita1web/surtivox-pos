@@ -13,7 +13,7 @@ cd apps/catalog-worker
 npx wrangler d1 create surtivox-catalog
 ```
 
-Copia el `database_id` mostrado por Cloudflare y reemplaza `REPLACE_WITH_DATABASE_ID` en `wrangler.toml`.
+Copia el `database_id` mostrado por Cloudflare y reemplaza el `database_id` actual de `wrangler.toml` (el repo ya trae un `database_id` configurado; cámbialo solo si creas una base nueva).
 
 ## Cargar el esquema
 

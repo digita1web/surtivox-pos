@@ -8,9 +8,9 @@ directly, and business logic never imports React Native.
 ```
 UI (screens, components)            apps/mobile
         │ calls
-Application / service logic          apps/mobile/services, hooks
+Application / service logic          apps/mobile/src (repos.ts, *Ops.ts)
         │ calls
-Domain / business logic              packages/pos-core, inventory
+Domain / business logic              packages/pos-core
         │ uses
 Persistence                          packages/database (SQLite)
 ```
@@ -20,8 +20,8 @@ Rules:
 - **UI components contain no business logic.** Price, tax, discount and change
   math lives in `pos-core`, not in a component. A component calls a pure
   function and renders the result.
-- **Domain packages are framework-free.** `pos-core`, `database`, `types`,
-  `inventory`, `validation` import nothing from React Native. They run under
+- **Domain packages are framework-free.** `pos-core`, `database` and `types`
+  import nothing from React Native. They run under
   Node (that is how they are tested) and under Metro.
 - Functions are small and independently testable. Prefer composition over
   large classes or god-objects.
@@ -67,9 +67,11 @@ not stored as a mutable `products.stock` number. Every change records *why*
 multi-device inventory sync correct later: devices exchange movements, not
 absolute counts, so concurrent sales don't clobber each other.
 
-## Printer & backup abstractions (designed, deferred)
+## Receipts and backups
 
-Receipts are a plain data model independent of any printer. A `ReceiptPrinter`
-interface (`print(receipt)`) will have adapters for Bluetooth ESC/POS, network,
-PDF and the system print dialog — none is a blocking dependency for V0.1.
-Backup/restore and CSV import/export are likewise abstracted from the UI.
+Receipts are a plain data model (`PrintableReceipt` in `apps/mobile/src/print.ts`)
+rendered to PDF and printed or shared with `expo-print` and `expo-sharing`.
+Full-database backup and restore, and CSV import/export, live in
+`apps/mobile/src/backup.ts`; the database part of a restore is
+`restoreOps.ts`. Specs per area: [core](core-spec.md), [sync](sync-spec.md),
+[ui](ui-spec.md).

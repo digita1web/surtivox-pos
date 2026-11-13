@@ -22,6 +22,7 @@ device → server → device round-trip.
 | GET  | `/health` | – | liveness |
 | GET  | `/market-prices?ean=<8-14 digits>` | – | public VTEX reference prices |
 | POST | `/sync/register` | Bearer token | bind a token to a store (idempotent) |
+| POST | `/sync/rotate` | Bearer token | replace the shop key (`{ "newToken": <64 hex> }`) |
 | POST | `/sync/push` | Bearer token | upsert uploaded rows for the token's store |
 | GET  | `/sync/pull?since=<ms>` | Bearer token | rows changed after the cursor |
 
@@ -83,9 +84,10 @@ pnpm db:schema
 pnpm deploy                         # prints https://surtivox-sync.<you>.workers.dev
 ```
 
-Then in the app: **More → Cloud sync**, paste the Worker URL, tap **Generate**
-for a token, and **Connect & sync**. On a second device, enter the same URL and
-token and use **Restore this device from cloud**.
+Then set `DEFAULT_SYNC_URL` in `apps/mobile/src/sync.ts` to the printed URL and
+rebuild the app (see [DEPLOY.md](DEPLOY.md)). The **Cloud backup** screen then
+offers one-tap activation. On a second device, use the recovery kit or the shop
+code to link it. The manual URL and token form is only shown in developer mode.
 
 ### Local dry run (no account changes)
 

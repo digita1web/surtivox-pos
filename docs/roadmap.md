@@ -1,5 +1,11 @@
 # Roadmap
 
+> Este documento es el plan original y está desactualizado: varios pasos
+> marcados como pendientes ya existen en el código (tienda, productos, venta,
+> reportes, clientes, devoluciones, personal, sincronización) y los paquetes
+> `validation` y `localization` no se crearon. El estado real está en el código
+> y en el historial de commits.
+
 Built vertically: each module goes migration → repository → domain/service →
 hooks → UI → tests, and is verified before the next begins. Cloud sync is not
 built until local POS is reliable.
