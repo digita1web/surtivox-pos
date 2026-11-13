@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   UPDATE_CHECK_INTERVAL_MS, UPDATE_KEYS, checkUpdateNow, classifyResponse, compareVersions, decideNotice, describeUpdateResult,
-  dismissUpdate, installedLabel, isCheckDue, loadUpdateNotice, parseRelease, parseVersion, type UpdateDeps, type UpdateSettings,
+  dismissUpdate, installedLabel, isCheckDue, loadUpdateNotice, parseRelease, parseVersion, versionFooter, type UpdateDeps, type UpdateSettings,
 } from './appUpdate.ts';
 
 const BASE = 'https://github.com/digita1web/surtivox-pos';
@@ -348,4 +348,11 @@ test('el boton esta en Mas, muestra la version instalada y no envia datos', () =
   const code = source('./updateCheck.ts');
   assert.doesNotMatch(code, /install_id|getInstallId|authorization|token|store/i);
   assert.match(code, /checkUpdateNow\(deps\(\)\)/);
+});
+
+test('el pie de Más muestra la versión instalada y omite ese dato si no se puede leer', () => {
+  assert.equal(versionFooter('1.1.4'), 'Surtivox POS · v1.1.4 · sin conexión');
+  assert.equal(versionFooter('1.2.0'), 'Surtivox POS · v1.2.0 · sin conexión');
+  assert.equal(versionFooter(null), 'Surtivox POS · sin conexión');
+  assert.equal(versionFooter('basura'), 'Surtivox POS · sin conexión');
 });

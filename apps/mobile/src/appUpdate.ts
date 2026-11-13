@@ -173,6 +173,11 @@ export function installedLabel(installedVersion: string | null): string | null {
   return parsed ? formatVersion(parsed) : null;
 }
 
+export function versionFooter(installedVersion: string | null): string {
+  const label = installedLabel(installedVersion);
+  return label ? `Surtivox POS · ${label} · sin conexión` : 'Surtivox POS · sin conexión';
+}
+
 export async function checkUpdateNow(deps: UpdateDeps): Promise<UpdateCheckResult> {
   const installed = installedLabel(deps.installedVersion);
   try {

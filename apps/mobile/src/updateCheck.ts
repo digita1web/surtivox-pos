@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import { getDb } from './db';
 import { getLocalSetting, setLocalSetting } from './repos';
 import {
-  RELEASES_LATEST_URL, checkUpdateNow, dismissUpdate, installedLabel, loadUpdateNotice,
+  RELEASES_LATEST_URL, checkUpdateNow, dismissUpdate, installedLabel, loadUpdateNotice, versionFooter,
   type UpdateCheckResult, type UpdateDeps, type UpdateNotice, type UpdateSettings,
 } from './appUpdate';
 
@@ -53,4 +53,8 @@ export function checkForUpdateNow(): Promise<UpdateCheckResult> {
 
 export function installedVersionText(): string {
   return installedLabel(Constants.expoConfig?.version ?? null) ?? 'no disponible';
+}
+
+export function installedVersionFooter(): string {
+  return versionFooter(Constants.expoConfig?.version ?? null);
 }

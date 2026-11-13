@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSession, useRole } from '../../src/session';
 import { can, ROLE_LABEL } from '../../src/roles';
 import { useCloudConnected } from '../../src/useCloudConnected';
+import { installedVersionFooter } from '../../src/updateCheck';
 import { useTheme, initials, space, type Theme } from '../../src/theme';
 import { TabHeader, scrollProps, useTabListInset } from '../../src/pos/Screen';
 import { showAlert } from '../../src/pos/alert';
@@ -335,7 +336,7 @@ export default function More() {
       </View>
 
       <Pressable onPress={tapVersion} hitSlop={8} accessibilityLabel="Versión de Surtivox POS">
-        <Text style={{ color: t.faint, textAlign: 'center', marginTop: 20, fontSize: 12 }}>Surtivox POS · v1.0 · sin conexión</Text>
+        <Text style={{ color: t.faint, textAlign: 'center', marginTop: 20, fontSize: 12 }}>{installedVersionFooter()}</Text>
       </Pressable>
     </ScrollView>
     </View>
