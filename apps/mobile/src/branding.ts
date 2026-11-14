@@ -104,6 +104,10 @@ export function currencyConfigFor(code: string): { code: string; locale: string;
   return { code: c?.code ?? 'USD', locale: c?.locale ?? 'en-US', decimals: c?.decimals ?? 2 };
 }
 
+export function currencyCodeForNewShop(activeStore: { currency_code: string } | null | undefined): string {
+  return currencyConfigForDisplay(activeStore?.currency_code ?? 'COP').code;
+}
+
 export function localeForCurrency(code: string): string {
   return currencyConfigFor(code).locale;
 }

@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { Text, View, Pressable, StyleSheet } from 'react-native';
+import { Text } from 'react-native';
 import { showAlert } from '../src/pos/alert';
 import { useRouter } from 'expo-router';
-import { createStore, updateAllStoreCurrencies, DEFAULT_RECEIPT_ACCENT, type StoreProfile } from '../src/repos';
+import { createStore, DEFAULT_RECEIPT_ACCENT, type StoreProfile } from '../src/repos';
 import { useSession } from '../src/session';
-import { setAppCurrency } from '../src/appCurrency';
-import { CURRENCIES, defaultCurrencyFor, currencyConfigFor } from '../src/branding';
+import { currencyCodeForNewShop, currencyConfigForDisplay } from '../src/branding';
 import { ShopDetailsFields } from '../src/pos/StoreProfileForm';
-import { useTheme, space, radius } from '../src/theme';
+import { useTheme, space } from '../src/theme';
 import { Screen } from '../src/pos/Screen';
 import { PrimaryButton } from '../src/pos/kit';
 
@@ -22,7 +21,8 @@ export default function NewShop() {
   const router = useRouter();
   const reload = useSession((s) => s.load);
   const [profile, setProfile] = useState<StoreProfile>(EMPTY_PROFILE);
-  const [code, setCode] = useState(() => defaultCurrencyFor(Intl.DateTimeFormat().resolvedOptions().locale));
+  const activeStore = useSession((s) => s.store);
+  const code = currencyCodeForNewShop(activeStore);
   const [busy, setBusy] = useState(false);
   const patch = (p: Partial<StoreProfile>) => setProfile((prev) => ({ ...prev, ...p }));
 
@@ -30,9 +30,7 @@ export default function NewShop() {
     if (!profile.name.trim() || busy) return;
     setBusy(true);
     try {
-      await createStore(profile.name.trim(), currencyConfigFor(code), { ...profile, name: profile.name.trim() });
-      await setAppCurrency(code);
-      await updateAllStoreCurrencies(code);
+      await createStore(profile.name.trim(), currencyConfigForDisplay(code), { ...profile, name: profile.name.trim() });
       await reload();          // new shop is now the active one (created as current)
       router.replace('/');     // fresh shop has no staff yet → straight to Home
     } catch (e) {
@@ -50,24 +48,8 @@ export default function NewShop() {
 
       <ShopDetailsFields value={profile} onChange={patch} />
 
-      <Text style={[st.label, { color: t.muted }]}>MONEDA</Text>
-      <View style={st.pills}>
-        {CURRENCIES.map((c) => {
-          const on = code === c.code;
-          return (
-            <Pressable key={c.code} onPress={() => setCode(c.code)} style={[st.pill, { borderColor: on ? t.accent : t.line, backgroundColor: on ? t.accent : t.panel }]}>
-              <Text style={{ color: on ? t.accentFg : t.fg, fontWeight: '700' }}>{c.code}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <Text style={{ color: t.muted, marginTop: space.lg }}>Moneda: {code}. Es la misma de tus otras tiendas; puedes cambiarla en Más.</Text>
       <Text style={{ color: t.faint, fontSize: 12, marginTop: space.md }}>Puedes ajustar el diseño del recibo (tamaño del papel, color y pie) en Perfil de la tienda después de crearla.</Text>
     </Screen>
   );
 }
-
-const st = StyleSheet.create({
-  label: { fontSize: 13, fontWeight: '600', marginTop: space.lg, marginBottom: space.sm },
-  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  pill: { borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 16, paddingVertical: 10 },
-});
