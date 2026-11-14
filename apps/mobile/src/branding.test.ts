@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { asMinor } from '@surtivox/pos-core';
-import { safeAccent, onAccent, contactLines, shopInitials, normalizeUrl, DEFAULT_ACCENT, defaultCurrencyFor, localeForCurrency, currencyConfigFor, CURRENCIES, currencyDecimalsFor, parseCurrencyInput, currencyForStore, currencyConfigForDisplay, APP_CURRENCY, DEFAULT_FOOTER, DEFAULT_RECEIPT_TERMS, localizedReceiptFooter, localizedReceiptTerms } from './branding.ts';
+import { safeAccent, onAccent, contactLines, shopInitials, normalizeUrl, DEFAULT_ACCENT, localeForCurrency, currencyConfigFor, CURRENCIES, currencyDecimalsFor, parseCurrencyInput, currencyForStore, currencyConfigForDisplay, APP_CURRENCY, DEFAULT_FOOTER, DEFAULT_RECEIPT_TERMS, localizedReceiptFooter, localizedReceiptTerms } from './branding.ts';
 
 test('safeAccent only accepts #rrggbb and falls back otherwise', () => {
   assert.equal(safeAccent('#2563EB'), '#2563eb');
@@ -27,18 +27,6 @@ test('shopInitials and normalizeUrl', () => {
   assert.equal(shopInitials('Bin Hashim Mart'), 'BH');
   assert.equal(shopInitials('  '), '?');
   assert.equal(normalizeUrl('https://shop.example.com/'), 'shop.example.com');
-});
-
-test('defaultCurrencyFor maps device regions to a currency, defaulting to USD', () => {
-  assert.equal(defaultCurrencyFor('en-US'), 'USD');
-  assert.equal(defaultCurrencyFor('en-GB'), 'GBP');
-  assert.equal(defaultCurrencyFor('fr_FR'), 'EUR');
-  assert.equal(defaultCurrencyFor('en-CA'), 'CAD');
-  assert.equal(defaultCurrencyFor('ur-PK'), 'PKR');
-  assert.equal(defaultCurrencyFor('es-CO'), 'COP');
-  assert.equal(defaultCurrencyFor('ja-JP'), 'USD'); // unmapped region
-  assert.equal(defaultCurrencyFor('en'), 'USD');    // no region
-  assert.equal(defaultCurrencyFor(null), 'USD');
 });
 
 test('every offered currency has a Latin-digit locale', () => {

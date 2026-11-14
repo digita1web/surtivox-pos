@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { createStore, type StoreProfile } from '../repos';
 import { setAppCurrency } from '../appCurrency';
 import { useTheme, type Theme } from '../theme';
-import { DEFAULT_ACCENT, CURRENCIES, defaultCurrencyFor, currencyConfigFor } from '../branding';
+import { DEFAULT_ACCENT, CURRENCIES, APP_CURRENCY, currencyConfigFor } from '../branding';
 import { ShopDetailsFields, ReceiptFields, ReceiptPreview } from './StoreProfileForm';
 import { RecoverBody, RecoverButton, useRecover } from './RecoverForm';
 import { hasHostedSync } from '../sync';
@@ -159,8 +159,7 @@ const EMPTY_PROFILE: StoreProfile = {
 function SetupForm({ t, insets, onCreated, onRecover }: { t: Theme; insets: { top: number; bottom: number }; onCreated: () => void; onRecover: (() => void) | null }) {
   const [step, setStep] = useState<0 | 1>(0);
   const [profile, setProfile] = useState<StoreProfile>(EMPTY_PROFILE);
-  // Start from the device's region (US → USD, GB → GBP, DE → EUR …); always changeable.
-  const [code, setCode] = useState(() => defaultCurrencyFor(Intl.DateTimeFormat().resolvedOptions().locale));
+  const [code, setCode] = useState<string>(APP_CURRENCY.code);
   const [busy, setBusy] = useState(false);
   const scroll = useRef<ScrollView>(null);
   const patch = (p: Partial<StoreProfile>) => setProfile((prev) => ({ ...prev, ...p }));

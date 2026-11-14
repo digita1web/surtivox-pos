@@ -88,17 +88,6 @@ export const CURRENCIES: CurrencyOption[] = [
   { code: 'PKR', locale: 'en-PK', name: 'Pakistani rupee', decimals: 2, symbol: 'PKR' },
 ];
 
-const EURO_REGIONS = new Set(['DE', 'FR', 'ES', 'IT', 'NL', 'BE', 'AT', 'IE', 'PT', 'FI', 'GR', 'LU', 'SK', 'SI', 'EE', 'LV', 'LT', 'MT', 'CY', 'HR']);
-const REGION_CURRENCY: Record<string, string> = { CO: 'COP', US: 'USD', CA: 'CAD', GB: 'GBP', AU: 'AUD', IN: 'INR', AE: 'AED', SA: 'SAR', ZA: 'ZAR', PK: 'PKR' };
-
-/** Best-guess setup currency from a device locale tag such as "en-GB". Falls back to USD. */
-export function defaultCurrencyFor(localeTag: string | null | undefined): string {
-  const region = (localeTag ?? '').split(/[-_]/)[1]?.toUpperCase();
-  if (!region) return 'USD';
-  if (EURO_REGIONS.has(region)) return 'EUR';
-  return REGION_CURRENCY[region] ?? 'USD';
-}
-
 export function currencyConfigFor(code: string): { code: string; locale: string; decimals: number } {
   const c = CURRENCIES.find((x) => x.code === code);
   return { code: c?.code ?? 'USD', locale: c?.locale ?? 'en-US', decimals: c?.decimals ?? 2 };
