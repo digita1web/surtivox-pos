@@ -39,5 +39,3 @@ Surtivox-POS.aab
 *.keystore
 *.jks
 
-# Capturas de revisión (no se versionan hasta que se aprueben)
-/capturas-revision/
