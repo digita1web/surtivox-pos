@@ -7,6 +7,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      all_archs:
+        description: 'Compilar arm64-v8a y armeabi-v7a, como en un release (sin publicar nada)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -154,6 +159,19 @@ jobs:
             echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g" >> apps/mobile/android/gradle.properties
           fi
 
+      - name: Elegir arquitecturas
+        env:
+          ALL_ARCHS: ${{ inputs.all_archs }}
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] || [ "${ALL_ARCHS}" = "true" ]; then
+            echo "ARCHS=arm64-v8a,armeabi-v7a" >> "${GITHUB_ENV}"
+            echo "EXPECTED_ABIS='arm64-v8a' 'armeabi-v7a'" >> "${GITHUB_ENV}"
+          else
+            echo "ARCHS=arm64-v8a" >> "${GITHUB_ENV}"
+            echo "EXPECTED_ABIS='arm64-v8a'" >> "${GITHUB_ENV}"
+          fi
+
       - name: Build release APK
         working-directory: apps/mobile/android
         env:
@@ -162,11 +180,6 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            ARCHS="arm64-v8a,armeabi-v7a"
-          else
-            ARCHS="arm64-v8a"
-          fi
           echo "Arquitecturas: ${ARCHS}"
           ./gradlew assembleRelease --no-daemon --build-cache -PreactNativeArchitectures="${ARCHS}"
 
@@ -176,14 +189,9 @@ jobs:
           APK=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
           AAPT2=$(ls "${ANDROID_HOME}"/build-tools/*/aapt2 | sort -V | tail -n 1)
           ACTUAL=$("${AAPT2}" dump badging "${APK}" | grep -m1 '^native-code:' | sed 's/^native-code: //')
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            EXPECTED="'arm64-v8a' 'armeabi-v7a'"
-          else
-            EXPECTED="'arm64-v8a'"
-          fi
           echo "Arquitecturas del APK: ${ACTUAL}"
-          if [ "${ACTUAL}" != "${EXPECTED}" ]; then
-            echo "::error::Se esperaba ${EXPECTED} y el APK trae ${ACTUAL}"
+          if [ "${ACTUAL}" != "${EXPECTED_ABIS}" ]; then
+            echo "::error::Se esperaba ${EXPECTED_ABIS} y el APK trae ${ACTUAL}"
             exit 1
           fi
           echo '### Arquitecturas del APK' >> "$GITHUB_STEP_SUMMARY"
