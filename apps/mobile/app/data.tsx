@@ -78,7 +78,7 @@ export default function DataScreen() {
           : `Último respaldo generado: ${new Date(lastBackupAt).toLocaleString('es-CO')}`}
       </Text>
       <Group t={t}>
-        <Row t={t} icon="save-outline" title="Guardar copia en el teléfono" subtitle="Elige una carpeta (por ejemplo Descargas). Se verifica al guardar"
+        <Row t={t} icon="save-outline" title="Guardar copia en el teléfono" subtitle="Elige o crea una carpeta dentro de Descargas. Se verifica al guardar"
           busy={busy === 'sd'} onPress={() => run('sd', async () => {
             const r = await saveBackupToDevice(store);
             if (!r) return;
