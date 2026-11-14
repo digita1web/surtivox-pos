@@ -45,7 +45,7 @@ Si el navegador avisa que el archivo puede ser dañino, toca **Descargar de todo
 
 <div align="center">
   <img src="docs/screenshots/01-inicio.png" width="46%" alt="Pantalla de inicio con ventas del día, accesos rápidos y productos frecuentes" />
-  <img src="docs/screenshots/02-productos.png" width="46%" alt="Pantalla de productos con búsqueda, filtros de stock y aviso de producto por completar" />
+  <img src="docs/screenshots/02-productos.png" width="46%" alt="Pantalla de productos con búsqueda, filtros de stock y la lista con precios y existencias" />
   <br />
   <img src="docs/screenshots/03-ventas.png" width="46%" alt="Pantalla de ventas con filtros por periodo y total del día" />
   <img src="docs/screenshots/04-mas-respaldo.png" width="46%" alt="Pantalla Más con la opción de respaldo en la nube" />
