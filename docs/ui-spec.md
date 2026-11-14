@@ -13,6 +13,8 @@ Pantallas (Expo Router en `app/`), componentes del punto de venta (`src/pos/`) y
 
 ## Estado
 
+- El carrito y el cobro (`CartBar`, `CheckoutSheet`) viven en el layout de pestañas: una venta puede completarse o anularse con cualquier pestaña enfocada. Una pantalla de pestaña que liste ventas o stock debe leer `salesVersion` de `useCheckoutUI` y ponerlo entre las dependencias de su `useFocusEffect` (Inicio, Productos y Ventas lo hacen; lo vigila `salesRefreshWiring.test.ts`).
+
 - SQLite es la fuente de verdad. Zustand solo guarda estado efímero de interfaz (`cart.ts`, `session.ts`, `productWizardStore.ts`); nunca datos durables del negocio.
 - Los reportes consultan la base, no el estado en memoria.
 - El stock se deriva de `stock_movements`; no existe una columna de stock editable.
