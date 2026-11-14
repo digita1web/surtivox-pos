@@ -437,7 +437,7 @@ h1 em {
 .phone-screen {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 9 / 20;
+  aspect-ratio: 720 / 1493;
   border-radius: 32px;
   background: var(--panel);
 }
