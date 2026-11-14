@@ -236,7 +236,7 @@ export default function CloudSync() {
         <>
           <View style={[s.benefit, { borderColor: t.line }]}>
             {[
-              ['cloud-done-outline', 'Respaldo automático', 'Tu tienda está segura si pierdes o se daña el teléfono.'],
+              ['cloud-done-outline', 'Respaldo en la nube', 'Guarda tu tienda en la nube con un toque. Si pierdes o se daña el teléfono, la recuperas.'],
               ['phone-portrait-outline', 'Entre dispositivos', 'Vende desde dos teléfonos o desde administración a la vez.'],
             ].map(([icon, title, sub]) => (
               <View key={title} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10 }}>
