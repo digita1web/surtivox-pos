@@ -9,6 +9,26 @@ updates:
     groups:
       all-minor-patch:
         update-types: [minor, patch]
+    # Expo, React Native and their native modules move together with the Expo
+    # SDK: a major bump must be done by hand with `expo install`. React Native
+    # is 0.x, where a minor bump is also breaking. Wrangler 4 changes deploys.
+    ignore:
+      - dependency-name: "expo"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "expo-*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@expo/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-native"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-native-*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "wrangler"
+        update-types: ["version-update:semver-major"]
 
   # Keep the GitHub Actions in our workflows up to date
   - package-ecosystem: github-actions
