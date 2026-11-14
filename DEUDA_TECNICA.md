@@ -1,6 +1,6 @@
 # Deuda técnica
 
-Estado: **v1.1.4, pruebas con tiendas piloto** (`versionCode` 10, [app.json](apps/mobile/app.json)). No es un lanzamiento comercial. Este archivo es la lista de pendientes. Cada punto indica si fue **verificado** en el código o es una **hipótesis**. Última revisión: 2026-11-13 (19:24, UTC-5).
+Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](apps/mobile/app.json)). No es un lanzamiento comercial. Este archivo es la lista de pendientes. Cada punto indica si fue **verificado** en el código o es una **hipótesis**. Última revisión: 2026-11-13 (19:24, UTC-5).
 
 ## Decisiones tomadas para la beta
 
