@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
 import { countProductsToReview, listProducts, listProductsToReview, isLowStock, type Product } from '../../src/repos';
 import { useSession } from '../../src/session';
+import { useCheckoutUI } from '../../src/checkoutUI';
 import { useRole } from '../../src/session';
 import { can } from '../../src/roles';
 import { ProductCard } from '../../src/pos/ProductCard';
@@ -20,6 +21,7 @@ export default function Products() {
   const router = useRouter();
   const listInset = useTabListInset();
   const store = useSession((s) => s.store)!;
+  const salesVersion = useCheckoutUI((s) => s.salesVersion);
   const canEdit = can(useRole(), 'products');
   const [products, setProducts] = useState<Product[]>([]);
   const [query, setQuery] = useState('');
@@ -44,7 +46,7 @@ export default function Products() {
       setReviewCount(count);
     }).catch(() => {});
     return () => { active = false; };
-  }, [store.id]));
+  }, [store.id, salesVersion]));
 
   // Open straight into a stock filter when arriving from the Home "Needs
   // attention" card, then consume the param so a later tab tap doesn't re-apply it.

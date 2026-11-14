@@ -54,6 +54,7 @@ export default function Sales() {
   const money = useMoney();
   const canVoid = can(useRole(), 'returns');
   const bumpSales = useCheckoutUI((s) => s.bumpSales);
+  const salesVersion = useCheckoutUI((s) => s.salesVersion);
   const [sales, setSales] = useState<SaleSummary[]>([]);
   const [range, setRange] = useState<Range>('today');
   const [method, setMethod] = useState('all');
@@ -65,12 +66,11 @@ export default function Sales() {
 
   useFocusEffect(useCallback(() => {
     refresh();
-  }, [refresh]));
+  }, [refresh, salesVersion]));
 
   const voidOne = async (sale: SaleSummary) => {
     try {
       await voidSale(store.id, sale.id);
-      refresh();
       bumpSales();
       showAlert('Venta anulada', `${sale.invoice_no} se anuló y el stock volvió al inventario.`);
     } catch (e) {
