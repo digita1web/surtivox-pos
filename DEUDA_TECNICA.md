@@ -9,6 +9,28 @@ Estado: **v1.1.4, pruebas con tiendas piloto** (`versionCode` 10, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## Revisión del 2026-11-14
+
+Pruebas en el Redmi Note 9 (Android 12) entre las 15:59 y las 17:00 (UTC-5); este bloque se escribió el 2026-11-14 16:47. Cada punto es **verificado** salvo que diga lo contrario. La sesión no ve imágenes: la interfaz se leyó con `uiautomator`.
+
+**APK probado:** el artefacto de CI que instaló el propietario el 2026-11-14 a las 15:57: `versionCode` 10, solo `arm64-v8a`, firma de producción (`e798f4a4…`). Incluye `cecfe5b` (se vio el texto "Guarda tu tienda en la nube con un toque"), por lo que lleva el refresco de listas y los ids con `expo-crypto`; el commit exacto del build no se determinó.
+
+- **Refresco de listas tras vender o anular (cerrado, `cb3e996`).** Productos pasó de 8 a 7 en stock al vender en la misma pestaña; Ventas pasó de "1 pedido" a "2 pedidos" al vender desde esa pestaña; al anular volvió a "1 pedido" tras cerrar la alerta, **sin el `refresh()` directo** que se quitó; el stock cuadró (7 = 8 − 1 − 1 + 1). Los ids nuevos de `expo-crypto` no dieron errores al crear ventas, productos y personal.
+- **PIN.** Se rechazan un PIN débil (`1234`) y PIN que no coinciden, con mensajes en español. Intentos fallidos: sin aviso en el 1 y el 2, "Te quedan 2 intentos" y "1 intento" en el 3 y el 4, bloqueo de 30 s con cuenta atrás en el 5 y de unos 60 s en el siguiente. El PIN correcto **se rechaza durante el bloqueo** y entra al expirar. Bloqueo automático en 1 minuto: no bloquea tras 15 s fuera de la app y sí tras 75 s.
+- **Código de recuperación.** La hoja del código aparece al crear al primer propietario; "Copiar o compartir" abre el selector del sistema. "¿Olvidaste el PIN del propietario?" rechaza un código incorrecto ("Te quedan 4 intentos"), con el correcto restablece el PIN y **emite un código nuevo**; el PIN anterior deja de funcionar y el nuevo entra.
+- **Guardia de rutas por rol.** Un cajero queda bloqueado ("Tu rol (Cajero) no permite abrir esta sección.") al abrir por enlace directo `reports`, `staff`, `data`, `cloud-sync`, `store-settings` y `paywall`; el propietario abre `reports`, `staff` y `data`.
+- **Respaldo con personal y PIN.** Guardar copia: 258 registros, verificada. Se hizo una venta y se añadió un cajero **después** de la copia; al restaurar ("258 registros en 20 tablas") desaparecieron ambos, quedaron las 2 personas y el PIN del cajero siguió funcionando.
+- **Los PIN viajan en la copia.** *Verificado en el JSON:* `staff` incluye `pin_hash` y `pin_salt` de cada persona, y `local_settings` incluye `recovery_hash` y `recovery_salt`. No incluye el token de la nube ni `sync_state`. Confirma la hipótesis de la sección de seguridad: quien tenga el archivo tiene los hashes de los PIN (que son de 4 dígitos). No se probó cuánto tarda revertirlos.
+- **Varias tiendas.** Una tienda nueva numera sus facturas por separado (`INV-0001`) y carga su propio catálogo de ejemplo.
+
+### Hallazgos nuevos del 2026-11-14
+
+- **Agregar tienda puede cambiar la moneda de todas las tiendas.** *Verificado en el código y observado en el teléfono.* [new-shop.tsx](apps/mobile/app/new-shop.tsx) toma la moneda por defecto de la configuración regional del teléfono (`defaultCurrencyFor`, que devuelve `USD` si la región no está en su lista) y al crear llama a `setAppCurrency` y a `updateAllStoreCurrencies`, que cambia la moneda de **todas** las tiendas sin convertir precios. En la prueba, al crear una tienda sin tocar el selector (queda bajo el pliegue), toda la app pasó a mostrar `$18,000` en vez de `$ 18.000`. *No se leyó la configuración regional del teléfono* (se perdió la conexión). Corrección mínima: que el valor inicial sea la moneda global actual y no la del teléfono, y confirmar antes de cambiar la de las demás tiendas.
+- **El teléfono de pruebas quedó con la moneda global en USD** por lo anterior; hay que volver a COP antes de tomar capturas.
+- **Entorno: faltan reglas `udev` para `adb`.** Cada vez que el teléfono se reenumera por USB, `adb` pierde permisos ("insufficient permissions for device: missing udev rules"); pasó cuatro veces. Se arregla con las reglas udev de Android (paquete `android-sdk-platform-tools-common`, requiere `sudo`) o reconectando el cable.
+- **Con varios artículos, la hoja de cobro necesita desplazarse** para llegar al campo de efectivo recibido y a los montos rápidos: sus límites de pantalla salían invertidos hasta desplazar. *Inferido de `uiautomator`; no se vio la pantalla.*
+- **Pendiente de esta revisión:** capturas reales para la landing (`screen-home`, `screen-checkout`, `screen-reports`, `og-image`) y para el README, con datos ficticios. La tienda "Tienda Don Pepe" ya existe en el teléfono con 100 productos y 6 ventas, pero las capturas **no se han tomado**. Los PIN y el código de recuperación de prueba no se anotan en este repositorio.
+
 ## Revisión del 2026-11-13
 
 Hecha entre las 18:51 y las 19:24 (UTC-5). Cada punto dice si fue **verificado** (comando o prueba ejecutada) o es una **inferencia**.
