@@ -9,6 +9,17 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## Prueba de actualización 1.1.4 → 1.1.5 (2026-11-14, 20:59)
+
+Redmi Note 9 por adb, con datos de prueba ficticios. APK 1.1.4: el público de `releases/download/v1.1.4/Surtivox.apk` (`versionCode` 10). APK 1.1.5: artefacto del run #47, `versionCode` 11, 67 MB (las dos arquitecturas), firma de producción `e798f4a4…`. **Verificado** salvo que diga lo contrario.
+
+- Se instaló la 1.1.4 limpia, se creó una tienda (quedó en USD, el comportamiento antiguo), dos productos (Aceite 8 en stock, Arroz 3), una venta con Nequi (INV-0001), un cliente y una venta a fiado (INV-0002).
+- Se instaló la 1.1.5 encima con `adb install -r`, sin desinstalar. Se conservaron la tienda, los dos productos, las dos ventas ($27,400 en el día), el cliente con $4,200 de fiado pendiente y la moneda USD de la tienda existente.
+- El Arroz pasó de mostrar 2 a mostrar 1 en stock. La cuenta correcta es 3 − 1 − 1 = 1: la 1.1.4 enseñaba una lista desactualizada tras vender (el fallo de refresco ya corregido), no hubo pérdida de datos.
+- Instalación limpia de la 1.1.5: el onboarding abre con COP preseleccionado en el paso de moneda.
+- Las tiendas que ya se crearon en USD con la 1.1.4 siguen en USD; se cambia en Más. No se migra la moneda a propósito.
+- **No probado:** la ruta de etiqueta (validación, dos arquitecturas y release) y la nube con el kit de recuperación en un dispositivo.
+
 ## Revisión del 2026-11-14
 
 Pruebas en el Redmi Note 9 (Android 12) entre las 15:59 y las 17:00 (UTC-5); este bloque se escribió el 2026-11-14 16:47. Cada punto es **verificado** salvo que diga lo contrario. La sesión no ve imágenes: la interfaz se leyó con `uiautomator`.
