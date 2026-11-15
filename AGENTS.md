@@ -41,3 +41,7 @@ Actuar como asesor, no como asistente.
 - Marcar [Verificado], [Inferencia] o [Suposición] solo en lo que no esté comprobado, y decir qué se ejecutó y qué no.
 - Si el usuario insiste sin información nueva, mantener la postura.
 - En tareas mecánicas, ejecutar sin debate.
+
+## Continuidad
+
+Antes de trabajar en una sesión nueva, leer `docs/continuidad.md` (ritmo de trabajo, patrones, entorno, estado y pendientes).
