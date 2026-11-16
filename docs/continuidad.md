@@ -1,12 +1,12 @@
 # Guía de continuidad para Claude Code
 
-Para quien retome el trabajo en este repositorio (otro chat, otra sesión). Resume **cómo se trabaja aquí**, **en qué estado quedó todo** y **qué errores ya se cometieron** para no repetirlos. Estado verificado el **2026-11-14, 19:48 (UTC-5)**.
+Para quien retome el trabajo en este repositorio (otro chat, otra sesión). Resume **cómo se trabaja aquí**, **en qué estado quedó todo** y **qué errores ya se cometieron** para no repetirlos. Estado verificado el **2026-11-15, 19:55 (UTC-5)**.
 
 Léela junto con [AGENTS.md](../AGENTS.md) (reglas estrictas), [DEUDA_TECNICA.md](../DEUDA_TECNICA.md) (pendientes, hallazgos y verificaciones fechadas) y [RELEASING.md](../RELEASING.md) (firma y publicación).
 
 ## 1. Prompt de arranque sugerido
 
-> Lee `docs/continuidad.md`, `AGENTS.md` y la sección de revisión más reciente de `DEUDA_TECNICA.md`. Trabaja como asesor: verdad incómoda primero, marca [Verificado]/[Inferencia]/[Suposición] y di qué ejecutaste y qué no. No hagas push, no instales dependencias ni toques lo prohibido sin aprobación. Antes de afirmar algo en un documento o en la landing, compruébalo en el código. Empieza por el pendiente 1 de la sección 9.
+> Lee `docs/continuidad.md`, `AGENTS.md` y la sección de revisión más reciente de `DEUDA_TECNICA.md`. Trabaja como asesor: verdad incómoda primero, marca [Verificado]/[Inferencia]/[Suposición] y di qué ejecutaste y qué no. No hagas push, no instales dependencias ni toques lo prohibido sin aprobación. Antes de afirmar algo en un documento o en la landing, compruébalo en el código. Empieza por el pendiente 1 de la sección 9 (el estado actual está al principio de esa sección).
 
 ## 2. Reglas de oro
 
@@ -116,29 +116,28 @@ curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/runs/<id>
 - **Paleta y contraste** fijados por `landingTheme.test.ts` (tokens de color y 4,5:1). `landingVersion.test.ts` obliga a que `softwareVersion` del JSON-LD coincida con `app.json`.
 - **Cómo medir la maqueta sin ver la imagen:** Firefox no baja de ~488 px de ventana, así que se carga la página dentro de un `iframe` del ancho deseado (con la preferencia `privacy.file_unique_origin=false`) y se ejecuta JavaScript por `geckodriver` (API WebDriver) para medir: desbordes horizontales, imágenes rotas, objetivos táctiles menores de 40 px, texto menor de 12 px, **contraste real texto/fondo** y choques entre cajas (el teléfono trasero de la portada pisaba el texto a partir de 1.000 px y el comprobador de desbordes no lo veía). Hay que comprobar también las páginas legales tras cualquier cambio de `styles.css`.
 
-## 9. Estado actual y pendientes (2026-11-14)
+## 9. Estado actual y pendientes (2026-11-15)
 
-**Publicado:** el release `v1.1.4` (tag `da04886`, 2026-11-06) es el "Latest". **No se debe mover ni recrear ese tag.** `main` ya contiene la versión `1.1.5` (`versionCode` 11), pero **no existe el tag `v1.1.5`**.
+**Publicado:** el release `v1.1.5` (`versionCode` 11) es el "Latest" y está **verificado**. Lo publica `.github/workflows/build-android.yml`, que valida el tag con `scripts/check-release-tag.mjs` contra `apps/mobile/app.json`. El run #49 del tag terminó en verde, el asset `Surtivox.apk` (67 047 569 bytes, SHA-256 `d4eec978…45768b7`, igual al que publica GitHub) trae `arm64-v8a` y `armeabi-v7a` y está firmado con la clave de producción (`e798f4a4…1cc32d`). **No se deben mover ni recrear los tags `v1.1.4` ni `v1.1.5`.** `versionCode` no puede bajar: un fallo grave se arregla hacia adelante (1.1.6, 12).
 
-**En `main` y ya subido** (resumen; el detalle con hashes está en `DEUDA_TECNICA.md`): cursores de sync reiniciados al restaurar un respaldo; salida del modo desarrollador; CI con el gate completo; estado de la nube unificado; `ScanModal` con la máquina de estados de la cámara; pie con la versión real; parches de Expo del SDK 57; build más rápido con `all_archs`; acciones de GitHub fijadas por SHA; moneda heredada al agregar una tienda y COP por defecto en el onboarding; capturas reales en README, landing y `og-image`; ids con `expo-crypto`; Worker de sync verificado (el endpoint `/sync/rotate` y las tablas del kit existen).
+**Verificado en el teléfono (2026-11-14):** actualización del 1.1.4 público al 1.1.5 con datos (tienda, productos, ventas, cliente y fiado se conservaron) e instalación limpia con onboarding en COP; detalle en `DEUDA_TECNICA.md`. La prueba usó el artefacto del run #47, no el APK público del release.
 
-**Sin commitear (solo en el equipo del propietario):** el rediseño de la landing (`landing/index.html`, `landing/styles.css`, `landing/assets/screen-products.webp`) y `apps/mobile/src/landingStructure.test.ts`. Esperan su revisión en el navegador. Al aprobarlos, commitéalos con rutas concretas.
+**En `main`** (resumen; el detalle con hashes está en `DEUDA_TECNICA.md`): cursores de sync reiniciados al restaurar un respaldo; salida del modo desarrollador; CI con el gate completo; estado de la nube unificado; `ScanModal` con la máquina de estados de la cámara; pie con la versión real; parches de Expo del SDK 57; build más rápido con `all_archs`; acciones de GitHub fijadas por SHA; moneda heredada al agregar una tienda y COP por defecto en el onboarding; capturas reales en README, landing y `og-image`; ids con `expo-crypto`; Worker de sync verificado; rediseño de la landing aprobado por el propietario.
 
 **Pendientes por orden:**
 
-1. **Revisión de la landing** por el propietario y su commit. Opcional: una captura real de la pantalla de fiado (se pidió un teléfono desbloqueado).
-2. **Prueba de actualización desde el 1.1.4 público con datos** (el propietario **autorizó borrar los datos de prueba del teléfono**). Plan: obtener el APK público de la página de releases, desinstalar la app, instalar el 1.1.4, crear tienda, productos, ventas, un PIN y una copia, instalar encima el APK nuevo (`versionCode` 11, el artefacto del run con `all_archs`) y comprobar que no se pierde nada. Añade una instalación limpia para ver el onboarding en COP. Necesita el teléfono desbloqueado y el artefacto en la carpeta del proyecto.
-3. **Crear el tag `v1.1.5`** (lo hace el propietario): push de `main`, esperar verde, `git tag v1.1.5` y `git push origin v1.1.5`. El workflow valida que el tag coincida con `app.json`, compila las dos arquitecturas, verifica la firma y publica `Surtivox.apk`. La ruta del tag **nunca se ha ejecutado**. `versionCode` no puede bajar: si hay un fallo grave se arregla hacia adelante (1.1.6, 12).
-4. **Cuota del sync gratuito (P1-1):** falta el número de filas por tienda; conviene medir antes la tienda más grande con una consulta de solo lectura que ejecuta el propietario. Va junto con la paginación de `/sync/pull` (P2-5), un solo despliegue (por la API REST) y el Worker antes que la app.
-5. **Catálogo comunitario (P1-5):** decidir el umbral de consenso (hoy 2) y si se limita por IP.
-6. **Pagos (pospuestos por el propietario):** el P0-1 sigue abierto: `/pagos/crear` valida contra `sync_tokens`, tabla que el sync vacía al migrar a `shop_keys`. Falta el webhook y `entitlements`.
-7. **Menores:** `allowBackup="true"` (decisión de privacidad frente a comodidad), frase de "respaldo automático" en `paywall.tsx` (ruta heredada), `repos.ts` (1.200 líneas, sin leer entero), `roadmap.md` desactualizado, una tienda de prueba extra en el teléfono ("Tienda Prueba Moneda").
+1. **Instalar el APK público del release** (`releases/latest/download/Surtivox.apk`) en el teléfono para confirmar la descarga directa. Necesita el teléfono conectado y desbloqueado; la instalación por USB en MIUI muestra un aviso de 7 s que hay que aceptar a tiempo.
+2. **Nube y kit de recuperación en un dispositivo:** nunca se probaron de punta a punta en el teléfono.
+3. **Cuota del sync gratuito (P1-1):** falta el número de filas por tienda; conviene medir antes la tienda más grande con una consulta de solo lectura que ejecuta el propietario. Va junto con la paginación de `/sync/pull` (P2-5), un solo despliegue (por la API REST) y el Worker antes que la app.
+4. **Catálogo comunitario (P1-5):** decidir el umbral de consenso (hoy 2) y si se limita por IP.
+5. **Pagos (pospuestos por el propietario):** el P0-1 sigue abierto: `/pagos/crear` valida contra `sync_tokens`, tabla que el sync vacía al migrar a `shop_keys`. Falta el webhook y `entitlements`.
+6. **Menores:** `allowBackup="true"` (decisión de privacidad frente a comodidad), frase de "respaldo automático" en `paywall.tsx` (ruta heredada), `repos.ts` (1.200 líneas, sin leer entero), `roadmap.md` desactualizado. Opcional: captura real de la pantalla de fiado para la landing.
 
 ## 10. Decisiones del propietario (no las reabras ni decidas por él)
 
 - **Moneda:** la app es para Colombia. COP por defecto. La moneda es **global** para todas las tiendas y no convierte precios; se cambia en Más. Agregar una tienda hereda la moneda de la activa y **ya no ofrece selector**.
 - **Respaldo JSON con hashes de PIN:** aceptado para la Beta; a futuro se cifrará el archivo.
-- **Release:** v1.1.5, no reutilizar v1.1.4. Los APK de `main` son solo arm64; los tags llevan las dos arquitecturas.
+- **Release:** v1.1.5 publicada; no reutilizar tags. Los APK de `main` son solo arm64; los tags llevan las dos arquitecturas.
 - **La nube** es gratis y "en pruebas"; **no** se promete sincronización automática (solo existe el botón).
 - **Dependabot:** se ignoran saltos mayores de Expo, de `react-native-*`, `react` y `wrangler`, y mayores y menores de `react-native`.
 - **Pendiente de su decisión:** tope de filas del sync, umbral del catálogo, retiro de `expo-iap`/`paywall`, `allowBackup`, si `roadmap.md` se reescribe.
