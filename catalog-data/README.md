@@ -87,3 +87,24 @@ Resultado del 2026-11-16 con 200.000 productos sintéticos, **medido en un compu
 - Ordenar todas las coincidencias por relevancia daba p95 45 ms y máximo 150 ms; acotar a 300 candidatos lo bajó a los valores de arriba.
 
 Pendiente de medir en un Android de gama baja: descarga, verificación del sha256, apertura y búsqueda. Los datos sintéticos repiten vocabulario; un catálogo real puede pesar distinto.
+
+## Fuentes en uso
+
+| Fuente | Estado | Productos | Cómo se obtiene |
+|---|---|---:|---|
+| `surtivox` (propio) | aprobada | 814 | Redactado por el proyecto; los JSONL de `data/surtivox/` se editan a mano o se regeneran. |
+| `off` (Open Food Facts) | aprobada | 447 | `src/importers/fetch-off.sh` descarga a `.cache/off/<día>/` y `src/cli/import-off.ts --day=<día>` escribe `data/off/colombia.jsonl`. |
+| `invima-cum` | pendiente | 0 | Pospuesta; CC BY-SA 4.0, incompatible con ODbL. |
+
+**Open Food Facts solo entrega 10 páginas (1.000 productos) a usuarios no identificados.** Desde la página 11 responde "Due to heavy abuse from robots, we are unable to serve this page to unidentified users". No se rodea ese bloqueo partiendo consultas: para el resto hay que usar una cuenta de Open Food Facts o su exportación oficial de datos, con aprobación del propietario.
+
+Reglas del importador (`src/importers/off.ts`, probadas en `test/off.test.ts`): nombre en español; marca obligatoria y con mayúscula inicial si viene en mayúsculas; si el nombre ya trae una medida no se agrega otra y una presentación que la contradiga se descarta; categoría por nombre (`NAME_RULES`: la malta va a bebidas) o por la tabla `off-categories.json`; los suplementos y las proteínas no tienen equivalencia a propósito. Lo demás queda en cuarentena en la caché con su motivo.
+
+## Publicar una actualización
+
+```bash
+node catalog-data/src/cli/validate.ts
+node catalog-data/src/cli/build.ts --version=AAAA.MM.DD --out=landing/catalogo --gzip=false
+```
+
+`landing/` se publica en GitHub Pages al fusionar en `main`; la app descarga `https://digita1web.github.io/surtivox-pos/catalogo/manifest.json` y el `.sqlite` de su tipo de negocio, y compara tamaño y sha256 antes de instalarlo. `test/published.test.ts` falla si `data/` cambió y no se recompiló lo publicado.
