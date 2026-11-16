@@ -11,6 +11,7 @@ import { getDb } from './db';
 import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';
 import { voidSaleOn } from './saleOps';
+import { COUNT_REMINDER_KEY, COUNT_SNOOZE_KEY, countSnoozeUntil, parseSettingNumber, shouldRemindCount } from './countReminder';
 import { countReportOn, countStaffOn, type CountReport, type CountReportFilter, type CountStaff } from './countReport';
 import { openCountOn, recordCountOn, closeCountOn, countLinesOn, lastCountAtOn, expectedStockOn, type CountResult, type CountLine } from './countOps';
 import { checkoutSaleOn, recordCustomerPaymentOn, type CheckoutLine, type CheckoutOptions, type Receipt } from './checkoutOps';
@@ -1234,4 +1235,36 @@ export async function stockCountReport(storeId: string, filter: CountReportFilte
 
 export async function stockCountStaff(storeId: string): Promise<CountStaff[]> {
   return countStaffOn(getDb(), storeId);
+}
+
+export async function trackedProductCount(storeId: string): Promise<number> {
+  const row = await getDb().getFirstAsync<{ n: number }>(
+    'SELECT COUNT(*) AS n FROM products WHERE store_id=? AND deleted_at IS NULL AND track_inventory=1', [storeId],
+  );
+  return Number(row?.n ?? 0);
+}
+
+export async function stockCountReminder(storeId: string): Promise<{ lastCountAt: number | null } | null> {
+  const [enabled, snooze, lastCountAt, trackedProducts] = await Promise.all([
+    getLocalSetting(COUNT_REMINDER_KEY),
+    getLocalSetting(COUNT_SNOOZE_KEY),
+    lastStockCountAt(storeId),
+    trackedProductCount(storeId),
+  ]);
+  const remind = shouldRemindCount({
+    enabled: enabled === '1', now: Date.now(), lastCountAt, trackedProducts, snoozedUntil: parseSettingNumber(snooze),
+  });
+  return remind ? { lastCountAt } : null;
+}
+
+export async function isStockCountReminderOn(): Promise<boolean> {
+  return (await getLocalSetting(COUNT_REMINDER_KEY)) === '1';
+}
+
+export async function setStockCountReminder(on: boolean): Promise<void> {
+  await setLocalSetting(COUNT_REMINDER_KEY, on ? '1' : '0');
+}
+
+export async function snoozeStockCountReminder(): Promise<void> {
+  await setLocalSetting(COUNT_SNOOZE_KEY, String(countSnoozeUntil(Date.now())));
 }

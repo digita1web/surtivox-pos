@@ -6,6 +6,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { asMinor } from '@surtivox/pos-core';
 import {
   todayStats, recentlySold, listProducts, lowStockProducts, getLocalSetting, setLocalSetting, salesBackupCounts, hasRecovery,
+  stockCountReminder, snoozeStockCountReminder,
   type TodayStats, type Product, type LowStockItem,
 } from '../../src/repos';
 import { useSession, useRole } from '../../src/session';
@@ -29,6 +30,7 @@ import { useTheme, space, radius, circle } from '../../src/theme';
 import { greetingForDate } from '../../src/greeting';
 import { exportFullBackup } from '../../src/backup';
 import { backupReminderText, backupSnoozeUntil, shouldRemindBackup } from '../../src/backupReminder';
+import { countReminderText } from '../../src/countReminder';
 import { showAlert } from '../../src/pos/alert';
 import { UpdateNoticeCard, useUpdateNotice } from '../../src/pos/UpdateNotice';
 import { kitReminderNow, snoozeKitReminder, hasHostedSync } from '../../src/sync';
@@ -57,6 +59,8 @@ export default function Home() {
   const [backupNudge, setBackupNudge] = useState<{ lastBackupAt: number | null } | null>(null);
   const [backupBusy, setBackupBusy] = useState(false);
   const [recoveryMissing, setRecoveryMissing] = useState(false);
+  const [countNudge, setCountNudge] = useState<{ lastCountAt: number | null } | null>(null);
+  const canCount = can(role, 'stock_count');
   const update = useUpdateNotice();
   const [kitNudge, setKitNudge] = useState<{ title: string; body: string } | null>(null);
   const me = useSession((state) => state.staff);
@@ -113,7 +117,9 @@ export default function Home() {
     cloud.refresh();
     void refreshBackupNudge();
     kitReminderNow().then(setKitNudge).catch(() => setKitNudge(null));
-  }, [store.id, salesVersion, cloud.refresh, refreshBackupNudge, me?.role, staffTotal]));
+    if (canCount) stockCountReminder(store.id).then(setCountNudge).catch(() => setCountNudge(null));
+    else setCountNudge(null);
+  }, [store.id, salesVersion, cloud.refresh, refreshBackupNudge, me?.role, staffTotal, canCount]));
 
   const saveBackup = async () => {
     if (backupBusy) return;
@@ -126,6 +132,11 @@ export default function Home() {
     } finally {
       setBackupBusy(false);
     }
+  };
+
+  const snoozeCount = () => {
+    setCountNudge(null);
+    void snoozeStockCountReminder().catch(() => {});
   };
 
   const snoozeBackup = () => {
@@ -241,6 +252,25 @@ export default function Home() {
                 <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 12 }}>{backupBusy ? 'Generando…' : 'Guardar copia'}</Text>
               </Pressable>
               <Pressable onPress={snoozeBackup} disabled={backupBusy} style={s.backupSnooze}>
+                <Text style={{ color: t.muted, fontWeight: '700', fontSize: 12 }}>Ahora no</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+
+        {countNudge ? (
+          <View style={[s.backupNudge, { backgroundColor: t.panel, borderColor: t.line }]}>
+            <View style={s.backupTitle}>
+              <Ionicons name="clipboard-outline" size={18} color={t.accent} />
+              <Text style={{ color: t.fg, fontWeight: '700', flex: 1, marginLeft: space.sm }} numberOfLines={1}>
+                {countReminderText(countNudge.lastCountAt, Date.now())}
+              </Text>
+            </View>
+            <View style={s.backupActions}>
+              <Pressable onPress={() => router.push('/stock-count')} style={[s.backupAction, { backgroundColor: t.accent }]}>
+                <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 12 }}>Contar ahora</Text>
+              </Pressable>
+              <Pressable onPress={snoozeCount} style={s.backupSnooze}>
                 <Text style={{ color: t.muted, fontWeight: '700', fontSize: 12 }}>Ahora no</Text>
               </Pressable>
             </View>

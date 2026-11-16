@@ -44,3 +44,13 @@ test('el informe filtra por periodo y por quien contó', () => {
   assert.match(report, /periodRange\(period, Date\.now\(\)\)/);
   assert.match(report, /staffId: who\.id/);
 });
+
+test('el aviso semanal es opcional, vive en Inicio y solo lo ve quien puede contar', () => {
+  const home = read('../app/(tabs)/index.tsx');
+  assert.match(home, /if \(canCount\) stockCountReminder\(store\.id\)\.then\(setCountNudge\)/);
+  assert.match(home, /const canCount = can\(role, 'stock_count'\);/);
+  assert.match(home, /router\.push\('\/stock-count'\)/);
+  assert.match(report, /<Switch value=\{reminder\} onValueChange=\{toggleReminder\}/);
+  const pkg = JSON.parse(read('../package.json')) as { dependencies: Record<string, string> };
+  assert.equal(pkg.dependencies['expo-notifications'], undefined);
+});

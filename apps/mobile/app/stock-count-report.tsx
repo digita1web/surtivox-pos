@@ -1,9 +1,11 @@
 import { useCallback, useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Switch, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { asMinor } from '@surtivox/pos-core';
-import { stockCountReport, stockCountStaff, type CountReport, type CountStaff } from '../src/repos';
+import {
+  stockCountReport, stockCountStaff, isStockCountReminderOn, setStockCountReminder, type CountReport, type CountStaff,
+} from '../src/repos';
 import { useSession } from '../src/session';
 import { useMoney } from '../src/pos/ui';
 import { showAlert } from '../src/pos/alert';
@@ -35,6 +37,19 @@ export default function StockCountReport() {
   const [staff, setStaff] = useState<CountStaff[]>([]);
   const [report, setReport] = useState<CountReport | null>(null);
   const [sharing, setSharing] = useState(false);
+  const [reminder, setReminder] = useState(false);
+
+  useFocusEffect(useCallback(() => {
+    isStockCountReminderOn().then(setReminder).catch(() => setReminder(false));
+  }, []));
+
+  const toggleReminder = (on: boolean) => {
+    setReminder(on);
+    setStockCountReminder(on).catch((e) => {
+      setReminder(!on);
+      showAlert('No se pudo guardar', e instanceof Error ? e.message : String(e));
+    });
+  };
 
   useFocusEffect(useCallback(() => {
     let live = true;
@@ -68,6 +83,13 @@ export default function StockCountReport() {
   return (
     <Screen title="Diferencias de inventario" subtitle="Resultado de los conteos físicos">
       <View style={{ padding: space.lg }}>
+        <View style={[s.reminder, { backgroundColor: t.panel, borderColor: t.line }]}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: t.fg, fontWeight: '700' }}>Recordarme contar cada semana</Text>
+            <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>Muestra un aviso en Inicio si pasan 7 días sin contar.</Text>
+          </View>
+          <Switch value={reminder} onValueChange={toggleReminder} accessibilityLabel="Recordatorio semanal de conteo" />
+        </View>
         <ChipRow>
           {PERIODS.map((p) => <Chip key={p} label={PERIOD_LABEL[p]} on={period === p} onPress={() => setPeriod(p)} />)}
         </ChipRow>
@@ -156,6 +178,7 @@ export default function StockCountReport() {
 }
 
 const s = StyleSheet.create({
+  reminder: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginBottom: space.md },
   totals: { flexDirection: 'row', gap: space.md, marginTop: space.md },
   total: { flex: 1, borderWidth: 1, borderRadius: radius.lg, padding: space.md },
   actions: { flexDirection: 'row', gap: space.md, marginTop: space.md },
