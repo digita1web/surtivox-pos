@@ -9,6 +9,10 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## Release v1.1.6 publicado (2026-11-16 15:20)
+
+Tag `v1.1.6` sobre `bc5b999`; run #56 en verde (compilar y publicar). **Verificado** descargando el APK público de `releases/latest`: `Surtivox.apk` de 67 109 293 bytes, SHA-256 `c19256d647281b8ec4fad6667e752d91f4edd292f205fe56b7128bf2ca256e1c` (igual al que publica GitHub), firma de producción `e798f4a4…1cc32d`, `versionCode` 12, `versionName` 1.1.6, `arm64-v8a` y `armeabi-v7a`. El bundle trae "Conteo de inventario", "Por agotarse", "Cobra en segundos", "Borrar búsqueda" y "botellas", y ya no "Stock bajo" ni "Vende sin complicaciones". La landing publicada dice `softwareVersion` 1.1.6 y anuncia el conteo. **No verificado:** instalar este APK público en el teléfono.
+
 ## Despliegue del Worker de sync con schemaVersion 2 (2026-11-16 13:49)
 
 Hecho por la API REST de Cloudflare con un token temporal del propietario (D1 Edit y Workers Scripts Edit), con su autorización expresa. **Verificado.**
