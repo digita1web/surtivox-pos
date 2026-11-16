@@ -4,6 +4,18 @@ import { resetSyncCursorsOn } from './syncState.ts';
 
 export type RestoreDb = Pick<SQLiteDatabase, 'execAsync' | 'runAsync' | 'withTransactionAsync'>;
 
+const DEPENDENT_TABLES: Record<string, readonly string[]> = {
+  stock_movements: ['stock_count_lines', 'stock_counts'],
+};
+
+export function tablesToClear(backupTables: readonly string[]): string[] {
+  const out = [...backupTables];
+  for (const table of backupTables) {
+    for (const dependent of DEPENDENT_TABLES[table] ?? []) if (!out.includes(dependent)) out.push(dependent);
+  }
+  return out;
+}
+
 export async function applyBackupOn(
   db: RestoreDb,
   tables: Record<string, Record<string, unknown>[]>,
@@ -13,7 +25,7 @@ export async function applyBackupOn(
   await db.execAsync('PRAGMA foreign_keys = OFF;');
   try {
     await db.withTransactionAsync(async () => {
-      for (const table of tableNames) await db.runAsync(restoreDeleteSql(table));
+      for (const table of tablesToClear(tableNames)) await db.runAsync(restoreDeleteSql(table));
       for (const table of tableNames) {
         for (const row of filterBackupRows(table, tables[table]!)) {
           const columns = Object.keys(row);

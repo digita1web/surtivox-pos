@@ -108,3 +108,24 @@ test('restoring keeps the recovery kit keys and replaces the other local setting
   assert.equal(read('kit_entropy_v1'), 'secreto');
   assert.equal(read('last_backup_at'), 'del-respaldo');
 });
+
+test('a backup made before stock counts existed clears the counts whose adjustments it replaces', async () => {
+  const db = syncedDevice();
+  db.prepare("INSERT INTO products (id,store_id,name,selling_price,created_at,updated_at,device_id) VALUES ('p1','s1','Arroz',100,0,0,'d1')").run();
+  db.prepare("INSERT INTO stock_counts (id,store_id,started_at,created_at,updated_at,device_id) VALUES ('k1','s1',1,1,1,'d1')").run();
+  db.prepare("INSERT INTO stock_movements (id,store_id,product_id,type,quantity_delta,reference_type,reference_id,created_at,device_id) VALUES ('m1','s1','p1','adjustment',-2,'stock_count','k1',1,'d1')").run();
+  db.prepare("INSERT INTO stock_count_lines (id,count_id,product_id,product_name_snapshot,expected_qty,counted_qty,unit_cost,movement_id,created_at,device_id) VALUES ('l1','k1','p1','Arroz',5,3,10,'m1',1,'d1')").run();
+  const backup = { ...oldBackup(), products: [{ id: 'p1', store_id: 's1', name: 'Arroz', selling_price: 100, created_at: 0, updated_at: 0, device_id: 'd1' }], stock_movements: [] };
+  await applyBackupOn(adapter(db), backup);
+  const n = (table: string) => (db.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get() as { n: number }).n;
+  assert.equal(n('stock_movements'), 0);
+  assert.equal(n('stock_count_lines'), 0);
+  assert.equal(n('stock_counts'), 0);
+});
+
+test('a partial backup without stock movements leaves the counts alone', async () => {
+  const db = syncedDevice();
+  db.prepare("INSERT INTO stock_counts (id,store_id,started_at,created_at,updated_at,device_id) VALUES ('k1','s1',1,1,1,'d1')").run();
+  await applyBackupOn(adapter(db), oldBackup());
+  assert.equal((db.prepare('SELECT COUNT(*) AS n FROM stock_counts').get() as { n: number }).n, 1);
+});
