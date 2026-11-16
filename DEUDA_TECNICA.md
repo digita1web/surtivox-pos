@@ -9,6 +9,10 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## Unidad de venta por metro (anotado 2026-11-16, decisión del propietario)
+
+La app solo vende en `unit`, `pcs`, `pack`, `box`, `dozen`, `kg`, `g`, `L`, `ml`, `lb`, `bulto` y `bottle` (`UNITS` en `apps/mobile/app/add-product.tsx`). No hay metro, así que en el catálogo estandarizado los productos que se venden por metro (cables, cuerda, malla, lona, plástico, manguera) usan `unit` y se llaman "(1 metro)". **Pendiente para la próxima versión de la app:** agregar la unidad `m` (metro) para que ferreterías y mercerías puedan vender por metro, con su etiqueta en `stockLabel` y su test, y después pasar esos productos de `catalog-data` a `unit: "m"` (la taxonomía ya tiene `m` como unidad de presentación; habría que marcarla `sale: true` y actualizar `taxonomy.test.ts` y `data.test.ts`).
+
 ## Despliegue del Worker de sync con schemaVersion 2 (2026-11-16 13:49)
 
 Hecho por la API REST de Cloudflare con un token temporal del propietario (D1 Edit y Workers Scripts Edit), con su autorización expresa. **Verificado.**
