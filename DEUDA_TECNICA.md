@@ -9,6 +9,28 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## Despliegue del Worker de sync con schemaVersion 2 (2026-11-16 13:49)
+
+Hecho por la API REST de Cloudflare con un token temporal del propietario (D1 Edit y Workers Scripts Edit), con su autorización expresa. **Verificado.**
+
+- Antes: D1 `surtivox-sync` (`1faf3ce0…`) con 18 tablas y sin tablas de conteo; el Worker solo tenía el binding `DB`; `/health` = `{"tables":15}`.
+- Punto de restauración de D1 (Time Travel) tomado antes de cambiar nada: `00000017-00000000-00005125-baebeed7d3ddc45a60278608f2ec528e`.
+- Aplicada `apps/sync-worker/migrations/0002_stock_counts.sql`: existen `stock_counts` y `stock_count_lines`.
+- Worker subido desde `main` (paquete de `wrangler deploy --dry-run`), mismo binding `DB`. `/health` = `{"tables":17,"schemaVersion":2}`; `/sync/pull` sin token o con token falso responde 401.
+- **Pendiente del propietario:** revocar el token en Cloudflare (quedó en el historial de la conversación); el archivo local ya se borró.
+- **No verificado:** una sincronización real de un teléfono contra el Worker nuevo.
+
+## Prueba en dispositivo de la actualización 1.1.5 → main con conteo (2026-11-16 12:37)
+
+Redmi Note 9 (Android 12) por adb, datos ficticios. **Verificado** salvo que diga lo contrario.
+
+- **Partida:** `pm clear` (con permiso del propietario; la app no tenía tienda) e instalación de la APK pública v1.1.5 (SHA-256 `d4eec978…45768b7`, firma `e798f4a4…`). Onboarding con COP preseleccionado, "Tienda Don Pepe", catálogo de ejemplo, INV-0001 $11.000 en efectivo, INV-0002 $7.000 a fiado a "Cliente Prueba".
+- **Actualización** con `adb install -r` a la APK del build #53 de `main` (arm64, misma firma, aún `versionCode` 11): se conservaron tienda, ventas del día ($18.000, 2 pedidos, 3 artículos), stock y el fiado de $7.000. Las migraciones 0012 y 0013 corrieron sin error sobre datos reales.
+- **Conteo:** tarjeta en Inicio; aviso semanal ("Aún no has hecho un conteo") tras activarlo y sin conteos, y desaparece al contar; búsqueda por nombre; Aceite esperado 9 → contado 7 (faltante 2, $14.250 a costo) y Agua Cristal 9 → 10 (sobrante 1, $1.125); el stock quedó en 7 y 10; terminar abre el informe con faltante y sobrante separados; el PDF `conteo-inventario-2026-11-16.pdf` se genera y abre el selector de compartir.
+- **Corregido tras la prueba:** relleno doble del informe que cortaba el chip "Todo" (`51b0deb`); etiqueta de accesibilidad "Clear search" → "Borrar búsqueda" (`b34e3f9`). Capturas de Inicio y Productos y `og-image.png` actualizadas (`c89044b`).
+- **No probado:** escaneo con la cámara en el conteo (no se puede por adb), envío por WhatsApp (no está instalado en el Redmi; el enlace `wa.me` se abriría en el navegador), contenido visual del PDF, conteo con personal y PIN (la tienda de prueba no tiene personal), sincronización con la nube.
+- **Detalle previo, sin tocar:** las unidades se muestran sin plural ("10 botella").
+
 ## Conteo físico de inventario (2026-11-16 09:52)
 
 Rama `feat/conteo-fisico`, commits locales sin subir: `fcf9daa` (migración 0012), `4a10f3b` (compuerta de esquema del sync), `dc0205b` (countOps), `047990f` (pantalla), `4d8c7a3` (informe), `622043c` (recordatorio), `45208c5` (restaurar respaldos viejos). **Verificado** con tests en `node:sqlite` y las migraciones reales, `verify.sh`, `pnpm -r typecheck`, `pnpm test` y `expo export` para Android. **No verificado en el teléfono.**

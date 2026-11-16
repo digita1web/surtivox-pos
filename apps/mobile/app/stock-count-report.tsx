@@ -82,7 +82,7 @@ export default function StockCountReport() {
 
   return (
     <Screen title="Diferencias de inventario" subtitle="Resultado de los conteos físicos">
-      <View style={{ padding: space.lg }}>
+      <View>
         <View style={[s.reminder, { backgroundColor: t.panel, borderColor: t.line }]}>
           <View style={{ flex: 1 }}>
             <Text style={{ color: t.fg, fontWeight: '700' }}>Recordarme contar cada semana</Text>
