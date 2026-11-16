@@ -66,3 +66,8 @@ test('Inicio ofrece el conteo bajo las acciones principales solo a quien puede c
   assert.match(home, /title="Agregar producto"/);
   assert.match(home, /Agrega tu primer producto/);
 });
+
+test('el informe no suma su propio relleno al de Screen, así los chips llegan al borde', () => {
+  assert.match(report, /<Screen title="Diferencias de inventario"[^>]*>\n\s*<View>/);
+  assert.doesNotMatch(report, /<Screen title="Diferencias de inventario"[^>]*>\n\s*<View style=\{\{ padding/);
+});
