@@ -16,6 +16,7 @@ import { migration as m0008 } from './migrations/0008_market_prices.ts';
 import { migration as m0009 } from './migrations/0009_barcode_lookups.ts';
 import { migration as m0010 } from './migrations/0010_local_settings.ts';
 import { migration as m0011 } from './migrations/0011_catalog_client.ts';
+import { migration as m0012 } from './migrations/0012_stock_counts.ts';
 
 /** Ordered list of all migrations. Append new ones; never edit or remove. */
-export const MIGRATIONS = [m0000, m0001, m0002, m0003, m0004, m0005, m0006, m0007, m0008, m0009, m0010, m0011] as const;
+export const MIGRATIONS = [m0000, m0001, m0002, m0003, m0004, m0005, m0006, m0007, m0008, m0009, m0010, m0011, m0012] as const;

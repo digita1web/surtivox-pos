@@ -24,7 +24,7 @@ function tableNames(db: DatabaseSync): string[] {
 test('runMigrations applies all schema migrations in order', async () => {
   const db = new DatabaseSync(':memory:');
   const applied = await runMigrations(adapter(db), MIGRATIONS);
-  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops', '0008_market_prices', '0009_barcode_lookups', '0010_local_settings', '0011_catalog_client']);
+  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops', '0008_market_prices', '0009_barcode_lookups', '0010_local_settings', '0011_catalog_client', '0012_stock_counts']);
 
   const tables = tableNames(db);
   for (const t of [
@@ -50,6 +50,8 @@ test('runMigrations applies all schema migrations in order', async () => {
     'local_settings',
     'catalog_outbox',
     'catalog_cache',
+    'stock_counts',
+    'stock_count_lines',
     '_migrations',
   ]) {
     assert.ok(tables.includes(t), `expected table ${t}, got ${tables.join(', ')}`);
@@ -146,4 +148,30 @@ test('0011 adds local catalog outbox and cache outside sync tables', async () =>
     .run('7702511000045', 'Arroz Diana', 'found', 1000);
   assert.throws(() => db.prepare('INSERT INTO catalog_cache (barcode,status,checked_at) VALUES (?,?,?)')
     .run('x', 'invalid', 1000));
+});
+
+test('0012 adds stock counts on a database that already has sales and stock', async () => {
+  const db = new DatabaseSync(':memory:');
+  const before = MIGRATIONS.filter((m) => m.id < '0012');
+  await runMigrations(adapter(db), before);
+  db.exec(`INSERT INTO stores (id,name,currency_code,currency_locale,currency_decimals,created_at,updated_at,device_id,version)
+           VALUES ('s1','Tienda','COP','es-CO',0,0,0,'d1',1);
+           INSERT INTO products (id,store_id,name,cost_price,selling_price,track_inventory,created_at,updated_at,device_id,version)
+           VALUES ('p1','s1','Arroz',1000,2000,1,0,0,'d1',1);
+           INSERT INTO stock_movements (id,store_id,product_id,type,quantity_delta,created_at,device_id)
+           VALUES ('m1','s1','p1','opening_stock',10,0,'d1'), ('m2','s1','p1','sale',-3,1,'d1');`);
+  const stock = () => (db.prepare(`SELECT SUM(quantity_delta) AS n FROM stock_movements WHERE product_id='p1'`).get() as { n: number }).n;
+  assert.equal(stock(), 7);
+
+  assert.deepEqual(await runMigrations(adapter(db), MIGRATIONS), ['0012_stock_counts']);
+  assert.equal(stock(), 7);
+  assert.equal((db.prepare('SELECT COUNT(*) AS c FROM stock_counts').get() as { c: number }).c, 0);
+
+  db.exec(`INSERT INTO stock_counts (id,store_id,started_at,created_at,updated_at,device_id) VALUES ('k1','s1',5,5,5,'d1');
+           INSERT INTO stock_count_lines (id,count_id,product_id,product_name_snapshot,expected_qty,counted_qty,unit_cost,created_at,device_id)
+           VALUES ('l1','k1','p1','Arroz',7,5,1000,5,'d1');`);
+  assert.equal((db.prepare(`SELECT status FROM stock_counts WHERE id='k1'`).get() as { status: string }).status, 'open');
+  assert.throws(() => db.exec(`UPDATE stock_counts SET status='borrado' WHERE id='k1'`));
+  assert.throws(() => db.exec(`INSERT INTO stock_count_lines (id,count_id,product_id,product_name_snapshot,expected_qty,counted_qty,created_at,device_id)
+                               VALUES ('l2','k1','p1','Arroz',7,-1,5,'d1')`));
 });
