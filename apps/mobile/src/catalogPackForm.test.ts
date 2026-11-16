@@ -37,3 +37,7 @@ test('el catálogo vive en Más, protegido por el permiso de productos, y su lic
   assert.match(runtime, /installPackOn\(io, \{ base: CATALOG_PACK_BASE, dir: DIR, type \}\)/);
   assert.match(read('../app/catalog-pack.tsx'), /attribution\.map/);
 });
+
+test('si no hay conexión al descargar el catálogo, el mensaje invita a reintentar', () => {
+  assert.match(read('./catalogPackRuntime.ts'), /Revisa tu conexión e intenta de nuevo; una vez descargado funciona sin internet/);
+});
