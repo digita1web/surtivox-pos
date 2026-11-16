@@ -60,6 +60,10 @@ Si el navegador avisa que el archivo puede ser dañino, toca **Descargar de todo
   descuenta el inventario.
 - **Inventario:** fotos de productos, categorías, SKU, códigos de barras,
   alertas de productos por agotarse y avisos de agotado.
+- **Conteo de inventario:** propietario y administrador cuentan lo que hay en
+  el estante, ven el esperado contra lo contado y la app registra el ajuste.
+  Informe de faltantes y sobrantes a costo, por producto, conteo, fecha y
+  persona, que se comparte por WhatsApp o PDF. Aviso semanal opcional.
 - **Fiados:** clientes con saldo calculado a partir de un libro de movimientos;
   ventas a crédito, abonos y devoluciones a la cuenta del cliente.
 - **Reportes:** consulta hoy, 7 días y 30 días; ventas, ganancia bruta,
