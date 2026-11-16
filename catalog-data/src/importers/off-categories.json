@@ -526,5 +526,77 @@
  {
   "tag": "en:cereals-and-their-products",
   "category": "abarrotes"
+ },
+ {
+  "tag": "en:cigarettes",
+  "category": "cigarrillos"
+ },
+ {
+  "tag": "en:tobacco-products",
+  "category": "cigarrillos"
+ },
+ {
+  "tag": "en:smoked-bacon",
+  "category": "carnes-frias"
+ },
+ {
+  "tag": "en:bacons",
+  "category": "carnes-frias"
+ },
+ {
+  "tag": "en:shampoos",
+  "category": "cuidado-personal"
+ },
+ {
+  "tag": "en:open-beauty-facts",
+  "category": "cuidado-personal"
+ },
+ {
+  "tag": "en:tunas",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:tuna-salads",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:refried-beans",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:dried-fruits",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:jelly-desserts",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:compotes",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:chia",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:tea-based-beverages",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:artificially-sweetened-beverages",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:sweetened-beverages",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:non-alcoholic-beverages",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:beverages",
+  "category": "bebidas"
  }
 ]

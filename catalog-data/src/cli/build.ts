@@ -9,7 +9,7 @@ const out = resolve(args.get('out') ?? 'catalog-dist');
 const version = args.get('version');
 
 if (!version || !/^\d{4}\.\d{2}\.\d{2}(?:-\d+)?$/.test(version)) {
-  console.log('Uso: node catalog-data/src/cli/build.ts --version=AAAA.MM.DD[-N] [--out=carpeta] [--root=catalog-data]');
+  console.log('Uso: node catalog-data/src/cli/build.ts --version=AAAA.MM.DD[-N] [--out=carpeta] [--root=catalog-data] [--gzip=false]');
   process.exit(2);
 }
 
@@ -24,6 +24,6 @@ if (result.products.length === 0) {
   process.exit(1);
 }
 
-const manifest = buildPackages(out, result.products, result.taxonomy, { catalogVersion: version });
-for (const p of manifest.packages) console.log(`${p.id}: ${p.items} productos · ${p.bytes} bytes · gzip ${p.gzip_bytes} bytes · sha256 ${p.gzip_sha256}`);
+const manifest = buildPackages(out, result.products, result.taxonomy, { catalogVersion: version, gzip: args.get('gzip') !== 'false' });
+for (const p of manifest.packages) console.log(`${p.id}: ${p.items} productos · ${p.bytes} bytes · sha256 ${p.sha256}${p.gzip_bytes ? ` · gzip ${p.gzip_bytes} bytes` : ''}`);
 console.log(`Catálogo ${version}: ${result.products.length} productos, ${manifest.packages.length} paquetes, ${warnings} avisos. Salida: ${out}`);

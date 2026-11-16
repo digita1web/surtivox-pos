@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { brandCase, composeName, looksSpanish, mapCategory, parseQuantity, pickBrand, presentationText, transformOff, type CategoryRule, type OffRaw } from '../src/importers/off.ts';
+import { brandCase, categoryByName, composeName, hasMeasure, looksSpanish, mapCategory, presentationFits, parseQuantity, pickBrand, presentationText, transformOff, type CategoryRule, type OffRaw } from '../src/importers/off.ts';
 import { loadTaxonomy } from '../src/taxonomy.ts';
 import { ROOT } from './fixtures.ts';
 
@@ -129,4 +129,35 @@ test('las marcas en mayúsculas pasan a mayúscula inicial sin tocar siglas cort
   assert.equal(brandCase('Alpina'), 'Alpina');
   const r = transformOff(raw({ brands: 'TOSH' }), RULES, tax, '2026-11-16');
   assert.equal(r.ok && r.product['brand'], 'Tosh');
+});
+
+test('las bebidas genéricas solo atrapan lo que no cayó antes en licores o lácteos, y los suplementos no tienen equivalencia', async () => {
+  const { readFileSync } = await import('node:fs');
+  const rules = JSON.parse(readFileSync(new URL('../src/importers/off-categories.json', import.meta.url), 'utf8')) as CategoryRule[];
+  const index = (tag: string) => rules.findIndex((r) => r.tag === tag);
+  assert.ok(index('en:beverages') > index('en:beers'));
+  assert.ok(index('en:beverages') > index('en:dairies'));
+  assert.equal(mapCategory(['en:beverages', 'en:dairies', 'en:milks'], rules), 'lacteos');
+  assert.equal(mapCategory(['en:beverages', 'en:alcoholic-beverages', 'en:beers'], rules), 'licores');
+  for (const tag of ['en:dietary-supplements', 'en:vitamin-supplements', 'en:protein-powders']) assert.equal(mapCategory([tag], rules), null, tag);
+});
+
+test('si el nombre ya trae medida no se agrega otra, y una presentación contradictoria se descarta', () => {
+  assert.equal(hasMeasure('Leche en polvo entera 200 g'), true);
+  assert.equal(hasMeasure('Leche en polvo entera'), false);
+  assert.equal(composeName('Leche en polvo colanta entera 200 g', 'Colanta', { quantity: 200, unit: 'mg' }), 'Leche en polvo colanta entera 200 g');
+  assert.equal(presentationFits('Leche en polvo entera 200 g', { quantity: 200, unit: 'mg' }), null);
+  assert.deepEqual(presentationFits('Leche en polvo entera 200 g', { quantity: 200, unit: 'g' }), { quantity: 200, unit: 'g' });
+  assert.deepEqual(presentationFits('Leche en polvo entera', { quantity: 200, unit: 'g' }), { quantity: 200, unit: 'g' });
+  const r = transformOff(raw({ product_name_es: 'Leche en polvo entera 200 g', quantity: '200 mg', categories_tags: ['en:biscuits'] }), RULES, tax, '2026-11-16');
+  assert.ok(r.ok && !('presentation' in r.product) && r.product['name'] === 'Leche en polvo entera 200 g Colombina');
+});
+
+test('los nombres empiezan en mayúscula y la malta colombiana va a bebidas aunque la etiqueten como cerveza', () => {
+  assert.equal(composeName('agua omi', null, null), 'Agua omi');
+  assert.equal(composeName('ñame fresco', null, null), 'Ñame fresco');
+  assert.equal(categoryByName('Pony Malta Mini'), 'bebidas');
+  assert.equal(categoryByName('Cerveza Club Colombia'), null);
+  const r = transformOff(raw({ product_name_es: 'Pony Malta', brands: 'Bavaria', categories_tags: ['en:beers'] }), RULES, tax, '2026-11-16');
+  assert.ok(r.ok && r.product['category'] === 'bebidas');
 });

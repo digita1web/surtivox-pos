@@ -13,6 +13,7 @@ export type FtsDetail = 'full' | 'column' | 'none';
 export interface BuildOptions {
   catalogVersion: string;
   detail?: FtsDetail;
+  gzip?: boolean;
 }
 
 export interface PackageInfo {
@@ -21,9 +22,9 @@ export interface PackageInfo {
   items: number;
   bytes: number;
   sha256: string;
-  gzip_file: string;
-  gzip_bytes: number;
-  gzip_sha256: string;
+  gzip_file?: string;
+  gzip_bytes?: number;
+  gzip_sha256?: string;
   sources: string[];
 }
 
@@ -127,14 +128,18 @@ export function buildPackages(outDir: string, products: readonly Product[], tax:
     const path = join(outDir, file);
     buildPackageDb(path, type, subset, tax, opts);
     const raw = readFileSync(path);
-    const gz = gzipSync(raw, { level: 9 });
-    const gzFile = `${file}.gz`;
-    writeFileSync(join(outDir, gzFile), gz);
-    packages.push({
+    const info: PackageInfo = {
       id: type, file, items: subset.length, bytes: raw.length, sha256: sha256(raw),
-      gzip_file: gzFile, gzip_bytes: gz.length, gzip_sha256: sha256(gz),
       sources: [...new Set(subset.map((p) => p.source.id))].sort(),
-    });
+    };
+    if (opts.gzip !== false) {
+      const gz = gzipSync(raw, { level: 9 });
+      info.gzip_file = `${file}.gz`;
+      info.gzip_bytes = gz.length;
+      info.gzip_sha256 = sha256(gz);
+      writeFileSync(join(outDir, info.gzip_file), gz);
+    }
+    packages.push(info);
   }
   const manifest: Manifest = { format_version: FORMAT_VERSION, catalog_version: opts.catalogVersion, license: 'ODbL-1.0', packages };
   writeFileSync(join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');

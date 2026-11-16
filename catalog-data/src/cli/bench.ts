@@ -35,7 +35,7 @@ const [manifest, buildMs] = time(() => buildPackages(out, products, taxonomy, { 
 console.log(`\nPaquetes (FTS5 detail=${detail}) · compilación ${ms(buildMs)}`);
 console.log('| Paquete | Productos | SQLite | gzip -9 |');
 console.log('|---|---:|---:|---:|');
-for (const p of manifest.packages) console.log(`| ${p.id} | ${p.items} | ${mb(p.bytes)} | ${mb(p.gzip_bytes)} |`);
+for (const p of manifest.packages) console.log(`| ${p.id} | ${p.items} | ${mb(p.bytes)} | ${mb(p.gzip_bytes ?? 0)} |`);
 
 const biggest = [...manifest.packages].sort((a, b) => b.items - a.items)[0]!;
 const raw = readFileSync(join(out, biggest.file));

@@ -59,7 +59,7 @@ test('el manifest declara tamaños y sha256 exactos de cada archivo', () => {
   try {
     for (const p of manifest.packages) {
       const raw = readFileSync(join(dir, p.file));
-      const gz = readFileSync(join(dir, p.gzip_file));
+      const gz = readFileSync(join(dir, p.gzip_file!));
       assert.equal(raw.length, p.bytes);
       assert.equal(sha(raw), p.sha256);
       assert.equal(gz.length, p.gzip_bytes);
@@ -150,4 +150,17 @@ test('el comando build compila desde data/ y se niega si hay errores o falta la 
     rmSync(ok, { recursive: true, force: true });
     rmSync(bad, { recursive: true, force: true });
   }
+});
+
+test('sin gzip el manifest no anuncia archivos comprimidos ni los escribe', async () => {
+  const { existsSync } = await import('node:fs');
+  const dir = mkdtempSync(join(tmpdir(), 'paquete-raw-'));
+  try {
+    const manifest = buildPackages(dir, PRODUCTS, tax, { catalogVersion: '2026.11.16', gzip: false });
+    for (const p of manifest.packages) {
+      assert.equal(p.gzip_file, undefined);
+      assert.equal(existsSync(join(dir, `${p.file}.gz`)), false);
+      assert.equal(sha(readFileSync(join(dir, p.file))), p.sha256);
+    }
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });

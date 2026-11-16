@@ -68,15 +68,36 @@ export function pickBrand(brands: unknown): string | null {
   return first ? brandCase(first) : null;
 }
 
+const MEASURE_IN_NAME = /\d\s?(?:mg|g|kg|ml|L|lb)\b/;
+
+export function hasMeasure(name: string): boolean {
+  return MEASURE_IN_NAME.test(normalizeName(name));
+}
+
+export function presentationFits(name: string, pres: Presentation | null): Presentation | null {
+  if (!pres || !hasMeasure(name)) return pres;
+  return ` ${foldKey(normalizeName(name))} `.includes(` ${foldKey(presentationText(pres))} `) ? pres : null;
+}
+
 export function composeName(base: string, brand: string | null, pres: Presentation | null): string {
   let name = normalizeName(base);
   const key = () => ` ${foldKey(name)} `;
   if (brand && !key().includes(` ${foldKey(brand)} `)) name = `${name} ${brand}`;
-  if (pres) {
+  if (pres && !hasMeasure(name)) {
     const text = presentationText(pres);
     if (!key().includes(` ${foldKey(text)} `)) name = `${name} ${text}`;
   }
-  return normalizeName(name);
+  name = normalizeName(name);
+  return name.charAt(0).toLocaleUpperCase('es') + name.slice(1);
+}
+
+export const NAME_RULES: readonly { pattern: RegExp; category: string }[] = [
+  { pattern: /\bmalta\b/, category: 'bebidas' },
+];
+
+export function categoryByName(name: string): string | null {
+  const key = foldKey(name);
+  return NAME_RULES.find((r) => r.pattern.test(key))?.category ?? null;
 }
 
 export function mapCategory(tags: unknown, rules: readonly CategoryRule[]): string | null {
@@ -121,11 +142,11 @@ export function transformOff(raw: OffRaw, rules: readonly CategoryRule[], tax: T
   if (foldKey(base).length < 3) return { ok: false, reason: 'nombre_muy_corto', detail: base };
   const brand = pickBrand(raw.brands);
   if (!brand) return { ok: false, reason: 'sin_marca' };
-  const category = mapCategory(raw.categories_tags, rules);
+  const category = categoryByName(base) ?? mapCategory(raw.categories_tags, rules);
   if (!category) return { ok: false, reason: 'categoria_sin_equivalencia' };
   const cat = tax.categories.get(category);
   if (!cat) return { ok: false, reason: 'categoria_inexistente', detail: category };
-  const pres = parseQuantity(raw.quantity);
+  const pres = presentationFits(base, parseQuantity(raw.quantity));
   const product: Record<string, unknown> = {
     id: `off:${code}`,
     name: composeName(base, brand, pres),
