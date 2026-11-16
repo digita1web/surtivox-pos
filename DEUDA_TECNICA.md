@@ -14,7 +14,8 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 Commit `448e574`: título con marca y palabras clave, `h1` con la marca, datos estructurados (`SoftwareApplication`, `Organization`, `WebSite`), sitemap con `lastmod`, página 404 con `noindex` y `landingSeo.test.ts`. **Verificado** con el gate; **no verificado:** que Google o Bing lo hayan indexado (una búsqueda previa no encontró nada del sitio).
 
 - **Decisión del propietario:** se mantiene el subdominio `digita1web.github.io/surtivox-pos/`. No se compra un dominio propio hasta validar la app con los primeros tenderos. Un dominio propio rankea mejor; al comprarlo hay que cambiar canonical, Open Graph, sitemap, JSON-LD, `robots.txt` y `pages.yml` (CNAME).
-- **Pendiente del propietario:** crear la propiedad en Google Search Console, pasar el código de verificación `<meta>`, enviar el sitemap y solicitar la indexación de la portada; importar la propiedad en Bing Webmaster Tools; rellenar "Website", descripción y topics del repositorio en GitHub.
+- **Search Console (2026-11-15 20:35, según el propietario; no verificable desde aquí):** propiedad `https://digita1web.github.io/surtivox-pos/` verificada con el archivo `landing/google5786bf3359978603.html` (commit `c2b8b31`). **No borrar ese archivo:** Google lo vuelve a comprobar y la propiedad se pierde sin él. Sitemap enviado e indexación de la portada solicitada.
+- **Pendiente del propietario:** importar la propiedad en Bing Webmaster Tools; rellenar "Website", descripción y topics del repositorio en GitHub; revisar en Search Console, pasados unos días, el informe de páginas indexadas y las búsquedas por "Surtivox".
 
 ## Prueba de actualización 1.1.4 → 1.1.5 (2026-11-14, 20:59)
 
