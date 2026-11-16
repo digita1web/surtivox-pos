@@ -9,6 +9,16 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## Catálogo estandarizado sin conexión (Entrega 2, 2026-11-16)
+
+Rama `feat/catalogo-datos`, commits locales. **Verificado** con tests (583 de la app y 59 de `catalog-data`), `verify.sh`, `pnpm -r typecheck` y `expo export`. **No verificado en el teléfono.**
+
+- `catalog-data/`: taxonomías, registro de fuentes con licencias, validador, generador de paquetes SQLite con FTS5 y manifest con sha256; detalle en `catalog-data/README.md`.
+- Publicado en `landing/catalogo/` (GitHub Pages, aprobado por el propietario para la fase de pruebas): 1.261 productos (814 propios y 447 de Open Food Facts), seis paquetes de 68 a 184 KB, versión 2026.11.16.
+- App: Más → Catálogo de productos (permiso de productos) descarga el paquete del tipo de negocio, compara tamaño y sha256, comprueba `meta` y lo instala como base aparte en `SQLite/`. Al agregar un producto sugiere del catálogo mientras se escribe el nombre y busca el código primero en el teléfono; completa nombre, unidad, categoría y código, nunca el precio. Atribución ODbL en Licencias y en la pantalla del catálogo.
+- **Open Food Facts bloquea desde la página 11 a usuarios no identificados.** Se usaron las 10 primeras (1.000 productos, 447 aceptados). Para el resto hace falta una cuenta de Open Food Facts o su exportación oficial; **decisión pendiente del propietario.** No se rodeó el bloqueo.
+- Pendiente de verificar en el teléfono: descarga, verificación, sugerencias al escribir, búsqueda por código sin internet, cambio de tipo de negocio y eliminación.
+
 ## Unidad de venta por metro (anotado 2026-11-16, decisión del propietario)
 
 La app solo vende en `unit`, `pcs`, `pack`, `box`, `dozen`, `kg`, `g`, `L`, `ml`, `lb`, `bulto` y `bottle` (`UNITS` en `apps/mobile/app/add-product.tsx`). No hay metro, así que en el catálogo estandarizado los productos que se venden por metro (cables, cuerda, malla, lona, plástico, manguera) usan `unit` y se llaman "(1 metro)". **Pendiente para la próxima versión de la app:** agregar la unidad `m` (metro) para que ferreterías y mercerías puedan vender por metro, con su etiqueta en `stockLabel` y su test, y después pasar esos productos de `catalog-data` a `unit: "m"` (la taxonomía ya tiene `m` como unidad de presentación; habría que marcarla `sale: true` y actualizar `taxonomy.test.ts` y `data.test.ts`).
