@@ -117,8 +117,8 @@ export default function Products() {
           />
           <ChipRow>
             <Chip label="Todos" on={allOn} onPress={reset} />
-            <Chip label="Stock bajo" count={counts.low || undefined} on={stockFilter === 'low'} onPress={() => setStockFilter(stockFilter === 'low' ? null : 'low')} />
-            <Chip label="Sin stock" count={counts.out || undefined} on={stockFilter === 'out'} onPress={() => setStockFilter(stockFilter === 'out' ? null : 'out')} />
+            <Chip label="Por agotarse" count={counts.low || undefined} on={stockFilter === 'low'} onPress={() => setStockFilter(stockFilter === 'low' ? null : 'low')} />
+            <Chip label="Agotados" count={counts.out || undefined} on={stockFilter === 'out'} onPress={() => setStockFilter(stockFilter === 'out' ? null : 'out')} />
             {categories.length > 0 && <ChipDivider />}
             {categories.map((c) => (
               <Chip key={c.id} label={c.name} on={category === c.id} onPress={() => setCategory(category === c.id ? null : c.id)} />

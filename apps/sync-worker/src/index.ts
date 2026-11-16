@@ -1,5 +1,5 @@
 import {
-  SYNC_TABLES, serverUpsertSql, serverRowValues, pullSql, rowStoreId, PUSH_LIMITS, type SyncTable,
+  SYNC_TABLES, SYNC_SCHEMA_VERSION, serverUpsertSql, serverRowValues, pullSql, rowStoreId, PUSH_LIMITS, type SyncTable,
 } from '@surtivox/database';
 import { handleMarketPrices } from './marketPrices.ts';
 
@@ -93,7 +93,7 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
 
     if (url.pathname === '/' || url.pathname === '/health') {
-      return json({ ok: true, service: 'surtivox-sync', tables: SYNC_TABLES.length });
+      return json({ ok: true, service: 'surtivox-sync', tables: SYNC_TABLES.length, schemaVersion: SYNC_SCHEMA_VERSION });
     }
 
     if (url.pathname === '/market-prices') {
@@ -204,9 +204,12 @@ export default {
     // row time seen, so the device asks for strictly newer rows next time.
     if (url.pathname === '/sync/pull' && req.method === 'GET') {
       const since = Number(url.searchParams.get('since') ?? '0') || 0;
+      const only = url.searchParams.get('tables');
+      const wanted = only ? new Set(only.split(',')) : null;
       const out: Record<string, Row[]> = {};
       let cursor = since;
       for (const t of SYNC_TABLES) {
+        if (wanted && !wanted.has(t.name)) continue;
         const res = await env.DB.prepare(pullSql(t)).bind(storeId, since).all<Row>();
         const rows = res.results ?? [];
         out[t.name] = rows;

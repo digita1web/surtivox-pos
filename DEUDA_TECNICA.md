@@ -9,12 +9,28 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## Conteo físico de inventario (2026-11-16 09:52)
+
+Rama `feat/conteo-fisico`, commits locales sin subir: `fcf9daa` (migración 0012), `4a10f3b` (compuerta de esquema del sync), `dc0205b` (countOps), `047990f` (pantalla), `4d8c7a3` (informe), `622043c` (recordatorio), `45208c5` (restaurar respaldos viejos). **Verificado** con tests en `node:sqlite` y las migraciones reales, `verify.sh`, `pnpm -r typecheck`, `pnpm test` y `expo export` para Android. **No verificado en el teléfono.**
+
+- **Modelo.** `stock_counts` (sesión, empleado, abierta o cerrada) y `stock_count_lines` (esperado, contado, costo congelado, `movement_id`). Cada diferencia distinta de 0 inserta un movimiento `adjustment` con `reference_type='stock_count'` y `reference_id` igual al conteo. No se edita ni se borra ningún movimiento. Solo productos con `track_inventory`; cantidades enteras (`quantity_delta` es INTEGER: los productos por peso no se pueden contar con decimales).
+- **Permisos.** Capacidad `stock_count`: propietario y administrador; el cajero no ve el menú y el guardián de rutas lo bloquea.
+- **Compuerta del sync (`SYNC_SCHEMA_VERSION = 2`).** `/health` publica `schemaVersion`; la app no sincroniza contra un Worker que declare menos (uno viejo no la declara y cuenta como 1). Un teléfono que viene de una APK vieja trae una sola vez, desde cero, las tablas nuevas (`sync_state.synced_schema`, migración 0013; `/sync/pull?tables=`). Las APK viejas siguen sincronizando con el Worker nuevo y ven el stock ajustado.
+- **Orden de despliegue obligatorio (lo hace el propietario):** 1) desde `apps/sync-worker/`, `npx wrangler d1 execute surtivox-sync --remote --file=./migrations/0002_stock_counts.sql`; 2) desplegar el Worker; 3) publicar la APK. Si la APK sale antes, la nube de esos teléfonos se detiene con el aviso "El servidor de la nube necesita actualizarse…" hasta desplegar el Worker; no se pierden datos.
+- **Informe.** Por producto y por conteo, unidades y valor a costo, faltante y sobrante por separado, filtros por periodo y por quien contó, textos neutrales. Se comparte por WhatsApp (texto) o PDF (`expo-print` y `expo-sharing`, ya instalados).
+- **Recordatorio.** Aviso en Inicio, opcional y apagado por defecto. Sin `expo-notifications`, por decisión del propietario.
+- **Respaldo.** Restaurar un respaldo anterior a esta versión vacía también los conteos, porque reemplaza los movimientos que los sostienen.
+- **Lint:** el repositorio no tiene linter configurado (no hay script `lint` ni eslint/biome). El control es `tsc` estricto. Agregar uno requiere aprobar una dependencia.
+- **Ajustes posteriores (2026-11-16 10:56), verificados por el propietario en Expo Go:** acceso "Conteo de inventario" en Inicio bajo las dos acciones principales (`9c4e0b3`); "stock" reemplazado por "agotado", "por agotarse", "disponibles" y "unidades" en la app, la landing y el README, conservando la columna `stock` del CSV (`757152b`); la fila de "Ventas de hoy" baja de línea en vez de salirse de la tarjeta (`6a504c9`). Las capturas de la landing y del README aún muestran los textos viejos.
+- **Pendiente de verificar en el teléfono:** escaneo y búsqueda en la pantalla de conteo, teclado numérico, aviso de stock cambiado durante el conteo, PDF generado, apertura de WhatsApp, aviso en Inicio, y la sincronización real contra Cloudflare tras desplegar.
+
 ## SEO de la landing (2026-11-15 20:15)
 
 Commit `448e574`: título con marca y palabras clave, `h1` con la marca, datos estructurados (`SoftwareApplication`, `Organization`, `WebSite`), sitemap con `lastmod`, página 404 con `noindex` y `landingSeo.test.ts`. **Verificado** con el gate; **no verificado:** que Google o Bing lo hayan indexado (una búsqueda previa no encontró nada del sitio).
 
 - **Decisión del propietario:** se mantiene el subdominio `digita1web.github.io/surtivox-pos/`. No se compra un dominio propio hasta validar la app con los primeros tenderos. Un dominio propio rankea mejor; al comprarlo hay que cambiar canonical, Open Graph, sitemap, JSON-LD, `robots.txt` y `pages.yml` (CNAME).
-- **Pendiente del propietario:** crear la propiedad en Google Search Console, pasar el código de verificación `<meta>`, enviar el sitemap y solicitar la indexación de la portada; importar la propiedad en Bing Webmaster Tools; rellenar "Website", descripción y topics del repositorio en GitHub.
+- **Search Console (2026-11-15 20:35, según el propietario; no verificable desde aquí):** propiedad `https://digita1web.github.io/surtivox-pos/` verificada con el archivo `landing/google5786bf3359978603.html` (commit `c2b8b31`). **No borrar ese archivo:** Google lo vuelve a comprobar y la propiedad se pierde sin él. Sitemap enviado e indexación de la portada solicitada.
+- **Pendiente del propietario:** importar la propiedad en Bing Webmaster Tools; rellenar "Website", descripción y topics del repositorio en GitHub; revisar en Search Console, pasados unos días, el informe de páginas indexadas y las búsquedas por "Surtivox".
 
 ## Prueba de actualización 1.1.4 → 1.1.5 (2026-11-14, 20:59)
 

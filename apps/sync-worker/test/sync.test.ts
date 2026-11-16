@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { chunkPushRows } from '@surtivox/database';
+import { chunkPushRows, SYNC_SCHEMA_VERSION, SYNC_TABLES } from '@surtivox/database';
 import worker from '../src/index.ts';
 
 type Param = string | number | null;
@@ -197,4 +197,19 @@ test('what the app batcher produces is always accepted by the worker, with paren
   assert.equal(count('products'), 300);
   assert.equal(count('sales'), 700);
   assert.equal(count('sale_items'), 700);
+});
+
+test('health publishes the sync schema version and pull can be limited to some tables', async () => {
+  const { call } = server();
+  const health = await call('/health', TOKEN_A);
+  assert.equal(health.body.schemaVersion, SYNC_SCHEMA_VERSION);
+  await call('/sync/register', TOKEN_A, { storeId: 'A' });
+  const count = { id: 'k1', store_id: 'A', staff_id: null, status: 'closed', note: null, started_at: 1, closed_at: 2, created_at: 1, updated_at: 2, device_id: 'd', version: 1 };
+  const line = { id: 'l1', count_id: 'k1', product_id: 'p1', product_name_snapshot: 'x', expected_qty: 5, counted_qty: 4, unit_cost: 10, movement_id: 'm1', created_at: 2, device_id: 'd' };
+  await call('/sync/push', TOKEN_A, { tables: { stores: [store('A', 'Tienda A')], products: [product('p1', 'A', 'Arroz')], stock_counts: [count], stock_count_lines: [line] } });
+  const some = await call('/sync/pull?since=0&tables=stock_counts,stock_count_lines', TOKEN_A);
+  assert.deepEqual(Object.keys(some.body.tables).sort(), ['stock_count_lines', 'stock_counts']);
+  assert.equal(some.body.tables.stock_count_lines.length, 1);
+  const all = await call('/sync/pull?since=0', TOKEN_A);
+  assert.equal(Object.keys(all.body.tables).length, SYNC_TABLES.length);
 });

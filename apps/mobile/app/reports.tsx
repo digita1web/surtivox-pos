@@ -163,15 +163,15 @@ export default function Reports() {
         )}
 
         {/* low stock */}
-        <Text style={[s.section, { color: t.fg }]}>Stock bajo</Text>
+        <Text style={[s.section, { color: t.fg }]}>Por agotarse</Text>
         <View style={[s.card, { backgroundColor: t.panel, borderColor: t.line }]}>
           {lowStock.length === 0 ? (
-            <Text style={{ color: t.muted, textAlign: 'center', paddingVertical: 8 }}>Todo tiene buen stock. 👍</Text>
+            <Text style={{ color: t.muted, textAlign: 'center', paddingVertical: 8 }}>Ningún producto está por agotarse. 👍</Text>
           ) : lowStock.map((p, i) => (
             <View key={p.id} style={[s.listRow, i < lowStock.length - 1 && { borderBottomWidth: 1, borderColor: t.line }]}>
               <Ionicons name="alert-circle-outline" size={20} color={p.stock <= 0 ? t.danger : t.warn} />
               <Text style={{ color: t.fg, fontWeight: '600', flex: 1, marginLeft: 10 }} numberOfLines={1}>{p.name}</Text>
-              <Text style={{ color: p.stock <= 0 ? t.dangerText : t.warnText, fontWeight: '700' }}>{p.stock <= 0 ? 'Sin stock' : `Quedan ${p.stock}`}</Text>
+              <Text style={{ color: p.stock <= 0 ? t.dangerText : t.warnText, fontWeight: '700' }}>{p.stock <= 0 ? 'Agotado' : `Quedan ${p.stock}`}</Text>
             </View>
           ))}
         </View>

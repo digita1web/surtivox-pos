@@ -7,6 +7,7 @@ const RULES: readonly (readonly [RegExp, Capability])[] = [
   [/^\/(suppliers|add-supplier)(\/|$)/, 'suppliers'],
   [/^\/(customers|customer)(\/|$)/, 'customers'],
   [/^\/data(\/|$)/, 'backup'],
+  [/^\/(stock-count|stock-count-report)(\/|$)/, 'stock_count'],
   [/^\/(store-settings|business-settings|new-shop)(\/|$)/, 'shop'],
   [/^\/(cloud-sync|paywall|kit|recover)(\/|$)/, 'sync'],
   [/^\/add-product(\/|$)/, 'products'],

@@ -38,6 +38,14 @@ CORS responde `*` con métodos `GET, POST, OPTIONS`.
 - Columnas solo locales (por ejemplo `products.image_uri`) se envían siempre como `NULL`.
 - Los cursores `last_pushed_at` y `last_pulled_at` viven en `sync_state` en el teléfono y conservan 30 s de solapamiento. Restaurar un respaldo local los reinicia a 0 (`restoreOps.ts`).
 
+## Versión de esquema
+
+- `SYNC_SCHEMA_VERSION` (hoy 2) vive en `packages/database/src/sync.ts`. `/health` la publica como `schemaVersion`; un Worker sin ese campo cuenta como 1.
+- Antes de cada sincronización la app consulta `/health` y no envía nada si el servidor tiene una versión menor: un Worker viejo descartaría las tablas que no conoce mientras el cursor de push avanza.
+- `sync_state.synced_schema` (local) guarda hasta qué versión se sincronizó el teléfono. Si es menor que la actual, tras el pull normal se piden una sola vez desde cero las tablas nuevas con `/sync/pull?since=0&tables=a,b`, porque el cursor único de pull ya pasó de largo esas filas.
+- Las APK viejas ignoran en el pull las tablas que no conocen.
+- Orden de despliegue: migración de D1, Worker, APK.
+
 ## Límites de push
 
 - Por solicitud: 500 filas y 1 000 000 bytes (`PUSH_LIMITS`), con `413` si se pasa.
@@ -46,7 +54,8 @@ CORS responde `*` con métodos `GET, POST, OPTIONS`.
 ## Reglas de cambio
 
 - Una tabla nueva sincronizable se agrega a `SYNC_TABLES` en `packages/database` y lleva migración nueva. No se editan migraciones existentes.
-- El esquema del servidor está en `schema.sql` (idempotente). Las tablas nuevas de un despliegue llevan además un archivo en `migrations/` (hoy `0001_shop_keys.sql`), que se aplica antes de desplegar el Worker.
+- El esquema del servidor está en `schema.sql` (idempotente). Las tablas nuevas de un despliegue llevan además un archivo en `migrations/` (hoy `0001_shop_keys.sql` y `0002_stock_counts.sql`), que se aplica antes de desplegar el Worker.
+- Una tabla sincronizable nueva lleva `addedIn` con la versión en que entró y sube `SYNC_SCHEMA_VERSION`.
 - Cambiar el contrato de un endpoint exige desplegar el Worker antes de publicar la app que lo usa.
 - Nunca se registran tokens ni llaves en logs ni en mensajes de error.
 

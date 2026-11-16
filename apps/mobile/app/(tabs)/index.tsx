@@ -6,6 +6,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { asMinor } from '@surtivox/pos-core';
 import {
   todayStats, recentlySold, listProducts, lowStockProducts, getLocalSetting, setLocalSetting, salesBackupCounts, hasRecovery,
+  stockCountReminder, snoozeStockCountReminder, trackedProductCount,
   type TodayStats, type Product, type LowStockItem,
 } from '../../src/repos';
 import { useSession, useRole } from '../../src/session';
@@ -29,6 +30,7 @@ import { useTheme, space, radius, circle } from '../../src/theme';
 import { greetingForDate } from '../../src/greeting';
 import { exportFullBackup } from '../../src/backup';
 import { backupReminderText, backupSnoozeUntil, shouldRemindBackup } from '../../src/backupReminder';
+import { countReminderText } from '../../src/countReminder';
 import { showAlert } from '../../src/pos/alert';
 import { UpdateNoticeCard, useUpdateNotice } from '../../src/pos/UpdateNotice';
 import { kitReminderNow, snoozeKitReminder, hasHostedSync } from '../../src/sync';
@@ -57,6 +59,9 @@ export default function Home() {
   const [backupNudge, setBackupNudge] = useState<{ lastBackupAt: number | null } | null>(null);
   const [backupBusy, setBackupBusy] = useState(false);
   const [recoveryMissing, setRecoveryMissing] = useState(false);
+  const [countNudge, setCountNudge] = useState<{ lastCountAt: number | null } | null>(null);
+  const canCount = can(role, 'stock_count');
+  const [trackedTotal, setTrackedTotal] = useState(0);
   const update = useUpdateNotice();
   const [kitNudge, setKitNudge] = useState<{ title: string; body: string } | null>(null);
   const me = useSession((state) => state.staff);
@@ -113,7 +118,14 @@ export default function Home() {
     cloud.refresh();
     void refreshBackupNudge();
     kitReminderNow().then(setKitNudge).catch(() => setKitNudge(null));
-  }, [store.id, salesVersion, cloud.refresh, refreshBackupNudge, me?.role, staffTotal]));
+    if (canCount) {
+      stockCountReminder(store.id).then(setCountNudge).catch(() => setCountNudge(null));
+      trackedProductCount(store.id).then(setTrackedTotal).catch(() => setTrackedTotal(0));
+    } else {
+      setCountNudge(null);
+      setTrackedTotal(0);
+    }
+  }, [store.id, salesVersion, cloud.refresh, refreshBackupNudge, me?.role, staffTotal, canCount]));
 
   const saveBackup = async () => {
     if (backupBusy) return;
@@ -126,6 +138,11 @@ export default function Home() {
     } finally {
       setBackupBusy(false);
     }
+  };
+
+  const snoozeCount = () => {
+    setCountNudge(null);
+    void snoozeStockCountReminder().catch(() => {});
   };
 
   const snoozeBackup = () => {
@@ -164,11 +181,29 @@ export default function Home() {
       />
       <ScrollView {...scrollProps} style={s.flex} contentContainerStyle={{ paddingHorizontal: m.pad, paddingTop: space.xs, paddingBottom: listInset }}>
         <View style={[s.actions, { gap: m.gap }, m.actionsStacked && s.actionsStacked]}>
-          <ActionCard icon="cart" title="Venta rápida" hint="Vende sin complicaciones" tone="green" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={openQuick} />
+          <ActionCard icon="cart" title="Venta rápida" hint="Cobra en segundos" tone="green" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={openQuick} />
           {canProducts
             ? <ActionCard icon="add" title="Agregar producto" hint="Nuevo artículo del catálogo" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={() => router.push('/add-product')} />
             : <ActionCard icon="barcode-outline" title="Escanear y vender" hint="Escanea un código de barras" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={() => router.push('/scan')} />}
         </View>
+
+        {canCount && trackedTotal > 0 ? (
+          <Pressable
+            onPress={() => router.push('/stock-count')}
+            accessibilityRole="button"
+            accessibilityLabel="Conteo de inventario. Compara lo que hay con el sistema"
+            style={({ pressed }) => [s.countCard, { backgroundColor: t.panel, boxShadow: t.shadowCard, marginTop: m.gap, opacity: pressed ? 0.88 : 1 }]}
+          >
+            <View style={[s.countIcon, { backgroundColor: t.accentSoft }]}>
+              <Ionicons name="clipboard-outline" size={20} color={t.accent} />
+            </View>
+            <View style={{ flex: 1, marginLeft: space.md }}>
+              <Text style={{ color: t.fg, fontWeight: '800' }} numberOfLines={1} maxFontSizeMultiplier={1.3}>Conteo de inventario</Text>
+              <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 1 }} numberOfLines={2} maxFontSizeMultiplier={1.3}>Compara lo que hay con el sistema</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={t.faint} />
+          </Pressable>
+        ) : null}
 
         {showRecoverCardOnHome({ hosted: hasHostedSync(), canSync: can(role, 'sync'), cloudConnected: cloud.active, productCount: strip.length, orderCount: stats.orders }) ? (
           <Pressable
@@ -224,7 +259,7 @@ export default function Home() {
           </Text>
           <View style={s.todayStats}>
             <View style={s.todayStat}><Ionicons name="receipt-outline" size={16} color={t.accentFg} /><Text style={[s.todayStatTxt, { color: t.accentFg }]}>{stats.orders} {stats.orders === 1 ? 'pedido' : 'pedidos'}</Text></View>
-            <View style={s.todayStat}><Ionicons name="cube-outline" size={16} color={t.accentFg} /><Text style={[s.todayStatTxt, { color: t.accentFg }]}>{stats.itemsSold} artículos vendidos</Text></View>
+            <View style={s.todayStat}><Ionicons name="cube-outline" size={16} color={t.accentFg} /><Text style={[s.todayStatTxt, { color: t.accentFg }]}>{stats.itemsSold} {stats.itemsSold === 1 ? 'artículo vendido' : 'artículos vendidos'}</Text></View>
           </View>
         </Pressable>
 
@@ -241,6 +276,25 @@ export default function Home() {
                 <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 12 }}>{backupBusy ? 'Generando…' : 'Guardar copia'}</Text>
               </Pressable>
               <Pressable onPress={snoozeBackup} disabled={backupBusy} style={s.backupSnooze}>
+                <Text style={{ color: t.muted, fontWeight: '700', fontSize: 12 }}>Ahora no</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+
+        {countNudge ? (
+          <View style={[s.backupNudge, { backgroundColor: t.panel, borderColor: t.line }]}>
+            <View style={s.backupTitle}>
+              <Ionicons name="clipboard-outline" size={18} color={t.accent} />
+              <Text style={{ color: t.fg, fontWeight: '700', flex: 1, marginLeft: space.sm }} numberOfLines={1}>
+                {countReminderText(countNudge.lastCountAt, Date.now())}
+              </Text>
+            </View>
+            <View style={s.backupActions}>
+              <Pressable onPress={() => router.push('/stock-count')} style={[s.backupAction, { backgroundColor: t.accent }]}>
+                <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 12 }}>Contar ahora</Text>
+              </Pressable>
+              <Pressable onPress={snoozeCount} style={s.backupSnooze}>
                 <Text style={{ color: t.muted, fontWeight: '700', fontSize: 12 }}>Ahora no</Text>
               </Pressable>
             </View>
@@ -285,7 +339,7 @@ export default function Home() {
             <View style={{ flex: 1 }}>
               <Text style={{ color: t.fg, fontWeight: '700' }}>Requiere atención</Text>
               <Text style={{ color: t.muted, fontSize: 13, marginTop: 1 }}>
-                {[outCount ? `${outCount} sin stock` : null, lowCount ? `${lowCount} con stock bajo` : null].filter(Boolean).join(' · ')}
+                {[outCount ? `${outCount} ${outCount === 1 ? 'agotado' : 'agotados'}` : null, lowCount ? `${lowCount} por agotarse` : null].filter(Boolean).join(' · ')}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={t.faint} />
@@ -323,13 +377,15 @@ const s = StyleSheet.create({
   empty: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: radius.xl, padding: space.lg, alignItems: 'center', justifyContent: 'center' },
   today: { borderRadius: radius.xl, padding: space.xl, marginTop: space.xl },
   todayHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  todayStats: { flexDirection: 'row', gap: space.xl, marginTop: space.md },
-  todayStat: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  todayStatTxt: { fontWeight: '600', opacity: 0.95 },
+  todayStats: { flexDirection: 'row', flexWrap: 'wrap', columnGap: space.xl, rowGap: space.xs, marginTop: space.md },
+  todayStat: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1, maxWidth: '100%' },
+  todayStatTxt: { fontWeight: '600', opacity: 0.95, flexShrink: 1 },
   alert: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
   alertIcon: { ...circle(40), borderRadius: radius.md - 2 },
   upgrade: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
   backupNudge: { borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
+  countCard: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.xl, paddingHorizontal: space.md, paddingVertical: space.md, minHeight: 64 },
+  countIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   backupTitle: { flexDirection: 'row', alignItems: 'center' },
   backupActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.sm },
   backupAction: { borderRadius: radius.sm, paddingHorizontal: 12, paddingVertical: 8 },

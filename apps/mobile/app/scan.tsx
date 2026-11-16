@@ -128,7 +128,7 @@ export default function Scan() {
       const tracked = tracksInventory(product);
       cart.add(product);
       Vibration.vibrate(40);
-      flash(tracked && product.stock < nextQty ? `${product.name} — sin stock, agregado` : `Agregado ${product.name}`, !tracked || product.stock >= nextQty);
+      flash(tracked && product.stock < nextQty ? `${product.name} — agotado, agregado` : `Agregado ${product.name}`, !tracked || product.stock >= nextQty);
     }
   }, [store, isStock, cart, unknownCode]);
 
