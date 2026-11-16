@@ -98,3 +98,21 @@ test('el catálogo rechaza ids repetidos y códigos compartidos, y avisa posible
   assert.deepEqual(checker.add(twin.product!).map((i) => `${i.level}:${i.code}`), ['warning:posible_duplicado']);
   assert.equal(checker.count, 3);
 });
+
+test('jsonlFiles recorre subcarpetas en orden y trata una carpeta inexistente como vacía', async () => {
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { jsonlFiles } = await import('../src/catalog.ts');
+  const dir = mkdtempSync(join(tmpdir(), 'jsonl-'));
+  try {
+    mkdirSync(join(dir, 'b'));
+    writeFileSync(join(dir, 'b', 'z.jsonl'), '');
+    writeFileSync(join(dir, 'a.jsonl'), '');
+    writeFileSync(join(dir, 'notas.txt'), '');
+    assert.deepEqual(jsonlFiles(dir).map((p) => p.slice(dir.length + 1)), ['a.jsonl', join('b', 'z.jsonl')]);
+    assert.deepEqual(jsonlFiles(join(dir, 'no-existe')), []);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

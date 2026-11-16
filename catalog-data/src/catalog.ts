@@ -1,4 +1,4 @@
-import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs';
+import { createReadStream, readdirSync, type Dirent } from 'node:fs';
 import { join, relative } from 'node:path';
 import { createInterface } from 'node:readline';
 import { loadTaxonomy } from './taxonomy.ts';
@@ -6,12 +6,18 @@ import { CatalogChecker, validateProduct } from './validate.ts';
 import type { Issue, Product, Taxonomy } from './types.ts';
 
 export function jsonlFiles(dir: string): string[] {
-  if (!existsSync(dir)) return [];
+  let entries: Dirent[];
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') return [];
+    throw e;
+  }
   const out: string[] = [];
-  for (const name of readdirSync(dir).sort()) {
-    const path = join(dir, name);
-    if (statSync(path).isDirectory()) out.push(...jsonlFiles(path));
-    else if (name.endsWith('.jsonl')) out.push(path);
+  for (const entry of entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...jsonlFiles(path));
+    else if (entry.isFile() && entry.name.endsWith('.jsonl')) out.push(path);
   }
   return out;
 }

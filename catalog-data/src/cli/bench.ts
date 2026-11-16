@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
@@ -47,8 +47,8 @@ if (args.has('compare')) {
   for (const d of ['none', 'column', 'full'] as const) {
     const path = join(out, `cmp-${d}.sqlite`);
     const [, t] = time(() => buildPackageDb(path, biggest.id, productsFor(biggest.id, products), taxonomy, { catalogVersion: 'bench', detail: d }));
-    const size = statSync(path).size;
-    console.log(`  detail=${d}: ${mb(size)} · gzip ${mb(gzipSync(readFileSync(path), { level: 9 }).length)} · ${ms(t)}`);
+    const bytes = readFileSync(path);
+    console.log(`  detail=${d}: ${mb(bytes.length)} · gzip ${mb(gzipSync(bytes, { level: 9 }).length)} · ${ms(t)}`);
   }
 }
 
