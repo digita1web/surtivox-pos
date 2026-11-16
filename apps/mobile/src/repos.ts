@@ -11,6 +11,7 @@ import { getDb } from './db';
 import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';
 import { voidSaleOn } from './saleOps';
+import { countReportOn, countStaffOn, type CountReport, type CountReportFilter, type CountStaff } from './countReport';
 import { openCountOn, recordCountOn, closeCountOn, countLinesOn, lastCountAtOn, expectedStockOn, type CountResult, type CountLine } from './countOps';
 import { checkoutSaleOn, recordCustomerPaymentOn, type CheckoutLine, type CheckoutOptions, type Receipt } from './checkoutOps';
 import { reportSummaryOn, paymentsReceivedOn, type ReportSummary, type PaymentsReceived } from './reportOps';
@@ -1201,6 +1202,7 @@ export async function resetOwnerPin(input: { storeId: string; ownerId: string; c
 }
 
 export type { CountResult, CountLine } from './countOps';
+export type { CountReport, CountReportFilter, CountStaff } from './countReport';
 
 export async function openStockCount(storeId: string, staffId: string | null): Promise<string> {
   return openCountOn(getDb(), { newId, deviceId: DEVICE_ID }, storeId, staffId);
@@ -1224,4 +1226,12 @@ export async function lastStockCountAt(storeId: string): Promise<number | null> 
 
 export async function expectedStock(productId: string): Promise<number> {
   return expectedStockOn(getDb(), productId);
+}
+
+export async function stockCountReport(storeId: string, filter: CountReportFilter): Promise<CountReport> {
+  return countReportOn(getDb(), storeId, filter);
+}
+
+export async function stockCountStaff(storeId: string): Promise<CountStaff[]> {
+  return countStaffOn(getDb(), storeId);
 }

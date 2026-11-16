@@ -12,7 +12,7 @@ import { useMoney } from '../src/pos/ui';
 import { showAlert } from '../src/pos/alert';
 import { ScanModal } from '../src/pos/ScanModal';
 import { useTheme, space, radius } from '../src/theme';
-import { Screen, listProps } from '../src/pos/Screen';
+import { Screen, IconButton, listProps } from '../src/pos/Screen';
 import { SearchField, PrimaryButton, EmptyState } from '../src/pos/kit';
 import { countDiff, diffLabel, parseCounted, productForCode, searchCountable, countableProducts } from '../src/stockCount';
 
@@ -90,8 +90,7 @@ export default function StockCount() {
     setBusy(true);
     try {
       await closeStockCount(countId);
-      showAlert('Conteo terminado', `Se guardaron ${countedProducts} producto${countedProducts === 1 ? '' : 's'}.`);
-      router.back();
+      router.replace('/stock-count-report');
     } catch (e) {
       showAlert('No se pudo terminar el conteo', e instanceof Error ? e.message : String(e));
       setBusy(false);
@@ -113,6 +112,7 @@ export default function StockCount() {
       title="Conteo de inventario"
       subtitle="Cuenta lo que hay y compáralo con el sistema"
       scroll={false}
+      right={<IconButton icon="document-text-outline" label="Informe de diferencias" onPress={() => router.push('/stock-count-report')} />}
       footer={footer}
     >
       {selected ? (

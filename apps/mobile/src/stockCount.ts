@@ -54,3 +54,25 @@ export function productForCode<T extends CountableProduct>(products: readonly T[
   if (!c) return null;
   return countableProducts(products).find((p) => p.barcode === c || (p.sku ?? '') === c) ?? null;
 }
+
+export type CountPeriod = 'hoy' | '7d' | '30d' | 'todo';
+
+export const PERIOD_LABEL: Record<CountPeriod, string> = {
+  hoy: 'Hoy',
+  '7d': 'Últimos 7 días',
+  '30d': 'Últimos 30 días',
+  todo: 'Todo',
+};
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function periodRange(period: CountPeriod, now: number): { from: number; to: number } {
+  const to = now + 1;
+  if (period === 'todo') return { from: 0, to };
+  if (period === 'hoy') {
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    return { from: d.getTime(), to };
+  }
+  return { from: now - (period === '7d' ? 7 : 30) * DAY_MS, to };
+}

@@ -201,3 +201,12 @@ test('search finds tracked products by name without accents, barcode or sku', as
   assert.equal(productForCode(list, '111'), null);
   assert.equal(productForCode(list, ''), null);
 });
+
+test('periodRange covers today from midnight, rolling windows and everything', async () => {
+  const { periodRange } = await import('./stockCount.ts');
+  const now = new Date(2026, 10, 16, 15, 30).getTime();
+  assert.deepEqual(periodRange('hoy', now), { from: new Date(2026, 10, 16).getTime(), to: now + 1 });
+  assert.equal(periodRange('7d', now).from, now - 7 * 86_400_000);
+  assert.equal(periodRange('30d', now).from, now - 30 * 86_400_000);
+  assert.deepEqual(periodRange('todo', now), { from: 0, to: now + 1 });
+});

@@ -5,6 +5,8 @@ import { readFileSync } from 'node:fs';
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const screen = read('../app/stock-count.tsx');
 const more = read('../app/(tabs)/more.tsx');
+const report = read('../app/stock-count-report.tsx');
+const share = read('./countShare.ts');
 
 test('la pantalla de conteo escanea con ScanModal y nunca abre la cámara directamente', () => {
   assert.match(screen, /<ScanModal /);
@@ -21,8 +23,24 @@ test('el menú Más muestra el conteo solo a quien puede contar', () => {
   assert.match(more, /route: '\/stock-count', show: can\(role, 'stock_count'\)/);
 });
 
-test('los textos del conteo son neutrales', () => {
-  for (const word of [/rob[oóa]/i, /culpa/i, /p[eé]rdida por/i, /sospech/i, /descuadre del empleado/i]) {
-    assert.doesNotMatch(screen, word);
+test('los textos del conteo y del informe son neutrales', () => {
+  for (const source of [screen, report]) {
+    for (const word of [/rob[oóa]/i, /culpa/i, /p[eé]rdida por/i, /sospech/i, /descuadre del empleado/i]) {
+      assert.doesNotMatch(source, word);
+    }
   }
+});
+
+test('terminar un conteo lleva al informe, que comparte por WhatsApp y PDF sin dependencias nuevas', () => {
+  assert.match(screen, /closeStockCount\(countId\);\n\s*router\.replace\('\/stock-count-report'\)/);
+  assert.match(report, /shareCountReportWhatsApp\(report, opts\)/);
+  assert.match(report, /shareCountReportPdf\(report, \{ \.\.\.opts, dateOf \}\)/);
+  assert.match(share, /from 'expo-print'/);
+  assert.match(share, /from 'expo-sharing'/);
+  assert.match(share, /https:\/\/wa\.me\/\?text=\$\{encodeURIComponent\(text\)\}/);
+});
+
+test('el informe filtra por periodo y por quien contó', () => {
+  assert.match(report, /periodRange\(period, Date\.now\(\)\)/);
+  assert.match(report, /staffId: who\.id/);
 });
