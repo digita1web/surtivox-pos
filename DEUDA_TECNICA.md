@@ -9,6 +9,17 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## Prueba en el teléfono del catálogo sin conexión (2026-11-16 18:40)
+
+Redmi Note 9 por adb, APK del build #58 de `main` (1.1.6, `versionCode` 12, firma de producción `e798f4a4…`), instalado encima con datos ficticios. **Verificado:**
+
+- Sin red: "Descargar catálogo" muestra el error de conexión y no deja nada a medias. Con el WiFi recién conectado falló una vez más y funcionó al reintentar (el teléfono descarga el manifest con `curl` sin problema); el mensaje ahora pide revisar la conexión e intentar de nuevo.
+- Descarga de Tienda de barrio: 747 productos, 0,2 MB, versión 2026.11.16, atribución de Open Food Facts y del catálogo propio en pantalla.
+- **En modo avión:** "tinto" sugiere "Tinto · Bebidas" y "Vino tinto botella · Licores"; al tocar "Tinto" se completan nombre y la categoría existente "Bebidas". El código `7702004013514` con "Buscar" completa "Pony Malta Bavaria 1500 ml" y "Bebidas", sin avisos de error.
+- Cambio a Ferretería (419 productos): "puntilla 2" sugiere las puntillas de 2 pulgadas, "clavo" encuentra "Puntilla" por sinónimo y "tinto" ya no aparece.
+- "Eliminar catálogo" lo borra y dejan de salir sugerencias; reinstalado Tienda de barrio, "Buscar actualización" responde "Ya tienes la última versión".
+- **No probado:** escaneo con la cámara (no se puede por adb) y guardar un producto desde una sugerencia.
+
 ## Catálogo estandarizado sin conexión (Entrega 2, 2026-11-16)
 
 Rama `feat/catalogo-datos`, commits locales. **Verificado** con tests (583 de la app y 59 de `catalog-data`), `verify.sh`, `pnpm -r typecheck` y `expo export`. **No verificado en el teléfono.**
