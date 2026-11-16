@@ -43,7 +43,7 @@ async function fetchManifest(url: string): Promise<unknown> {
   } catch (e) {
     if (e instanceof Error && e.name === 'AbortError') throw new Error('El servidor del catálogo no respondió a tiempo. Revisa tu conexión.');
     if (e instanceof Error && /HTTP/.test(e.message)) throw e;
-    throw new Error('No hay conexión para descargar el catálogo. Funciona sin internet una vez descargado.');
+    throw new Error('No se pudo conectar para descargar el catálogo. Revisa tu conexión e intenta de nuevo; una vez descargado funciona sin internet.');
   } finally {
     clearTimeout(timer);
   }
