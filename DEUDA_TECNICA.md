@@ -9,6 +9,17 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## Despliegue del Worker de sync con schemaVersion 2 (2026-11-16 13:49)
+
+Hecho por la API REST de Cloudflare con un token temporal del propietario (D1 Edit y Workers Scripts Edit), con su autorización expresa. **Verificado.**
+
+- Antes: D1 `surtivox-sync` (`1faf3ce0…`) con 18 tablas y sin tablas de conteo; el Worker solo tenía el binding `DB`; `/health` = `{"tables":15}`.
+- Punto de restauración de D1 (Time Travel) tomado antes de cambiar nada: `00000017-00000000-00005125-baebeed7d3ddc45a60278608f2ec528e`.
+- Aplicada `apps/sync-worker/migrations/0002_stock_counts.sql`: existen `stock_counts` y `stock_count_lines`.
+- Worker subido desde `main` (paquete de `wrangler deploy --dry-run`), mismo binding `DB`. `/health` = `{"tables":17,"schemaVersion":2}`; `/sync/pull` sin token o con token falso responde 401.
+- **Pendiente del propietario:** revocar el token en Cloudflare (quedó en el historial de la conversación); el archivo local ya se borró.
+- **No verificado:** una sincronización real de un teléfono contra el Worker nuevo.
+
 ## Prueba en dispositivo de la actualización 1.1.5 → main con conteo (2026-11-16 12:37)
 
 Redmi Note 9 (Android 12) por adb, datos ficticios. **Verificado** salvo que diga lo contrario.
