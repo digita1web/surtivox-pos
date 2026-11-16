@@ -47,10 +47,22 @@ test('el informe filtra por periodo y por quien contó', () => {
 
 test('el aviso semanal es opcional, vive en Inicio y solo lo ve quien puede contar', () => {
   const home = read('../app/(tabs)/index.tsx');
-  assert.match(home, /if \(canCount\) stockCountReminder\(store\.id\)\.then\(setCountNudge\)/);
+  assert.match(home, /if \(canCount\) \{\s*stockCountReminder\(store\.id\)\.then\(setCountNudge\)/);
   assert.match(home, /const canCount = can\(role, 'stock_count'\);/);
   assert.match(home, /router\.push\('\/stock-count'\)/);
   assert.match(report, /<Switch value=\{reminder\} onValueChange=\{toggleReminder\}/);
   const pkg = JSON.parse(read('../package.json')) as { dependencies: Record<string, string> };
   assert.equal(pkg.dependencies['expo-notifications'], undefined);
+});
+
+test('Inicio ofrece el conteo bajo las acciones principales solo a quien puede contar y si hay productos con inventario', () => {
+  const home = read('../app/(tabs)/index.tsx');
+  assert.match(home, /\{canCount && trackedTotal > 0 \? \(\s*<Pressable\s*onPress=\{\(\) => router\.push\('\/stock-count'\)\}/);
+  assert.match(home, /trackedProductCount\(store\.id\)\.then\(setTrackedTotal\)/);
+  const actionsEnd = home.indexOf('title="Escanear y vender"');
+  const card = home.indexOf('Conteo de inventario. Compara');
+  const frequent = home.indexOf('title="Productos frecuentes"');
+  assert.ok(actionsEnd > 0 && actionsEnd < card && card < frequent);
+  assert.match(home, /title="Agregar producto"/);
+  assert.match(home, /Agrega tu primer producto/);
 });

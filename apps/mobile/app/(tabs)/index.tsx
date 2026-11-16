@@ -6,7 +6,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { asMinor } from '@surtivox/pos-core';
 import {
   todayStats, recentlySold, listProducts, lowStockProducts, getLocalSetting, setLocalSetting, salesBackupCounts, hasRecovery,
-  stockCountReminder, snoozeStockCountReminder,
+  stockCountReminder, snoozeStockCountReminder, trackedProductCount,
   type TodayStats, type Product, type LowStockItem,
 } from '../../src/repos';
 import { useSession, useRole } from '../../src/session';
@@ -61,6 +61,7 @@ export default function Home() {
   const [recoveryMissing, setRecoveryMissing] = useState(false);
   const [countNudge, setCountNudge] = useState<{ lastCountAt: number | null } | null>(null);
   const canCount = can(role, 'stock_count');
+  const [trackedTotal, setTrackedTotal] = useState(0);
   const update = useUpdateNotice();
   const [kitNudge, setKitNudge] = useState<{ title: string; body: string } | null>(null);
   const me = useSession((state) => state.staff);
@@ -117,8 +118,13 @@ export default function Home() {
     cloud.refresh();
     void refreshBackupNudge();
     kitReminderNow().then(setKitNudge).catch(() => setKitNudge(null));
-    if (canCount) stockCountReminder(store.id).then(setCountNudge).catch(() => setCountNudge(null));
-    else setCountNudge(null);
+    if (canCount) {
+      stockCountReminder(store.id).then(setCountNudge).catch(() => setCountNudge(null));
+      trackedProductCount(store.id).then(setTrackedTotal).catch(() => setTrackedTotal(0));
+    } else {
+      setCountNudge(null);
+      setTrackedTotal(0);
+    }
   }, [store.id, salesVersion, cloud.refresh, refreshBackupNudge, me?.role, staffTotal, canCount]));
 
   const saveBackup = async () => {
@@ -180,6 +186,24 @@ export default function Home() {
             ? <ActionCard icon="add" title="Agregar producto" hint="Nuevo artículo del catálogo" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={() => router.push('/add-product')} />
             : <ActionCard icon="barcode-outline" title="Escanear y vender" hint="Escanea un código de barras" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={() => router.push('/scan')} />}
         </View>
+
+        {canCount && trackedTotal > 0 ? (
+          <Pressable
+            onPress={() => router.push('/stock-count')}
+            accessibilityRole="button"
+            accessibilityLabel="Conteo de inventario. Compara lo que hay con el sistema"
+            style={({ pressed }) => [s.countCard, { backgroundColor: t.panel, boxShadow: t.shadowCard, marginTop: m.gap, opacity: pressed ? 0.88 : 1 }]}
+          >
+            <View style={[s.countIcon, { backgroundColor: t.accentSoft }]}>
+              <Ionicons name="clipboard-outline" size={20} color={t.accent} />
+            </View>
+            <View style={{ flex: 1, marginLeft: space.md }}>
+              <Text style={{ color: t.fg, fontWeight: '800' }} numberOfLines={1} maxFontSizeMultiplier={1.3}>Conteo de inventario</Text>
+              <Text style={{ color: t.muted, fontSize: 12.5, marginTop: 1 }} numberOfLines={2} maxFontSizeMultiplier={1.3}>Compara lo que hay con el sistema</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={t.faint} />
+          </Pressable>
+        ) : null}
 
         {showRecoverCardOnHome({ hosted: hasHostedSync(), canSync: can(role, 'sync'), cloudConnected: cloud.active, productCount: strip.length, orderCount: stats.orders }) ? (
           <Pressable
@@ -360,6 +384,8 @@ const s = StyleSheet.create({
   alertIcon: { ...circle(40), borderRadius: radius.md - 2 },
   upgrade: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
   backupNudge: { borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
+  countCard: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.xl, paddingHorizontal: space.md, paddingVertical: space.md, minHeight: 64 },
+  countIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   backupTitle: { flexDirection: 'row', alignItems: 'center' },
   backupActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.sm },
   backupAction: { borderRadius: radius.sm, paddingHorizontal: 12, paddingVertical: 8 },
