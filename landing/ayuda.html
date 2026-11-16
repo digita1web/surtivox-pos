@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Centro de ayuda — Surtivox POS</title>
+  <meta name="description" content="Guías paso a paso de Surtivox POS: instalar, vender y cobrar, productos, inventario, fiados, reportes, personal con PIN, respaldos y solución de problemas.">
+  <link rel="canonical" href="https://digita1web.github.io/surtivox-pos/ayuda.html">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#087F5B">
+  <meta name="copyright" content="© 2026 Surtivox. Todos los derechos reservados.">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="legal.css">
+  <link rel="stylesheet" href="ayuda.css">
+</head>
+<body class="legal-body help-body">
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Surtivox POS, inicio">
+      <img src="assets/icon-180.png" width="40" height="40" alt="">
+      <span>Surtivox <small>POS</small></span>
+    </a>
+    <nav class="main-nav" aria-label="Navegación principal">
+      <a href="index.html">Inicio</a>
+      <a href="index.html#producto">Producto</a>
+      <a href="ayuda.html" aria-current="page">Ayuda</a>
+      <a href="https://github.com/digita1web/surtivox-pos" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="help-main" id="contenido">
+    <section class="help-hero" aria-labelledby="ayuda-titulo">
+      <p class="eyebrow">Centro de ayuda</p>
+      <h1 id="ayuda-titulo">¿En qué te ayudamos?</h1>
+      <p class="help-lead">Guías paso a paso para usar Surtivox POS en tu tienda. Corresponde a la versión <span data-help-version>1.1.6</span> para Android.</p>
+      <form class="help-search" role="search" onsubmit="return false">
+        <label for="buscar-ayuda" class="help-sr">Buscar en la ayuda</label>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.2-4.2"/></svg>
+        <input id="buscar-ayuda" type="search" placeholder="Busca: fiado, PIN, respaldo, devolver…" autocomplete="off" spellcheck="false">
+      </form>
+      <p class="help-count" id="help-count" aria-live="polite"></p>
+      <div class="help-popular" aria-label="Búsquedas frecuentes">
+        <span>Lo más buscado:</span>
+        <a href="#instalar-la-app">Instalar la app</a>
+        <a href="#cobrar-una-venta">Cobrar</a>
+        <a href="#vender-a-fiado">Fiado</a>
+        <a href="#olvide-mi-pin">Olvidé mi PIN</a>
+        <a href="#guardar-una-copia">Copia de seguridad</a>
+      </div>
+    </section>
+
+    <nav class="help-topics" aria-label="Temas de ayuda">
+      <a class="help-topic" href="#primeros-pasos"><span aria-hidden="true">🚀</span><strong>Primeros pasos</strong><small>Instalar, crear tu tienda y actualizar</small></a>
+      <a class="help-topic" href="#vender"><span aria-hidden="true">🛒</span><strong>Vender y cobrar</strong><small>Escanear, cobrar, recibos, anular y devolver</small></a>
+      <a class="help-topic" href="#productos"><span aria-hidden="true">📦</span><strong>Productos</strong><small>Agregar, editar, unidades, alertas y CSV</small></a>
+      <a class="help-topic" href="#inventario"><span aria-hidden="true">📋</span><strong>Inventario</strong><small>Compras, proveedores, conteo y pedidos</small></a>
+      <a class="help-topic" href="#fiados"><span aria-hidden="true">🤝</span><strong>Clientes y fiados</strong><small>Fiar, recibir abonos y recordar por WhatsApp</small></a>
+      <a class="help-topic" href="#reportes"><span aria-hidden="true">📊</span><strong>Reportes</strong><small>Ventas, ganancia y medios de pago</small></a>
+      <a class="help-topic" href="#personal"><span aria-hidden="true">🔐</span><strong>Personal y seguridad</strong><small>Roles, PIN, bloqueo y recuperación</small></a>
+      <a class="help-topic" href="#respaldo"><span aria-hidden="true">☁️</span><strong>Respaldo y datos</strong><small>Copias, restaurar y nube</small></a>
+      <a class="help-topic" href="#ajustes"><span aria-hidden="true">⚙️</span><strong>Tu tienda y ajustes</strong><small>Recibo, varias tiendas, moneda y apariencia</small></a>
+      <a class="help-topic" href="#problemas"><span aria-hidden="true">🛠️</span><strong>Solución de problemas</strong><small>Cámara, instalación y contacto</small></a>
+    </nav>
+
+    <p class="help-empty" id="help-empty" hidden>No encontramos artículos con esas palabras. Prueba con otra palabra o <a href="#contacto">escríbenos</a>.</p>
+
+    <section class="help-section" id="primeros-pasos" aria-labelledby="t-primeros-pasos">
+      <h2 id="t-primeros-pasos"><span aria-hidden="true">🚀</span> Primeros pasos</h2>
+
+      <details class="help-article" id="instalar-la-app">
+        <summary><h3>Instalar la app en tu celular</h3></summary>
+        <div class="help-body-text">
+          <p>Surtivox POS es gratis y se instala desde un archivo (APK) publicado en GitHub. Todavía no está en Google Play y no funciona en iPhone.</p>
+          <p class="help-req">Necesitas: un celular Android 7.0 o más reciente.</p>
+          <ol>
+            <li>Desde el celular, abre la <a href="index.html#instala">página de descarga</a> y toca <b>Descargar gratis para Android</b>.</li>
+            <li>Si el navegador avisa que el archivo puede ser dañino, toca <b>Conservar</b> o <b>Descargar de todos modos</b>. Es un aviso común con cualquier APK.</li>
+            <li>Abre el archivo desde la notificación de la descarga o desde la carpeta <b>Descargas</b>.</li>
+            <li>Android te pedirá permiso para instalar desde tu navegador. Acéptalo solo para esta instalación y toca <b>Instalar</b>.</li>
+            <li>Abre <b>Surtivox</b> y sigue los pasos para crear tu tienda.</li>
+          </ol>
+          <p class="help-tip">Consejo: el archivo viene del release oficial del repositorio de Surtivox en GitHub. En la página de releases puedes ver la versión y la fecha.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="crear-tu-tienda">
+        <summary><h3>Crear tu tienda la primera vez</h3></summary>
+        <div class="help-body-text">
+          <ol>
+            <li>Lee y acepta los <b>Términos y Condiciones</b> y el <b>Aviso de Privacidad</b>. Sin aceptarlos no se puede usar la app.</li>
+            <li>La app te pregunta si quieres <b>ayudar a otros tenderos</b> con el catálogo comunitario. Es opcional: puedes tocar <b>Ahora no</b> y cambiarlo después en Más.</li>
+            <li><b>Paso 1 de 2 — Cuéntanos de tu tienda:</b> solo el nombre es obligatorio. Puedes agregar logo, eslogan, teléfono, correo y sitio web. La moneda viene en pesos colombianos (COP).</li>
+            <li><b>Paso 2 de 2 — Diseña tu recibo:</b> elige el tamaño del papel y el color, y escribe tu mensaje. La vista previa cambia mientras editas.</li>
+            <li>Toca <b>Crear mi tienda</b>. Aparece un recorrido corto por la app; puedes tocar <b>Saltar tour</b>.</li>
+          </ol>
+          <p>No necesitas cuenta ni internet: todo queda guardado en tu celular.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="catalogo-de-ejemplo">
+        <summary><h3>Cargar el catálogo de ejemplo para probar</h3></summary>
+        <div class="help-body-text">
+          <p>En <b>Más → Cargar catálogo de ejemplo</b> se agregan 100 productos típicos de tienda de barrio, con su categoría. Sirve para practicar antes de cargar tus productos.</p>
+          <p>Si un producto ya existe, no se duplica. Puedes editar o eliminar los productos de ejemplo como cualquier otro.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="conoce-la-pantalla-de-inicio">
+        <summary><h3>Conoce la pantalla de Inicio</h3></summary>
+        <div class="help-body-text">
+          <ul>
+            <li><b>Venta rápida:</b> cobra algo que no está registrado, escribiendo solo el precio.</li>
+            <li><b>Agregar producto:</b> abre el formulario de producto nuevo. Si tu rol no puede editar productos, en su lugar verás <b>Escanear y vender</b>.</li>
+            <li><b>Conteo de inventario:</b> aparece para el propietario y el administrador cuando hay productos que controlan inventario.</li>
+            <li><b>Productos frecuentes:</b> lo que vendiste hace poco, para agregarlo al carrito con un toque.</li>
+            <li><b>Ventas de hoy:</b> el total del día, los pedidos y los artículos vendidos. Tócala para ver el historial.</li>
+            <li><b>Avisos:</b> la app te recuerda guardar una copia de tus datos, generar tu código de recuperación o contar el inventario si lo activaste.</li>
+          </ul>
+          <p>Arriba están la búsqueda de productos, el escáner y el botón para cambiar entre modo claro y oscuro.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="actualizar-la-app">
+        <summary><h3>Actualizar a una versión nueva</h3></summary>
+        <div class="help-body-text">
+          <p>Cuando hay una versión nueva, la app muestra el aviso <b>Descargar la versión nueva</b>. Puedes seguir usando la app mientras tanto.</p>
+          <ol>
+            <li>Antes de actualizar, guarda una copia de tus datos (<a href="#guardar-una-copia">ver cómo</a>).</li>
+            <li>Toca <b>Descargar</b> e instala el archivo encima de la app que ya tienes. No la desinstales.</li>
+          </ol>
+          <p class="help-warn">Importante: desinstalar la app borra los datos guardados en el celular. Para actualizar, instala encima.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="help-section" id="vender" aria-labelledby="t-vender">
+      <h2 id="t-vender"><span aria-hidden="true">🛒</span> Vender y cobrar</h2>
+
+      <details class="help-article" id="vender-escaneando">
+        <summary><h3>Vender escaneando el código de barras</h3></summary>
+        <div class="help-body-text">
+          <ol>
+            <li>Toca el botón del escáner, en el centro de la barra inferior.</li>
+            <li>Apunta la cámara al código. Cada producto escaneado se suma al carrito y aparece en <b>Agregados recientemente</b>.</li>
+            <li>Si hay poca luz, enciende la <b>linterna</b>. Si el código no se lee, toca <b>Ingresar código manualmente</b>.</li>
+            <li>¿Te equivocaste? Toca <b>Deshacer último producto</b>.</li>
+            <li>Cuando termines, toca <b>Cobrar</b>.</li>
+          </ol>
+          <p>También puedes agregar productos tocando <b>Agregar</b> en la pestaña Productos o en Productos frecuentes.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="producto-no-registrado">
+        <summary><h3>Escaneé un producto que no está registrado</h3></summary>
+        <div class="help-body-text">
+          <p>Si el código no está en tu tienda, aparece la hoja <b>Producto nuevo</b> con tres opciones:</p>
+          <ul>
+            <li><b>Venta única:</b> lo vendes una sola vez con el precio que escribas, sin guardarlo.</li>
+            <li><b>Guardar en inventario:</b> lo registras con nombre, tu precio de venta, el costo por unidad y la cantidad.</li>
+            <li><b>Registrar paso a paso:</b> foto, nombre, categoría y precio en un minuto. Si sales, tu avance se guarda.</li>
+          </ul>
+          <p>Con internet, la app puede sugerir el nombre desde Open Food Facts. Revisa siempre que el nombre sea correcto.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="venta-rapida">
+        <summary><h3>Venta rápida de algo sin registrar</h3></summary>
+        <div class="help-body-text">
+          <p>En Inicio, toca <b>Venta rápida</b>, escribe el precio del artículo y toca <b>Agregar al carrito</b>. Sirve para cobrar algo suelto sin crear el producto.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="cobrar-una-venta">
+        <summary><h3>Cobrar una venta</h3></summary>
+        <div class="help-body-text">
+          <ol>
+            <li>Con productos en el carrito, toca <b>Cobrar</b>.</li>
+            <li>Revisa los artículos y ajusta cantidades con <b>−</b> y <b>+</b>.</li>
+            <li>Si quieres, elige un <b>cliente</b> (por defecto es <b>Cliente ocasional</b>) y agrega un <b>descuento</b> en porcentaje.</li>
+            <li>Elige el medio de pago: <b>Efectivo</b>, <b>Tarjeta</b>, <b>Transferencia</b>, <b>Nequi</b>, <b>Daviplata</b> o <b>Fiado</b>.</li>
+            <li>En efectivo, escribe cuánto te entregaron o toca un monto rápido; la app calcula el cambio.</li>
+            <li>Toca <b>Completar venta</b>. El inventario se descuenta solo.</li>
+          </ol>
+          <p class="help-tip">Si vendes un producto agotado, la app te avisa y puedes tocar <b>Vender de todas formas</b>.</p>
+          <p>Para cancelar todo el carrito, toca <b>Cancelar venta</b>.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="recibo-o-factura">
+        <summary><h3>Compartir o imprimir el recibo</h3></summary>
+        <div class="help-body-text">
+          <p>Al completar la venta aparece <b>Venta completada</b> con el detalle. Desde ahí:</p>
+          <ul>
+            <li><b>Compartir:</b> genera un PDF y abre el menú de compartir del celular (WhatsApp, correo, etc.).</li>
+            <li><b>Imprimir:</b> envía el recibo a una impresora disponible en el celular.</li>
+          </ul>
+          <p>Más tarde, en <b>Ventas</b>, abre una venta y toca <b>Compartir factura</b> o <b>Imprimir factura</b>.</p>
+          <p>El diseño del recibo se cambia en <a href="#personalizar-el-recibo">Perfil y recibos</a>.</p>
+          <p class="help-warn">El recibo de Surtivox no es una factura electrónica de la DIAN.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="historial-de-ventas">
+        <summary><h3>Ver el historial de ventas</h3></summary>
+        <div class="help-body-text">
+          <p>En la pestaña <b>Ventas</b> ves las ventas con su total. Puedes filtrar por periodo (<b>Hoy</b>, <b>7 días</b>, <b>30 días</b>, <b>Todo el tiempo</b>) y por medio de pago, y buscar por número de factura o por cajero. Toca una venta para ver su detalle.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="anular-una-venta">
+        <summary><h3>Anular una venta</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario y administrador.</p>
+          <ol>
+            <li>En <b>Ventas</b>, toca el botón de anular (la caneca roja) de la venta.</li>
+            <li>Confirma. El dinero se resta del total del día y los productos vuelven al inventario.</li>
+          </ol>
+          <p>Si la venta fue a fiado, también se quita del saldo del cliente.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="hacer-una-devolucion">
+        <summary><h3>Hacer una devolución</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario y administrador.</p>
+          <ol>
+            <li>En <b>Ventas</b>, abre la venta.</li>
+            <li>Selecciona los <b>artículos a devolver</b> y la cantidad.</li>
+            <li>Elige el <b>método de devolución</b> (cómo le devuelves el dinero) y confirma.</li>
+          </ol>
+          <p>Si la venta se fió, la devolución se abona a la cuenta del cliente y no sale dinero de la caja.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="help-section" id="productos" aria-labelledby="t-productos">
+      <h2 id="t-productos"><span aria-hidden="true">📦</span> Productos</h2>
+
+      <details class="help-article" id="agregar-un-producto">
+        <summary><h3>Agregar un producto</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario y administrador.</p>
+          <ol>
+            <li>Toca <b>Agregar producto</b> en Inicio o el <b>+</b> en Productos.</li>
+            <li>Escribe el <b>Nombre</b> (obligatorio) y elige la <b>Categoría</b>, o crea una con <b>+ Nueva</b>.</li>
+            <li>En <b>Código de barras</b>, escanéalo con la cámara o escríbelo. Con internet, toca <b>Buscar</b> para completar el nombre y la foto desde Open Food Facts. Si el producto no tiene código, toca <b>Generar código</b>.</li>
+            <li>Escribe el <b>Precio de venta</b> (obligatorio). El <b>Precio de costo</b> es opcional, pero sin él los reportes no pueden calcular tu ganancia.</li>
+            <li>Opcional: <b>Impuesto %</b>, <b>SKU / código interno</b> y la <b>Unidad</b> en que lo vendes.</li>
+            <li>Escribe la <b>Cantidad inicial</b> y, en <b>Avisar cuando queden</b>, desde cuántas unidades quieres la alerta de que se está acabando.</li>
+            <li>Agrega una foto si quieres y toca <b>Guardar producto</b>.</li>
+          </ol>
+          <p class="help-tip">Si escaneas un código que ya está en tu catálogo, la app te avisa y te ofrece editar ese producto, para que no quede duplicado.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="editar-o-eliminar-un-producto">
+        <summary><h3>Editar o eliminar un producto</h3></summary>
+        <div class="help-body-text">
+          <p>En <b>Productos</b>, toca el lápiz del producto, cambia lo que necesites y toca <b>Guardar cambios</b>.</p>
+          <p>Las unidades disponibles no se cambian aquí: se ajustan con una compra (<a href="#registrar-una-compra">Compras / reabastecer</a>) o con un <a href="#contar-el-inventario">conteo de inventario</a>, para que cada movimiento quede registrado.</p>
+          <p>Para eliminarlo, toca <b>Eliminar producto</b>. Las ventas anteriores se conservan.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="buscar-y-filtrar-productos">
+        <summary><h3>Buscar y filtrar productos</h3></summary>
+        <div class="help-body-text">
+          <p>En <b>Productos</b>, busca por nombre, código de barras o SKU, o toca el ícono del código para escanear. Debajo están los filtros <b>Por agotarse</b>, <b>Agotados</b> y tus categorías.</p>
+          <p>Cada tarjeta muestra el precio y cuántas unidades hay disponibles.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="unidades-de-venta">
+        <summary><h3>Unidades de venta</h3></summary>
+        <div class="help-body-text">
+          <p>Al crear un producto eliges en qué unidad lo vendes: unidad, pieza, paquete, caja, docena, kilogramo, gramo, litro, mililitro, libra, bulto o botella.</p>
+          <p>Las cantidades del inventario son números enteros.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="alertas-de-agotados">
+        <summary><h3>Alertas de productos por agotarse</h3></summary>
+        <div class="help-body-text">
+          <p>Un producto aparece como <b>Por agotarse</b> cuando sus unidades llegan al número que pusiste en <b>Avisar cuando queden</b> (5 si lo dejas vacío), y como <b>Agotado</b> cuando llega a cero.</p>
+          <p>Los ves en Inicio, en el filtro de Productos y en Reportes. Solo aplica a los productos que controlan inventario.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="precios-de-referencia">
+        <summary><h3>Precios de supermercados de referencia</h3></summary>
+        <div class="help-body-text">
+          <p>Al crear un producto con código de barras, y con internet, la app puede mostrar <b>Precio en supermercados</b> para ese código. Son solo de referencia: no cambian tus precios.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="importar-y-exportar-productos">
+        <summary><h3>Importar y exportar productos en CSV</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario y administrador.</p>
+          <p>En <b>Más → Respaldo y CSV</b>:</p>
+          <ul>
+            <li><b>Exportar productos</b> comparte tu catálogo como archivo CSV, y <b>Exportar ventas</b> comparte todas las líneas de venta.</li>
+            <li><b>Importar productos</b> agrega o actualiza productos desde un CSV. Se cruza por código de barras: los que ya existen se actualizan (nombre, precios e impuesto) y los nuevos se crean con su cantidad inicial.</li>
+          </ul>
+          <p>Columnas del archivo: <code>name</code>, <code>barcode</code>, <code>selling_price</code>, <code>cost_price</code>, <code>tax_percent</code>, <code>stock</code>.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="help-section" id="inventario" aria-labelledby="t-inventario">
+      <h2 id="t-inventario"><span aria-hidden="true">📋</span> Inventario</h2>
+
+      <details class="help-article" id="registrar-una-compra">
+        <summary><h3>Registrar una compra para reabastecer</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario y administrador.</p>
+          <ol>
+            <li>Ve a <b>Más → Compras / reabastecer → Nueva compra</b>.</li>
+            <li>Elige el <b>proveedor</b> o deja <b>Sin proveedor</b>.</li>
+            <li>Escanea cada artículo o ajusta la cantidad y el costo en la lista.</li>
+            <li>Toca <b>Recibir</b>. Las unidades se suman al inventario y el costo del producto se actualiza.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="help-article" id="proveedores">
+        <summary><h3>Proveedores</h3></summary>
+        <div class="help-body-text">
+          <p>En <b>Más → Proveedores</b> guardas a quién le compras, con teléfono, correo, dirección y notas. Así eliges el proveedor al registrar una compra.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="contar-el-inventario">
+        <summary><h3>Contar el inventario</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario y administrador.</p>
+          <ol>
+            <li>Toca <b>Conteo de inventario</b> en Inicio o en Más.</li>
+            <li>Escanea el producto o búscalo por nombre o código.</li>
+            <li>Escribe cuántas unidades <b>contaste</b>. La app te muestra cuántas <b>esperaba</b> según el sistema y la diferencia, en unidades y en valor a costo.</li>
+            <li>Toca <b>Confirmar conteo</b>. El inventario se ajusta y el ajuste queda registrado a tu nombre.</li>
+            <li>Cuando termines, toca <b>Terminar conteo</b> para ver el informe.</li>
+          </ol>
+          <p class="help-tip">Si haces una venta mientras cuentas, la app usa las unidades del momento en que confirmas. Solo se pueden contar productos que controlan inventario, y en números enteros.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="informe-de-diferencias">
+        <summary><h3>Informe de diferencias de inventario</h3></summary>
+        <div class="help-body-text">
+          <p>Muestra el <b>faltante</b> (menos unidades de las esperadas) y el <b>sobrante</b> (más de las esperadas), en unidades y en valor a costo, por producto y por conteo. Puedes filtrar por periodo y por quién hizo el conteo.</p>
+          <p>Compártelo con los botones <b>WhatsApp</b> o <b>PDF</b>.</p>
+          <p>Las diferencias pueden venir de ventas sin registrar, mermas, productos dañados o errores de conteo o de registro. Sirven para revisar el inventario.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="recordatorio-de-conteo">
+        <summary><h3>Recordatorio semanal para contar</h3></summary>
+        <div class="help-body-text">
+          <p>En el informe de diferencias, activa <b>Recordarme contar cada semana</b>. Si pasan 7 días sin contar, Inicio muestra un aviso con <b>Contar ahora</b>. <b>Ahora no</b> lo oculta por un día.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="sugerencia-de-pedido">
+        <summary><h3>Sugerencia de pedido</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario y administrador.</p>
+          <p>En <b>Más → Sugerencia de pedido</b> la app calcula cuánto pedir de cada producto para los próximos 7 días, según lo que vendiste en las últimas semanas y las unidades disponibles. Si un producto no tiene ventas, no hay sugerencia para él.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="help-section" id="fiados" aria-labelledby="t-fiados">
+      <h2 id="t-fiados"><span aria-hidden="true">🤝</span> Clientes y fiados</h2>
+
+      <details class="help-article" id="agregar-un-cliente">
+        <summary><h3>Agregar un cliente</h3></summary>
+        <div class="help-body-text">
+          <p>En <b>Más → Clientes y fiados</b> toca <b>Agregar cliente</b>. El nombre es obligatorio; el teléfono, el correo, la dirección y las notas son opcionales. También puedes crearlo desde el cobro, al elegir cliente, con <b>Nuevo cliente</b>.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="vender-a-fiado">
+        <summary><h3>Vender a fiado</h3></summary>
+        <div class="help-body-text">
+          <ol>
+            <li>Al cobrar, toca <b>Cliente ocasional</b> y elige al cliente.</li>
+            <li>Elige <b>Fiado</b> como medio de pago. La app te muestra el nuevo saldo.</li>
+            <li>Toca <b>Registrar venta fiada</b>.</li>
+          </ol>
+          <p>Para fiar siempre hay que elegir un cliente.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="recibir-un-abono">
+        <summary><h3>Recibir un abono o pago del fiado</h3></summary>
+        <div class="help-body-text">
+          <ol>
+            <li>Abre el cliente en <b>Clientes y fiados</b>. Arriba ves su <b>saldo pendiente</b>.</li>
+            <li>Toca <b>Registrar pago</b>, escribe el monto y toca <b>Confirmar pago</b>.</li>
+          </ol>
+          <p>En <b>Historial</b> quedan las ventas fiadas, los pagos y las devoluciones. Los abonos aparecen en Reportes como <b>Abonos de fiados recibidos</b>.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="recordar-el-fiado-por-whatsapp">
+        <summary><h3>Recordar el fiado por WhatsApp</h3></summary>
+        <div class="help-body-text">
+          <p>En el cliente, toca <b>Recordar por WhatsApp</b>. Se abre WhatsApp con un mensaje amable que dice cuánto debe. Tú decides si lo envías.</p>
+          <p>El cliente debe tener guardado un número de celular colombiano válido.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="help-section" id="reportes" aria-labelledby="t-reportes">
+      <h2 id="t-reportes"><span aria-hidden="true">📊</span> Reportes</h2>
+
+      <details class="help-article" id="ver-reportes">
+        <summary><h3>Ver ventas, ganancia y medios de pago</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario y administrador.</p>
+          <p>En <b>Más → Reportes</b> eliges <b>Hoy</b>, <b>7 días</b> o <b>30 días</b> y ves:</p>
+          <ul>
+            <li><b>Ventas totales</b>, número de ventas y artículos vendidos.</li>
+            <li><b>Ganancia bruta</b>, <b>Devoluciones</b>, <b>Descuentos</b> y <b>Ventas netas</b>.</li>
+            <li><b>Métodos de pago</b>: cuánto entró por cada medio.</li>
+            <li><b>Fiado pendiente</b> y <b>Abonos de fiados recibidos</b>.</li>
+            <li><b>Más vendidos</b> y productos <b>Por agotarse</b>.</li>
+          </ul>
+          <p class="help-tip">Las ventas incluyen las fiadas. La ganancia bruta solo es correcta si los productos tienen su precio de costo.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="help-section" id="personal" aria-labelledby="t-personal">
+      <h2 id="t-personal"><span aria-hidden="true">🔐</span> Personal y seguridad</h2>
+
+      <details class="help-article" id="roles">
+        <summary><h3>Roles: propietario, administrador y cajero</h3></summary>
+        <div class="help-body-text">
+          <ul>
+            <li><b>Cajero:</b> solo puede vender y recibir pagos.</li>
+            <li><b>Administrador:</b> además puede ver reportes, editar productos, hacer devoluciones y anular ventas, registrar compras, gestionar proveedores, clientes y fiados, hacer y restaurar copias y contar el inventario.</li>
+            <li><b>Propietario:</b> todo lo anterior, más gestionar el personal, activar la nube y editar el perfil de la tienda y el recibo.</li>
+          </ul>
+          <p>Mientras no crees personal, la app funciona como propietario y no pide PIN.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="agregar-personal">
+        <summary><h3>Agregar personal con PIN</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario.</p>
+          <ol>
+            <li>Ve a <b>Más → Personal y roles → Agregar personal</b>.</li>
+            <li>Escribe el nombre, elige el rol y un <b>PIN de 4 dígitos</b>. La primera cuenta debe ser del propietario.</li>
+            <li>Al crear el primer propietario, guarda el <b>código de recuperación</b> que te muestra la app.</li>
+          </ol>
+          <p>La app no acepta PIN fáciles de adivinar, como 0000, 1234 o 1212.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="entrar-con-pin">
+        <summary><h3>Entrar con tu PIN y cambiar de persona</h3></summary>
+        <div class="help-body-text">
+          <p>Cuando hay personal, la app pregunta <b>¿Quién está trabajando?</b>: toca tu nombre y escribe tu PIN. Cada venta queda a nombre de quien la hizo.</p>
+          <p>Para que entre otra persona, toca <b>Bloquear</b> en Más o <b>Cerrar sesión</b> en Tiendas.</p>
+          <p class="help-warn">Después de 5 intentos fallidos, la app espera antes de dejarte intentar de nuevo: empieza en 30 segundos y puede llegar a 15 minutos.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="bloqueo-automatico">
+        <summary><h3>Bloqueo automático</h3></summary>
+        <div class="help-body-text">
+          <p>En <b>Personal y roles</b> eliges cuánto tiempo fuera de la app espera antes de pedir el PIN otra vez: <b>Nunca</b>, <b>1 min</b>, <b>5 min</b> (el valor por defecto) o <b>15 min</b>.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="olvide-mi-pin">
+        <summary><h3>Olvidé mi PIN</h3></summary>
+        <div class="help-body-text">
+          <p>En la pantalla del PIN toca <b>¿Olvidaste el PIN del propietario?</b>, escribe el <b>código de recuperación</b> y elige un PIN nuevo. Al usarlo, la app te da un código nuevo: guárdalo, porque el anterior deja de servir.</p>
+          <p>Si un cajero o administrador olvida su PIN, el propietario lo cambia en <b>Personal y roles</b>.</p>
+          <p class="help-warn">Sin el código de recuperación no hay forma de volver a entrar como propietario. Genéralo en <b>Personal y roles → Código de recuperación</b> y guárdalo fuera del celular.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="help-section" id="respaldo" aria-labelledby="t-respaldo">
+      <h2 id="t-respaldo"><span aria-hidden="true">☁️</span> Respaldo y datos</h2>
+
+      <details class="help-article" id="guardar-una-copia">
+        <summary><h3>Guardar una copia de seguridad</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario y administrador.</p>
+          <p>En <b>Más → Respaldo y CSV → Respaldo completo</b>:</p>
+          <ul>
+            <li><b>Guardar copia en el teléfono:</b> eliges o creas una carpeta dentro de Descargas y la app verifica la copia al guardarla.</li>
+            <li><b>Compartir copia:</b> envías el archivo <code>.json</code> por otra app, por ejemplo a tu correo.</li>
+          </ul>
+          <p class="help-tip">Guarda una copia fuera del celular con regularidad. Si el celular se pierde o se daña y no tienes copia ni nube, los datos no se pueden recuperar. Inicio te recuerda cuando lleva tiempo sin copia.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="restaurar-una-copia">
+        <summary><h3>Restaurar una copia de seguridad</h3></summary>
+        <div class="help-body-text">
+          <p>En <b>Respaldo y CSV</b>, toca <b>Restaurar desde respaldo</b> y elige el archivo.</p>
+          <p class="help-warn">Esto reemplaza TODOS los datos del celular: productos, ventas, clientes y personal. Antes de restaurar, la app guarda automáticamente una copia de lo que había.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="respaldo-en-la-nube">
+        <summary><h3>Respaldo en la nube</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario. Opcional y en versión de pruebas.</p>
+          <ol>
+            <li>Ve a <b>Más → Respaldo en la nube → Activar respaldo en la nube</b>.</li>
+            <li>Crea y confirma tu <a href="#kit-de-recuperacion">kit de recuperación</a>.</li>
+            <li>Toca <b>Sincronizar ahora</b> para enviar los cambios y traer los de tus otros celulares.</li>
+          </ol>
+          <p>Se guardan tu tienda, productos, ventas, clientes, fiados y personal. Las fotos de los productos no se envían. Puedes desactivarlo cuando quieras: tus datos se quedan en el celular.</p>
+          <p>Lee qué datos salen y dónde se guardan en el <a href="privacidad.html">Aviso de privacidad</a>.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="kit-de-recuperacion">
+        <summary><h3>Kit de recuperación de la nube</h3></summary>
+        <div class="help-body-text">
+          <p>Son 8 palabras que dan acceso a tu tienda en la nube. Míralas en un lugar privado, guárdalas con <b>Enviar a mi WhatsApp o copiar</b> o escríbelas en papel, y confírmalas escribiendo las dos palabras que te pide la app.</p>
+          <p class="help-warn">Quien tenga el kit tiene tu tienda. No lo compartas ni lo publiques.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="recuperar-en-otro-celular">
+        <summary><h3>Recuperar tu tienda en otro celular</h3></summary>
+        <div class="help-body-text">
+          <ol>
+            <li>Instala Surtivox en el celular nuevo.</li>
+            <li>En la primera pantalla toca <b>¿Ya usabas Surtivox? Ya tengo mi tienda</b>.</li>
+            <li>Escribe o pega las 8 palabras de tu kit y toca <b>Recuperar mi tienda</b>.</li>
+          </ol>
+          <p class="help-warn">Esto reemplaza los datos de ese celular con los de la nube. Antes se guarda una copia de lo que había.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="borrar-todos-los-datos">
+        <summary><h3>Borrar todos los datos de la app</h3></summary>
+        <div class="help-body-text">
+          <p>En <b>Más → Zona de peligro → Borrar todos los datos de la app</b> se borran productos, ventas, clientes y fiados, y la app vuelve al inicio.</p>
+          <p class="help-warn">No se puede deshacer. Guarda una copia antes.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="help-section" id="ajustes" aria-labelledby="t-ajustes">
+      <h2 id="t-ajustes"><span aria-hidden="true">⚙️</span> Tu tienda y ajustes</h2>
+
+      <details class="help-article" id="personalizar-el-recibo">
+        <summary><h3>Personalizar el perfil y el recibo</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario.</p>
+          <p>En <b>Más → Perfil y recibos</b> cambias el nombre, el logo, el eslogan y los datos de contacto de la tienda, y el diseño del recibo:</p>
+          <ul>
+            <li><b>Tamaño del papel:</b> Factura A4 (página completa, láser o PDF), rollo térmico de 80 mm o rollo térmico pequeño de 58 mm.</li>
+            <li><b>Color</b>, <b>mensaje de agradecimiento</b> y <b>términos o política de devoluciones</b>.</li>
+            <li>Qué mostrar: logo, datos de contacto y el nombre del cajero que hizo la venta.</li>
+          </ul>
+          <p>En <b>Más → Datos del negocio</b> están el nombre del negocio, el NIT o ID fiscal, la dirección, el teléfono y el correo que se imprimen en el recibo.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="varias-tiendas">
+        <summary><h3>Manejar varias tiendas en el mismo celular</h3></summary>
+        <div class="help-body-text">
+          <p>Toca la tarjeta de tu tienda en <b>Más</b> para abrir <b>Tiendas</b>. Ahí cambias de tienda o creas otra con <b>Agregar tienda</b>.</p>
+          <p>Cada tienda tiene sus propios productos, ventas, clientes y personal con PIN. Al cambiar de tienda se pide el PIN de la otra.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="cambiar-la-moneda">
+        <summary><h3>Cambiar la moneda</h3></summary>
+        <div class="help-body-text">
+          <p>En <b>Más → Moneda</b> cambias entre pesos colombianos (COP) y dólares (USD). Aplica a todas las tiendas del celular.</p>
+          <p class="help-warn">Cambiar la moneda no convierte los precios: solo cambia cómo se muestran.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="modo-oscuro">
+        <summary><h3>Modo claro, oscuro o automático</h3></summary>
+        <div class="help-body-text">
+          <p>En <b>Más → Apariencia</b> eliges <b>Claro</b>, <b>Oscuro</b>, <b>Automático por hora</b> (con la hora de inicio y fin) o <b>Igual que el teléfono</b>. También puedes cambiar rápido con el botón de la luna en Inicio.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="catalogo-comunitario">
+        <summary><h3>Catálogo comunitario: qué se comparte</h3></summary>
+        <div class="help-body-text">
+          <p>Si activas <b>Ayudar a mejorar el catálogo</b> en Más, cuando escribes o corriges el nombre de un producto con código de barras se envía a Surtivox solo el código, el nombre y la presentación. No se envían precios, ventas, clientes ni datos de tu tienda.</p>
+          <p>Puedes desactivarlo cuando quieras. Lo que ya enviaste no se borra automáticamente del catálogo compartido. Más detalles en el <a href="privacidad.html">Aviso de privacidad</a>.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="help-section" id="problemas" aria-labelledby="t-problemas">
+      <h2 id="t-problemas"><span aria-hidden="true">🛠️</span> Solución de problemas</h2>
+
+      <details class="help-article" id="la-camara-no-funciona">
+        <summary><h3>La cámara no escanea</h3></summary>
+        <div class="help-body-text">
+          <ul>
+            <li>Si ves <b>Necesitamos permiso para usar la cámara</b>, acepta el permiso.</li>
+            <li>Si ves <b>La cámara está bloqueada en los ajustes del teléfono</b>, toca <b>Abrir ajustes</b>, entra a Permisos y permite la Cámara.</li>
+            <li>Si dice <b>No se pudo iniciar la cámara</b>, toca <b>Reintentar</b> o cierra las otras apps que estén usando la cámara.</li>
+            <li>Con poca luz, enciende la linterna. Si el código está dañado, escríbelo con <b>Ingresar código manualmente</b>.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="help-article" id="no-se-instala">
+        <summary><h3>La app no se descarga o no se instala</h3></summary>
+        <div class="help-body-text">
+          <ul>
+            <li>Si el navegador bloquea la descarga, toca <b>Conservar</b> o <b>Descargar de todos modos</b>.</li>
+            <li>Si llegó al 100 % y no se abrió, ábrela desde la notificación o desde la carpeta <b>Descargas</b>.</li>
+            <li>Si Android no deja instalar, permite la instalación desde tu navegador cuando te lo pida.</li>
+            <li>Revisa que tu celular tenga Android 7.0 o más reciente y espacio libre.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="help-article" id="funciona-sin-internet">
+        <summary><h3>¿Qué funciona sin internet?</h3></summary>
+        <div class="help-body-text">
+          <p>Vender, cobrar, productos, inventario, fiados, reportes, personal y copias funcionan sin internet.</p>
+          <p>Necesitan internet: buscar el nombre y la foto de un código en Open Food Facts, los precios de supermercados, el respaldo en la nube, el catálogo comunitario y buscar actualizaciones.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="la-app-muestra-un-error">
+        <summary><h3>La app dice que la base de datos puede estar dañada</h3></summary>
+        <div class="help-body-text">
+          <p>La app no borra nada automáticamente. Toca primero <b>Guardar copia de mis datos</b> y después <b>Reintentar</b>. Si el problema sigue, escríbenos con el diagnóstico (ver abajo).</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="enviar-diagnostico">
+        <summary><h3>Enviar el diagnóstico de la app</h3></summary>
+        <div class="help-body-text">
+          <p>En <b>Más → Diagnóstico</b> toca <b>Compartir diagnóstico</b>. Incluye solo datos técnicos: versión de la app, tamaño de la base de datos, fecha del último respaldo y el último error. No incluye productos, ventas ni clientes.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="help-contact" id="contacto" aria-labelledby="t-contacto">
+      <h2 id="t-contacto">¿No encontraste lo que buscabas?</h2>
+      <p>Cuéntanos qué pasó, en qué pantalla estabas y, si puedes, adjunta el diagnóstico. No publiques datos de tus clientes ni tu kit de recuperación.</p>
+      <div class="help-contact-actions">
+        <a class="button button-primary" href="https://github.com/digita1web/surtivox-pos/issues" target="_blank" rel="noopener">Reportar en GitHub</a>
+        <a class="button button-ghost" href="mailto:pragramademateo@gmail.com?subject=Ayuda%20Surtivox%20POS">Escribir por correo</a>
+      </div>
+      <p class="help-updated">Última actualización: 16 de noviembre de 2026.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer legal-footer">
+    <div class="footer-brand">
+      <img src="assets/icon-180.png" width="32" height="32" alt="">
+      <span>Surtivox POS</span>
+    </div>
+    <p>Hecho para tiendas de barrio colombianas.</p>
+    <div class="footer-links">
+      <a href="ayuda.html">Ayuda</a>
+      <a href="https://github.com/digita1web/surtivox-pos" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/digita1web/surtivox-pos/releases" target="_blank" rel="noopener">Releases</a>
+      <a href="https://github.com/digita1web/surtivox-pos/blob/main/LICENSE" target="_blank" rel="noopener">Licencia</a>
+    </div>
+    <div class="footer-legal">
+      <span>© 2026 Surtivox. Todos los derechos reservados.</span>
+      <nav aria-label="Información legal">
+        <a href="aviso-legal.html">Aviso legal</a>
+        <a href="privacidad.html">Privacidad</a>
+        <a href="terminos.html">Términos</a>
+      </nav>
+    </div>
+  </footer>
+  <script src="ayuda.js" defer></script>
+</body>
+</html>
