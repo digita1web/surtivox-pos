@@ -10,7 +10,7 @@ const RULES: readonly (readonly [RegExp, Capability])[] = [
   [/^\/(stock-count|stock-count-report)(\/|$)/, 'stock_count'],
   [/^\/(store-settings|business-settings|new-shop)(\/|$)/, 'shop'],
   [/^\/(cloud-sync|paywall|kit|recover)(\/|$)/, 'sync'],
-  [/^\/add-product(\/|$)/, 'products'],
+  [/^\/(add-product|catalog-pack)(\/|$)/, 'products'],
 ];
 
 export function capabilityForPath(pathname: string): Capability | null {

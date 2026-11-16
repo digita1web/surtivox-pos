@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Modal, Keyboard, StyleSheet } from 'react-native';
 import { showAlert } from '../src/pos/alert';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +19,9 @@ import { isValidEan, marketEanForLookup } from '../src/marketPrices';
 import { useMoney } from '../src/pos/ui';
 import { APP_CURRENCY, parseCurrencyInput } from '../src/branding';
 import { PHOTO_TIP } from '../src/legalText';
+import type { PackHit } from '../src/catalogPack';
+import { catalogBarcodeFor, lookupCatalogBarcode, searchCatalog } from '../src/catalogPackRuntime';
+import { packHitSubtitle, resolvePackCategory } from '../src/catalogPackForm';
 
 const UNITS = ['unit', 'pcs', 'pack', 'box', 'dozen', 'kg', 'g', 'L', 'ml', 'lb', 'bulto', 'bottle'];
 const UNIT_LABEL: Record<string, string> = {
@@ -65,6 +68,30 @@ export default function AddProduct() {
   const [busy, setBusy] = useState(false);
   const [looking, setLooking] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [suggestions, setSuggestions] = useState<PackHit[]>([]);
+  const picked = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (editId || picked.current === name) { setSuggestions([]); return; }
+    let live = true;
+    const timer = setTimeout(() => {
+      searchCatalog(name, 5).then((hits) => { if (live) setSuggestions(hits); }).catch(() => {});
+    }, 200);
+    return () => { live = false; clearTimeout(timer); };
+  }, [name, editId]);
+
+  const applyPackHit = async (hit: PackHit, opts: { keepName?: boolean } = {}) => {
+    if (!opts.keepName || !name.trim()) { picked.current = hit.name; setName(hit.name); }
+    setSuggestions([]);
+    if (UNITS.includes(hit.unit)) setUnit(hit.unit);
+    const cat = resolvePackCategory(hit.categoryName, categories);
+    if (cat.kind === 'existing') { setAddingCategory(false); setCategoryId(cat.id); }
+    else if (cat.kind === 'new' && categoryId === null && !addingCategory) { setAddingCategory(true); setNewCategory(cat.name); }
+    if (!barcode.trim()) {
+      const code = await catalogBarcodeFor(hit.id);
+      if (code) setBarcode((prev) => prev.trim() ? prev : code);
+    }
+  };
 
   useEffect(() => {
     getStore().then((s) => {
@@ -104,9 +131,11 @@ export default function AddProduct() {
     setMarketEan(bc);
     setLooking(true);
     try {
+      const fromPack = editId ? null : await lookupCatalogBarcode(bc);
+      if (fromPack) await applyPackHit(fromPack, { keepName: true });
       const outcome = await lookupBarcode(bc);
-      if (outcome.status === 'not_found') { if (!silent) showAlert('No encontrado', 'No hay coincidencias para este código en la base de productos.'); return; }
-      if (outcome.status === 'error') { if (!silent) showAlert('No se pudo buscar', 'No se pudo conectar con la base de productos. Revisa tu conexión.'); return; }
+      if (outcome.status === 'not_found') { if (!silent && !fromPack) showAlert('No encontrado', 'No hay coincidencias para este código en la base de productos.'); return; }
+      if (outcome.status === 'error') { if (!silent && !fromPack) showAlert('No se pudo buscar', 'No se pudo conectar con la base de productos. Revisa tu conexión.'); return; }
       const info = outcome.info;
       if (info.name) setName((prev) => prev.trim() ? prev : info.name!);
       if (info.imageUrl && !imageUri) {
@@ -295,6 +324,21 @@ export default function AddProduct() {
       ) : null}
 
       {field('Nombre', name, setName, { ph: 'ej. Cola 500 ml', caps: 'words', req: true })}
+      {suggestions.length > 0 ? (
+        <View style={[st.suggestions, { borderColor: t.line, backgroundColor: t.panel }]}>
+          <Text style={{ color: t.muted, fontSize: 12, fontWeight: '600', marginBottom: space.xs }}>Del catálogo · toca para completar</Text>
+          {suggestions.map((hit) => (
+            <Pressable key={hit.id} onPress={() => { void applyPackHit(hit); }} accessibilityRole="button" accessibilityLabel={`Usar ${hit.name}`}
+              style={({ pressed }) => [st.suggestion, { borderTopColor: t.line, opacity: pressed ? 0.7 : 1 }]}>
+              <Ionicons name="sparkles-outline" size={16} color={t.accent} />
+              <View style={{ flex: 1, marginLeft: space.sm }}>
+                <Text style={{ color: t.fg, fontWeight: '700' }} numberOfLines={1}>{hit.name}</Text>
+                {packHitSubtitle(hit) ? <Text style={{ color: t.muted, fontSize: 12 }} numberOfLines={1}>{packHitSubtitle(hit)}</Text> : null}
+              </View>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
 
       <Text style={[st.label, { color: t.muted }]}>Categoría</Text>
       <View style={st.wrap}>
@@ -398,6 +442,8 @@ export default function AddProduct() {
 const st = StyleSheet.create({
   scanned: { borderWidth: 1, borderRadius: radius.md, padding: space.md },
   lookup: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, paddingHorizontal: 14 },
+  suggestions: { borderWidth: 1, borderRadius: radius.md, paddingHorizontal: space.md, paddingTop: space.sm, marginTop: space.sm },
+  suggestion: { flexDirection: 'row', alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth, paddingVertical: space.sm },
   scan: { width: 52, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md },
   photo: { width: 120, height: 120, borderRadius: radius.lg, borderWidth: 1 },
   photoEmpty: { alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed' },

@@ -1,0 +1,17 @@
+[
+  { "id": "unit", "name": "unidad", "plural": "unidades", "kind": "count", "factor": 1, "sale": true, "presentation": true },
+  { "id": "pcs", "name": "pieza", "plural": "piezas", "kind": "count", "factor": 1, "sale": true, "presentation": false },
+  { "id": "pack", "name": "paquete", "plural": "paquetes", "kind": "count", "factor": 1, "sale": true, "presentation": false },
+  { "id": "box", "name": "caja", "plural": "cajas", "kind": "count", "factor": 1, "sale": true, "presentation": false },
+  { "id": "dozen", "name": "docena", "plural": "docenas", "kind": "count", "factor": 12, "sale": true, "presentation": false },
+  { "id": "bulto", "name": "bulto", "plural": "bultos", "kind": "count", "factor": 1, "sale": true, "presentation": false },
+  { "id": "bottle", "name": "botella", "plural": "botellas", "kind": "count", "factor": 1, "sale": true, "presentation": false },
+  { "id": "mg", "name": "miligramo", "plural": "miligramos", "kind": "mass", "factor": 0.001, "sale": false, "presentation": true },
+  { "id": "g", "name": "gramo", "plural": "gramos", "kind": "mass", "factor": 1, "sale": true, "presentation": true },
+  { "id": "kg", "name": "kilogramo", "plural": "kilogramos", "kind": "mass", "factor": 1000, "sale": true, "presentation": true },
+  { "id": "lb", "name": "libra", "plural": "libras", "kind": "mass", "factor": 500, "sale": true, "presentation": true },
+  { "id": "ml", "name": "mililitro", "plural": "mililitros", "kind": "volume", "factor": 1, "sale": true, "presentation": true },
+  { "id": "L", "name": "litro", "plural": "litros", "kind": "volume", "factor": 1000, "sale": true, "presentation": true },
+  { "id": "cm", "name": "centímetro", "plural": "centímetros", "kind": "length", "factor": 0.01, "sale": false, "presentation": true },
+  { "id": "m", "name": "metro", "plural": "metros", "kind": "length", "factor": 1, "sale": false, "presentation": true }
+]

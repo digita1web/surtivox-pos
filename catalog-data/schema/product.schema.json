@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/digita1web/surtivox-pos/catalog-data/schema/product.schema.json",
+  "title": "Producto del catálogo estandarizado de Surtivox",
+  "description": "Una línea de un archivo JSONL de catalog-data/data. category, unit, presentation.unit, business_types y source.id deben existir en las taxonomías y en sources.json; esas referencias y la normalización de textos las comprueba src/validate.ts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "category", "unit", "business_types", "source", "license"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*:[A-Za-z0-9._-]{1,80}$", "description": "fuente:clave, estable entre versiones." },
+    "name": { "type": "string", "minLength": 2, "maxLength": 120, "description": "Nombre normalizado tal como lo verá el tendero." },
+    "brand": { "type": "string", "minLength": 1, "maxLength": 60 },
+    "category": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$", "description": "id de taxonomy/categories.json." },
+    "unit": { "type": "string", "description": "id de unidad de venta de taxonomy/units.json (mismos ids que la app)." },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["quantity", "unit"],
+      "properties": {
+        "quantity": { "type": "number", "exclusiveMinimum": 0, "maximum": 1000000 },
+        "unit": { "type": "string", "description": "id de unidad de presentación de taxonomy/units.json." },
+        "count": { "type": "integer", "minimum": 2, "maximum": 1000, "description": "Unidades por empaque, por ejemplo 6 para un six-pack." }
+      }
+    },
+    "synonyms": { "type": "array", "minItems": 1, "maxItems": 20, "uniqueItems": true, "items": { "type": "string", "minLength": 2, "maxLength": 80 } },
+    "barcodes": { "type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": { "type": "string", "pattern": "^(?:\\d{8}|\\d{12,14})$" }, "description": "GTIN con dígito de control válido." },
+    "business_types": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" } },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "ref": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Identificador del registro en la fuente original." },
+        "retrieved_at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+      }
+    },
+    "license": { "type": "string", "description": "id de sources/licenses.json; debe ser la licencia de la fuente." }
+  }
+}

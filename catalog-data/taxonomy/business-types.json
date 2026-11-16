@@ -1,0 +1,8 @@
+[
+  { "id": "tienda", "name": "Tienda de barrio", "description": "Abarrotes, bebidas, aseo y productos de consumo diario." },
+  { "id": "minimercado", "name": "Minimercado", "description": "Surtido amplio de supermercado pequeño, con frescos y congelados." },
+  { "id": "drogueria", "name": "Droguería", "description": "Medicamentos de venta libre, cuidado personal y productos para bebés." },
+  { "id": "ferreteria", "name": "Ferretería", "description": "Herramientas, tornillería, eléctricos, plomería y pinturas." },
+  { "id": "papeleria", "name": "Papelería", "description": "Útiles escolares, papel, cuadernos y artículos de oficina." },
+  { "id": "licorera", "name": "Licorera", "description": "Licores, cervezas, bebidas y pasabocas." }
+]

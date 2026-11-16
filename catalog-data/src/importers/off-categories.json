@@ -1,0 +1,602 @@
+[
+ {
+  "tag": "en:alcoholic-beverages",
+  "category": "licores"
+ },
+ {
+  "tag": "en:beers",
+  "category": "licores"
+ },
+ {
+  "tag": "en:wines",
+  "category": "licores"
+ },
+ {
+  "tag": "en:spirits",
+  "category": "licores"
+ },
+ {
+  "tag": "en:rums",
+  "category": "licores"
+ },
+ {
+  "tag": "en:whiskies",
+  "category": "licores"
+ },
+ {
+  "tag": "en:vodkas",
+  "category": "licores"
+ },
+ {
+  "tag": "en:tequilas",
+  "category": "licores"
+ },
+ {
+  "tag": "en:aguardientes",
+  "category": "licores"
+ },
+ {
+  "tag": "en:liqueurs",
+  "category": "licores"
+ },
+ {
+  "tag": "en:ciders",
+  "category": "licores"
+ },
+ {
+  "tag": "en:baby-foods",
+  "category": "bebes"
+ },
+ {
+  "tag": "en:baby-milks",
+  "category": "bebes"
+ },
+ {
+  "tag": "en:infant-formulas",
+  "category": "bebes"
+ },
+ {
+  "tag": "en:baby-cereals",
+  "category": "bebes"
+ },
+ {
+  "tag": "en:baby-desserts",
+  "category": "bebes"
+ },
+ {
+  "tag": "en:pet-food",
+  "category": "mascotas"
+ },
+ {
+  "tag": "en:dog-food",
+  "category": "mascotas"
+ },
+ {
+  "tag": "en:cat-food",
+  "category": "mascotas"
+ },
+ {
+  "tag": "en:dog-foods",
+  "category": "mascotas"
+ },
+ {
+  "tag": "en:cat-foods",
+  "category": "mascotas"
+ },
+ {
+  "tag": "en:chicken-eggs",
+  "category": "huevos"
+ },
+ {
+  "tag": "en:eggs",
+  "category": "huevos"
+ },
+ {
+  "tag": "en:ice-creams",
+  "category": "congelados"
+ },
+ {
+  "tag": "en:frozen-desserts",
+  "category": "congelados"
+ },
+ {
+  "tag": "en:frozen-foods",
+  "category": "congelados"
+ },
+ {
+  "tag": "en:plant-based-milk-alternatives",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:milk-substitutes",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:waters",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:sodas",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:carbonated-drinks",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:fruit-juices",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:juices-and-nectars",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:fruit-nectars",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:iced-teas",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:energy-drinks",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:sports-drinks",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:malt-beverages",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:soft-drinks",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:coffees",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:instant-coffees",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:ground-coffees",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:teas",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:herbal-teas",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:cocoa-and-its-products",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:hot-chocolate",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:cocoa-powders",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:peanut-butters",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:legume-butters",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:non-centrifugal-cane-sugars",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:panelas",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:milks",
+  "category": "lacteos"
+ },
+ {
+  "tag": "en:milks-liquid-and-powder",
+  "category": "lacteos"
+ },
+ {
+  "tag": "en:cheeses",
+  "category": "lacteos"
+ },
+ {
+  "tag": "en:yogurts",
+  "category": "lacteos"
+ },
+ {
+  "tag": "en:fermented-milk-products",
+  "category": "lacteos"
+ },
+ {
+  "tag": "en:butters",
+  "category": "lacteos"
+ },
+ {
+  "tag": "en:dairy-desserts",
+  "category": "lacteos"
+ },
+ {
+  "tag": "en:creams",
+  "category": "lacteos"
+ },
+ {
+  "tag": "en:dulce-de-leche",
+  "category": "lacteos"
+ },
+ {
+  "tag": "en:dairies",
+  "category": "lacteos"
+ },
+ {
+  "tag": "en:sausages",
+  "category": "carnes-frias"
+ },
+ {
+  "tag": "en:hams",
+  "category": "carnes-frias"
+ },
+ {
+  "tag": "en:prepared-meats",
+  "category": "carnes-frias"
+ },
+ {
+  "tag": "en:cold-cuts",
+  "category": "carnes-frias"
+ },
+ {
+  "tag": "en:chewing-gum",
+  "category": "dulces"
+ },
+ {
+  "tag": "en:candies",
+  "category": "dulces"
+ },
+ {
+  "tag": "en:lollipops",
+  "category": "dulces"
+ },
+ {
+  "tag": "en:gummies",
+  "category": "dulces"
+ },
+ {
+  "tag": "en:chocolate-candies",
+  "category": "dulces"
+ },
+ {
+  "tag": "en:bonbons",
+  "category": "dulces"
+ },
+ {
+  "tag": "en:chocolates",
+  "category": "dulces"
+ },
+ {
+  "tag": "en:confectioneries",
+  "category": "dulces"
+ },
+ {
+  "tag": "en:breads",
+  "category": "panaderia"
+ },
+ {
+  "tag": "en:sliced-breads",
+  "category": "panaderia"
+ },
+ {
+  "tag": "en:cakes",
+  "category": "panaderia"
+ },
+ {
+  "tag": "en:pastries",
+  "category": "panaderia"
+ },
+ {
+  "tag": "en:sponge-cakes",
+  "category": "panaderia"
+ },
+ {
+  "tag": "en:toasts",
+  "category": "panaderia"
+ },
+ {
+  "tag": "en:chips-and-fries",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:crisps",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:popcorn",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:salty-snacks",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:biscuits",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:crackers",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:biscuits-and-crackers",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:biscuits-and-cakes",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:nuts",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:appetizers",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:sweet-snacks",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:snacks",
+  "category": "snacks"
+ },
+ {
+  "tag": "en:fresh-fruits",
+  "category": "frutas-verduras"
+ },
+ {
+  "tag": "en:fresh-vegetables",
+  "category": "frutas-verduras"
+ },
+ {
+  "tag": "en:bananas",
+  "category": "frutas-verduras"
+ },
+ {
+  "tag": "en:plantains",
+  "category": "frutas-verduras"
+ },
+ {
+  "tag": "en:rices",
+  "category": "granos"
+ },
+ {
+  "tag": "en:dried-legumes",
+  "category": "granos"
+ },
+ {
+  "tag": "en:pulses",
+  "category": "granos"
+ },
+ {
+  "tag": "en:beans",
+  "category": "granos"
+ },
+ {
+  "tag": "en:lentils",
+  "category": "granos"
+ },
+ {
+  "tag": "en:chickpeas",
+  "category": "granos"
+ },
+ {
+  "tag": "en:peas",
+  "category": "granos"
+ },
+ {
+  "tag": "en:cereal-grains",
+  "category": "granos"
+ },
+ {
+  "tag": "en:legumes",
+  "category": "granos"
+ },
+ {
+  "tag": "en:mayonnaises",
+  "category": "condimentos"
+ },
+ {
+  "tag": "en:ketchup",
+  "category": "condimentos"
+ },
+ {
+  "tag": "en:mustards",
+  "category": "condimentos"
+ },
+ {
+  "tag": "en:tomato-sauces",
+  "category": "condimentos"
+ },
+ {
+  "tag": "en:sauces",
+  "category": "condimentos"
+ },
+ {
+  "tag": "en:spices",
+  "category": "condimentos"
+ },
+ {
+  "tag": "en:salts",
+  "category": "condimentos"
+ },
+ {
+  "tag": "en:vinegars",
+  "category": "condimentos"
+ },
+ {
+  "tag": "en:bouillon-cubes",
+  "category": "condimentos"
+ },
+ {
+  "tag": "en:broths",
+  "category": "condimentos"
+ },
+ {
+  "tag": "en:condiments",
+  "category": "condimentos"
+ },
+ {
+  "tag": "en:vegetable-oils",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:olive-oils",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:fats",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:flours",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:pastas",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:sugars",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:sweeteners",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:breakfast-cereals",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:canned-fishes",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:canned-foods",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:jams",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:sweet-spreads",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:spreads",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:dessert-mixes",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:gelatin",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:groceries",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:cereals-and-their-products",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:cigarettes",
+  "category": "cigarrillos"
+ },
+ {
+  "tag": "en:tobacco-products",
+  "category": "cigarrillos"
+ },
+ {
+  "tag": "en:smoked-bacon",
+  "category": "carnes-frias"
+ },
+ {
+  "tag": "en:bacons",
+  "category": "carnes-frias"
+ },
+ {
+  "tag": "en:shampoos",
+  "category": "cuidado-personal"
+ },
+ {
+  "tag": "en:open-beauty-facts",
+  "category": "cuidado-personal"
+ },
+ {
+  "tag": "en:tunas",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:tuna-salads",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:refried-beans",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:dried-fruits",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:jelly-desserts",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:compotes",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:chia",
+  "category": "abarrotes"
+ },
+ {
+  "tag": "en:tea-based-beverages",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:artificially-sweetened-beverages",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:sweetened-beverages",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:non-alcoholic-beverages",
+  "category": "bebidas"
+ },
+ {
+  "tag": "en:beverages",
+  "category": "bebidas"
+ }
+]
