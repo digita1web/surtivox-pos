@@ -11,20 +11,8 @@ import { isLowStock, type Product } from '../repos';
 import { tracksInventory } from './stockPolicy';
 import { useRole } from '../session';
 import { can } from '../roles';
+import { stockLabel } from './unitLabel';
 
-const UNIT_SHORT: Record<string, string> = {
-  pcs: 'pza',
-  pack: 'paq',
-  box: 'caja',
-  dozen: 'doc',
-  lb: 'lb',
-  bulto: 'bulto',
-  bottle: 'botella',
-  kg: 'kg',
-  g: 'g',
-  L: 'L',
-  ml: 'ml',
-};
 
 /**
  * Compact grid card: photo, name, price + stock, add button (or a - qty + stepper
@@ -41,7 +29,6 @@ function ProductCardBase({ product }: { product: Product }) {
   const tracked = tracksInventory(product);
   const out = tracked && product.stock <= 0;
   const low = tracked && !out && isLowStock(product);
-  const unit = product.unit && product.unit !== 'unit' ? (UNIT_SHORT[product.unit] ?? product.unit) : 'disponibles';
 
   return (
     <View style={[s.card, { backgroundColor: t.panel, borderColor: qty > 0 ? t.accent : t.line }]}>
@@ -57,7 +44,7 @@ function ProductCardBase({ product }: { product: Product }) {
         <Text style={[s.name, { color: t.fg }]} numberOfLines={1} ellipsizeMode="tail" maxFontSizeMultiplier={1.3}>{product.name}</Text>
         <View style={s.priceRow}>
           <Text style={[s.price, { color: t.fg }]} numberOfLines={1}>{money(asMinor(product.selling_price))}</Text>
-          <Text style={[s.stock, { color: t.muted }]} numberOfLines={1}>{tracked ? `${product.stock} ${unit}` : 'Sin control de inventario'}</Text>
+          <Text style={[s.stock, { color: t.muted }]} numberOfLines={1}>{tracked ? stockLabel(product.stock, product.unit) : 'Sin control de inventario'}</Text>
         </View>
       </Pressable>
 
