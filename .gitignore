@@ -39,3 +39,6 @@ Surtivox-POS.aab
 *.keystore
 *.jks
 
+
+# Paquetes compilados del catálogo
+catalog-dist/

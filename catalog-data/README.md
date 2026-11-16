@@ -47,3 +47,43 @@ Termina con código 1 si hay errores y muestra archivo, línea, código y motivo
 - No se hace scraping de tiendas ni se usan datos sin licencia clara.
 - Una fuente nueva se registra primero como `pending`, con su licencia verificada en la página oficial; pasa a `approved` solo con la decisión del propietario.
 - No se guardan fotos de productos: cada categoría tiene un emoji, y en la app, su imagen por defecto.
+
+## Compilar los paquetes
+
+```bash
+node catalog-data/src/cli/build.ts --version=2026.11.16 --out=catalog-dist
+```
+
+No compila si la validación tiene errores. Genera, por cada tipo de negocio con productos, `<tipo>.sqlite`, su versión comprimida `<tipo>.sqlite.gz` y un `manifest.json` con `catalog_version`, cantidad de productos, bytes y sha256 de cada archivo. La compilación es reproducible: los mismos datos producen los mismos bytes, así la app no descarga de nuevo un paquete que no cambió.
+
+Cada paquete es una base SQLite lista para abrir, sin pasos de importación:
+
+- `products` (en orden de nombre más corto primero), `barcodes`, `categories`, `units`, `sources` (con licencia y atribución) y `meta`.
+- `products_fts`: FTS5 sin contenido duplicado (`content=''`, `detail=none`), con `unicode61 remove_diacritics 2` y prefijos de 2 y 3 letras.
+- `src/search.ts` tiene las consultas que usará la app: `matchQuery` convierte lo escrito en prefijos seguros (sin operadores de FTS5) y la búsqueda ordena por relevancia solo los primeros 300 candidatos, para que el costo quede acotado aunque coincidan miles.
+
+## Medición
+
+```bash
+node catalog-data/src/cli/bench.ts --items=200000 [--compare]
+```
+
+Genera productos sintéticos deterministas (nunca se guardan en `data/`), los valida, compila los paquetes y mide tamaños y consultas.
+
+Resultado del 2026-11-16 con 200.000 productos sintéticos, **medido en un computador de escritorio, no en un teléfono**:
+
+| Paquete | Productos | SQLite | gzip -9 |
+|---|---:|---:|---:|
+| tienda | 95.733 | 14,3 MB | 4,9 MB |
+| minimercado | 95.480 | 14,3 MB | 4,9 MB |
+| ferretería | 42.778 | 6,3 MB | 2,1 MB |
+| papelería | 29.328 | 4,4 MB | 1,4 MB |
+| droguería | 27.206 | 4,2 MB | 1,3 MB |
+| licorera | 23.315 | 3,4 MB | 1,1 MB |
+
+- `detail=none` pesa 14,3 MB frente a 17,3 MB (`column`) y 18,4 MB (`full`).
+- Brotli 11 deja el paquete de tienda en 3,3 MB frente a 4,9 MB con gzip, pero tarda 90 s en comprimir y el teléfono necesitaría una librería para descomprimirlo.
+- Búsqueda mientras se escribe (5.500 consultas de 2 o más letras): p50 1,4 ms, p95 14 ms, máximo 57 ms. Por código de barras: p50 0,04 ms. Abrir el paquete: menos de 1 ms.
+- Ordenar todas las coincidencias por relevancia daba p95 45 ms y máximo 150 ms; acotar a 300 candidatos lo bajó a los valores de arriba.
+
+Pendiente de medir en un Android de gama baja: descarga, verificación del sha256, apertura y búsqueda. Los datos sintéticos repiten vocabulario; un catálogo real puede pesar distinto.
