@@ -17,7 +17,7 @@ export function SearchField({ value, onChangeText, placeholder, right }: {
         style={[s.searchInput, { color: t.fg }]}
       />
       {value ? (
-        <Pressable onPress={() => onChangeText('')} hitSlop={10} accessibilityLabel="Clear search">
+        <Pressable onPress={() => onChangeText('')} hitSlop={10} accessibilityLabel="Borrar búsqueda">
           <Ionicons name="close-circle" size={18} color={t.faint} />
         </Pressable>
       ) : right}
