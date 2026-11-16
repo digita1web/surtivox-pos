@@ -154,6 +154,7 @@ export default function More() {
     { icon: 'cart-outline', label: 'Compras / reabastecer', route: '/purchases', show: can(role, 'purchases') },
     { icon: 'clipboard-outline', label: 'Conteo de inventario', route: '/stock-count', show: can(role, 'stock_count') },
     { icon: 'cube-outline', label: 'Todos los productos', route: '/products', show: can(role, 'products') },
+    { icon: 'library-outline', label: 'Catálogo de productos', route: '/catalog-pack', show: can(role, 'products') },
     { icon: 'receipt-outline', label: 'Historial de ventas', route: '/sales', show: true },
     { icon: 'people-circle-outline', label: 'Personal y roles', route: '/staff', show: can(role, 'staff') },
     { icon: 'swap-vertical-outline', label: 'Respaldo y CSV', route: '/data', show: can(role, 'backup') },

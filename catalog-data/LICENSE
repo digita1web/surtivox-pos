@@ -1,0 +1,19 @@
+Catálogo estandarizado de productos de Surtivox POS
+
+Los datos de esta carpeta (taxonomy/, sources/, data/ y los paquetes que se
+generan a partir de ellos) se ponen a disposición bajo la Open Database
+License (ODbL) v1.0:
+https://opendatacommons.org/licenses/odbl/1-0/
+
+Los derechos sobre los contenidos individuales de la base de datos se
+licencian bajo la Database Contents License (DbCL) v1.0:
+https://opendatacommons.org/licenses/dbcl/1-0/
+
+Cada producto indica en sus campos "source" y "license" de qué fuente proviene
+y bajo qué licencia la publicó esa fuente. La atribución exigida por cada
+fuente está en sources/sources.json y debe acompañar cualquier uso o
+redistribución del catálogo o de los paquetes generados.
+
+El código de esta carpeta (src/, test/, schema/ y los archivos de
+configuración) no forma parte de la base de datos y se rige por el archivo
+LICENSE de la raíz del repositorio.

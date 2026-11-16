@@ -37,6 +37,15 @@ export default function Licenses() {
         {'\n\n'}
         Las consultas salen de tu teléfono y se guardan en él para no repetirlas. Los datos de esta fuente no se mezclan con el catálogo comunitario de Surtivox ni se envían como aportes de tu tienda. Las imágenes y marcas de productos pertenecen a sus respectivos titulares. Surtivox POS no modifica precios, inventario ni ventas a partir de esos datos externos.
       </Text>
+
+      <Text style={title}>Catálogo de productos sin conexión</Text>
+      <Text style={body}>
+        El catálogo que se descarga en Más → Catálogo de productos se publica bajo la Open Database License (ODbL) 1.0; el contenido individual, bajo la Database Contents License (DbCL). Combina el catálogo propio de Surtivox POS con datos de Open Food Facts (https://openfoodfacts.org) filtrados para Colombia. Es solo texto: no incluye precios ni fotos, y no se mezcla con el catálogo comunitario.
+        {'\n\n'}
+        Atribución: catálogo propio de Surtivox POS y datos de Open Food Facts, disponibles bajo la Open Database License.
+        {'\n'}
+        Licencia: https://opendatacommons.org/licenses/odbl/1-0/
+      </Text>
     </Screen>
   );
 }

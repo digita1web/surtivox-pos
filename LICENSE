@@ -4,3 +4,5 @@ Este software y su código fuente son propiedad exclusiva de Mateo Castro y del 
 Queda estrictamente prohibida la copia, distribución, modificación, sublicenciamiento o uso comercial de este software, en su totalidad o en parte, sin el consentimiento previo y por escrito del titular de los derechos de autor.
 
 El uso de esta aplicación en entornos comerciales requiere la adquisición de una licencia comercial. Para obtener una licencia de uso, por favor contacte a: contacto3rillodivino@gmail.com
+
+Se exceptúan de esta licencia los datos de la carpeta catalog-data/ (taxonomías, registro de fuentes, datos maestros y los paquetes generados a partir de ellos), que se publican bajo la Open Database License 1.0 según catalog-data/LICENSE, y los archivos de terceros que conservan su propia licencia (apps/mobile/LICENSE y LICENSES/).
