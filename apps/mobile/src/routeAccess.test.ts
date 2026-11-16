@@ -10,6 +10,7 @@ test('sensitive routes map to the capability the menu already uses', () => {
     '/customers': 'customers', '/customer/abc-123': 'customers', '/data': 'backup',
     '/store-settings': 'shop', '/business-settings': 'shop', '/new-shop': 'shop',
     '/cloud-sync': 'sync', '/paywall': 'sync', '/kit': 'sync', '/recover': 'sync', '/add-product': 'products',
+    '/stock-count': 'stock_count', '/stock-count-report': 'stock_count',
   };
   for (const [path, capability] of Object.entries(expected)) assert.equal(capabilityForPath(path), capability, path);
 });
@@ -27,7 +28,7 @@ test('trailing slashes and query strings do not bypass a guard', () => {
 });
 
 test('a cashier is blocked from every guarded route and the owner from none', () => {
-  const paths = ['/staff', '/add-staff', '/reports', '/purchases', '/suppliers', '/customers', '/data', '/store-settings', '/cloud-sync', '/kit', '/recover', '/add-product'];
+  const paths = ['/staff', '/add-staff', '/reports', '/purchases', '/suppliers', '/customers', '/data', '/store-settings', '/cloud-sync', '/kit', '/recover', '/add-product', '/stock-count', '/stock-count-report'];
   const blocked = (role: Role) => paths.filter((p) => !can(role, capabilityForPath(p)!));
   assert.equal(blocked('cashier').length, paths.length);
   assert.deepEqual(blocked('owner'), []);

@@ -183,3 +183,21 @@ test('lastCountAt is the latest counted line of the store', async () => {
   assert.equal(await lastCountAtOn(a, 's1'), 5001);
   assert.equal(await lastCountAtOn(a, 's2'), null);
 });
+
+test('search finds tracked products by name without accents, barcode or sku', async () => {
+  const { searchCountable, productForCode } = await import('./stockCount.ts');
+  const list = [
+    { id: 'a', name: 'Café Águila Roja 250 g', barcode: '7702032', sku: 'CAF1', track_inventory: 1 },
+    { id: 'b', name: 'Bolsa plástica', barcode: '111', sku: null, track_inventory: 0 },
+    { id: 'c', name: 'Cafetera', barcode: null, sku: null },
+  ];
+  assert.deepEqual(searchCountable(list, 'cafe aguila').map((p) => p.id), ['a']);
+  assert.deepEqual(searchCountable(list, 'CAFE').map((p) => p.id), ['a', 'c']);
+  assert.deepEqual(searchCountable(list, '7702032').map((p) => p.id), ['a']);
+  assert.deepEqual(searchCountable(list, 'caf1').map((p) => p.id), ['a']);
+  assert.deepEqual(searchCountable(list, 'bolsa'), []);
+  assert.deepEqual(searchCountable(list, '  '), []);
+  assert.equal(productForCode(list, '7702032')?.id, 'a');
+  assert.equal(productForCode(list, '111'), null);
+  assert.equal(productForCode(list, ''), null);
+});

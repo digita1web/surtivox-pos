@@ -11,6 +11,7 @@ import { getDb } from './db';
 import { currencyConfigFor } from './branding';
 import { newId, DEVICE_ID } from './id';
 import { voidSaleOn } from './saleOps';
+import { openCountOn, recordCountOn, closeCountOn, countLinesOn, lastCountAtOn, expectedStockOn, type CountResult, type CountLine } from './countOps';
 import { checkoutSaleOn, recordCustomerPaymentOn, type CheckoutLine, type CheckoutOptions, type Receipt } from './checkoutOps';
 import { reportSummaryOn, paymentsReceivedOn, type ReportSummary, type PaymentsReceived } from './reportOps';
 import { getSaleOn, processReturnOn, type SaleDetail, type ReturnPick, type RefundMethod, type ReturnReceipt } from './returnOps';
@@ -1197,4 +1198,30 @@ export async function hasRecovery(storeId: string): Promise<boolean> {
 
 export async function resetOwnerPin(input: { storeId: string; ownerId: string; code: string; newPin: string }): Promise<RecoveryResult> {
   return resetPinWithRecoveryOn(getDb(), recoveryDeps, { ...input, now: Date.now() });
+}
+
+export type { CountResult, CountLine } from './countOps';
+
+export async function openStockCount(storeId: string, staffId: string | null): Promise<string> {
+  return openCountOn(getDb(), { newId, deviceId: DEVICE_ID }, storeId, staffId);
+}
+
+export async function recordStockCount(countId: string, productId: string, counted: number): Promise<CountResult> {
+  return recordCountOn(getDb(), { newId, deviceId: DEVICE_ID }, countId, productId, counted);
+}
+
+export async function closeStockCount(countId: string): Promise<boolean> {
+  return closeCountOn(getDb(), {}, countId);
+}
+
+export async function stockCountLines(countId: string): Promise<CountLine[]> {
+  return countLinesOn(getDb(), countId);
+}
+
+export async function lastStockCountAt(storeId: string): Promise<number | null> {
+  return lastCountAtOn(getDb(), storeId);
+}
+
+export async function expectedStock(productId: string): Promise<number> {
+  return expectedStockOn(getDb(), productId);
 }

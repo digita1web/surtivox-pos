@@ -18,11 +18,11 @@ const RANK: Record<Role, number> = { cashier: 0, manager: 1, owner: 2 };
 
 /** Things a role may or may not do. Selling is always allowed for everyone. */
 export type Capability =
-  | 'reports' | 'products' | 'returns' | 'purchases' | 'suppliers' | 'customers' | 'backup' | 'staff' | 'sync' | 'shop';
+  | 'reports' | 'products' | 'returns' | 'purchases' | 'suppliers' | 'customers' | 'backup' | 'stock_count' | 'staff' | 'sync' | 'shop';
 
 // Minimum rank required per capability. Cashier=0, Manager=1, Owner=2.
 const MIN_RANK: Record<Capability, number> = {
-  reports: 1, products: 1, returns: 1, purchases: 1, suppliers: 1, customers: 1, backup: 1,
+  reports: 1, products: 1, returns: 1, purchases: 1, suppliers: 1, customers: 1, backup: 1, stock_count: 1,
   staff: 2, // only owners manage staff
   sync: 2,  // only owners connect the store to the cloud
   shop: 2,  // only owners edit the shop profile and receipt look
@@ -33,7 +33,7 @@ export function can(role: Role, cap: Capability): boolean {
 }
 
 export const CAPABILITIES: readonly Capability[] = [
-  'reports', 'products', 'returns', 'purchases', 'suppliers', 'customers', 'backup', 'staff', 'sync', 'shop',
+  'reports', 'products', 'returns', 'purchases', 'suppliers', 'customers', 'backup', 'stock_count', 'staff', 'sync', 'shop',
 ];
 
 export const CAPABILITY_LABEL: Record<Capability, string> = {
@@ -44,6 +44,7 @@ export const CAPABILITY_LABEL: Record<Capability, string> = {
   suppliers: 'gestionar proveedores',
   customers: 'gestionar clientes y fiados',
   backup: 'hacer y restaurar copias',
+  stock_count: 'contar inventario',
   staff: 'gestionar personal',
   sync: 'activar la nube',
   shop: 'editar el perfil de la tienda',
