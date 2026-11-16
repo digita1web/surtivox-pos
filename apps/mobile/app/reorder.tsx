@@ -12,7 +12,7 @@ import { useTheme, space, radius, type as ty } from '../src/theme';
 
 function stockMessage(days: number | null): string {
   if (days === null) return 'Sin historial de ventas';
-  if (days === 0) return 'Sin stock';
+  if (days === 0) return 'Agotado';
   return `Se acaba en ${Number(days.toFixed(1))} días`;
 }
 
@@ -89,7 +89,7 @@ export default function Reorder() {
               <UrgencyBadge urgency={item.urgency} />
             </View>
             <View style={{ marginTop: space.md }}>
-              <Row label="Stock actual" value={String(item.current_stock)} />
+              <Row label="Disponibles" value={String(item.current_stock)} />
               <Row label="Venta diaria" value={`${item.units_per_day} u/día`} />
             </View>
             <View style={{ marginTop: space.md }}>

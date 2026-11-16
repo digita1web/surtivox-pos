@@ -41,7 +41,7 @@ function ProductCardBase({ product }: { product: Product }) {
   const tracked = tracksInventory(product);
   const out = tracked && product.stock <= 0;
   const low = tracked && !out && isLowStock(product);
-  const unit = product.unit && product.unit !== 'unit' ? (UNIT_SHORT[product.unit] ?? product.unit) : 'en stock';
+  const unit = product.unit && product.unit !== 'unit' ? (UNIT_SHORT[product.unit] ?? product.unit) : 'disponibles';
 
   return (
     <View style={[s.card, { backgroundColor: t.panel, borderColor: qty > 0 ? t.accent : t.line }]}>
@@ -50,14 +50,14 @@ function ProductCardBase({ product }: { product: Product }) {
           <Thumb uri={product.image_uri} name={product.name} category={product.category_name} style={s.image} textSize={26} />
           {(out || low) && (
             <View style={[s.badge, { backgroundColor: out ? t.danger : t.warn }]}>
-              <Text style={s.badgeText}>{out ? 'AGOTADO' : 'STOCK BAJO'}</Text>
+              <Text style={s.badgeText}>{out ? 'AGOTADO' : 'POR AGOTARSE'}</Text>
             </View>
           )}
         </View>
         <Text style={[s.name, { color: t.fg }]} numberOfLines={1} ellipsizeMode="tail" maxFontSizeMultiplier={1.3}>{product.name}</Text>
         <View style={s.priceRow}>
           <Text style={[s.price, { color: t.fg }]} numberOfLines={1}>{money(asMinor(product.selling_price))}</Text>
-          <Text style={[s.stock, { color: t.muted }]} numberOfLines={1}>{tracked ? `${product.stock} ${unit}` : 'Sin control de stock'}</Text>
+          <Text style={[s.stock, { color: t.muted }]} numberOfLines={1}>{tracked ? `${product.stock} ${unit}` : 'Sin control de inventario'}</Text>
         </View>
       </Pressable>
 

@@ -339,7 +339,7 @@ export default function Home() {
             <View style={{ flex: 1 }}>
               <Text style={{ color: t.fg, fontWeight: '700' }}>Requiere atención</Text>
               <Text style={{ color: t.muted, fontSize: 13, marginTop: 1 }}>
-                {[outCount ? `${outCount} sin stock` : null, lowCount ? `${lowCount} con stock bajo` : null].filter(Boolean).join(' · ')}
+                {[outCount ? `${outCount} ${outCount === 1 ? 'agotado' : 'agotados'}` : null, lowCount ? `${lowCount} por agotarse` : null].filter(Boolean).join(' · ')}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={t.faint} />

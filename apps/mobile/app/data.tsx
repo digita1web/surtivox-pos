@@ -98,7 +98,7 @@ export default function DataScreen() {
       <View style={[s.note, { backgroundColor: t.accentSoft }]}>
         <Ionicons name="information-circle-outline" size={18} color={t.accent} />
         <Text style={{ color: t.fg, marginLeft: space.sm, flex: 1, fontSize: 13 }}>
-          La importación cruza por código de barras: los productos existentes se actualizan (nombre, precios, impuesto) y los nuevos se crean con su stock inicial. Columnas: name, barcode, selling_price, cost_price, tax_percent, stock.
+          La importación cruza por código de barras: los productos existentes se actualizan (nombre, precios, impuesto) y los nuevos se crean con su cantidad inicial. Columnas: name, barcode, selling_price, cost_price, tax_percent, stock.
         </Text>
       </View>
     </Screen>

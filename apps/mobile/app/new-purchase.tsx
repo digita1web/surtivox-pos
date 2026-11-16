@@ -56,7 +56,7 @@ export default function NewPurchase() {
         .map((p) => ({ productId: p.id, name: p.name, quantity: draft.qty[p.id]!, unitCost: asMinor(parseCost(p.id)) }));
       const r = await createPurchase(store.id, draft.supplierId, lines);
       draft.reset();
-      showAlert('Compra recibida', `${r.referenceNo} · ${r.itemCount} artículo${r.itemCount === 1 ? '' : 's'} · ${money(r.total)}. Stock actualizado.`);
+      showAlert('Compra recibida', `${r.referenceNo} · ${r.itemCount} artículo${r.itemCount === 1 ? '' : 's'} · ${money(r.total)}. Inventario actualizado.`);
       router.back();
     } catch (e) {
       showAlert('No se pudo guardar la compra', e instanceof Error ? e.message : String(e));
@@ -78,7 +78,7 @@ export default function NewPurchase() {
         <Pressable onPress={() => router.push('/scan?mode=stock')} style={[s.scanBtn, { backgroundColor: t.accent }]}>
           <Ionicons name="barcode-outline" size={24} color={t.accentFg} />
           <View style={{ marginLeft: space.md }}>
-            <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 16 }}>Escanea el código para agregar stock</Text>
+            <Text style={{ color: t.accentFg, fontWeight: '800', fontSize: 16 }}>Escanea el código para agregar unidades</Text>
             <Text style={{ color: t.accentFg, opacity: 0.9, fontSize: 12, marginTop: 1 }}>La forma más rápida: escanea cada artículo para reabastecer</Text>
           </View>
         </Pressable>
@@ -115,7 +115,7 @@ export default function NewPurchase() {
               <View style={[s.row, { backgroundColor: t.panel, borderColor: q > 0 ? t.accent : t.line }]}>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: t.fg, fontWeight: '700' }} numberOfLines={1}>{item.name}</Text>
-                  <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>en stock {item.stock}{q > 0 ? ` → ${item.stock + q}` : ''}</Text>
+                  <Text style={{ color: t.muted, fontSize: 12, marginTop: 2 }}>disponibles {item.stock}{q > 0 ? ` → ${item.stock + q}` : ''}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <View style={[s.costWrap, { borderColor: t.line, backgroundColor: t.bg }]}>

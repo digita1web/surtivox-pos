@@ -112,10 +112,10 @@ export function CheckoutSheet() {
       const one = outOfStock.length === 1;
       const names = outOfStock.map((it) => it.product.name).join(', ');
       showAlert(
-        one ? 'Producto sin stock' : 'Productos sin stock',
+        one ? 'Producto agotado' : 'Productos agotados',
         one
-          ? `El producto ${names} no tiene stock. ¿Deseas venderlo de todas formas?`
-          : `Los productos ${names} no tienen stock. ¿Deseas venderlos de todas formas?`,
+          ? `El producto ${names} está agotado. ¿Deseas venderlo de todas formas?`
+          : `Los productos ${names} están agotados. ¿Deseas venderlos de todas formas?`,
         [
           { text: 'Cancelar', style: 'cancel' },
           {
@@ -255,7 +255,7 @@ export function CheckoutSheet() {
             <View style={[s.creditNote, { backgroundColor: t.accentSoft }]}>
               <Ionicons name="alert-circle-outline" size={18} color={t.warn} />
               <Text style={{ color: t.fg, marginLeft: 8, flex: 1 }}>
-                Sin stock: {outOfStock.map((it) => it.product.name).join(', ')}. Puedes venderlo con confirmación.
+                Agotado: {outOfStock.map((it) => it.product.name).join(', ')}. Puedes venderlo con confirmación.
               </Text>
             </View>
           )}

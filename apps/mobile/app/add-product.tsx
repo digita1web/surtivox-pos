@@ -357,16 +357,16 @@ export default function AddProduct() {
 
       {editId ? (
         <>
-          <Text style={[st.label, { color: t.muted }]}>Stock actual</Text>
+          <Text style={[st.label, { color: t.muted }]}>Unidades disponibles</Text>
           <View style={[st.input, { borderColor: t.line, backgroundColor: t.surfaceAlt }]}>
             <Text style={{ color: t.fg, fontSize: 16 }}>{currentStock ?? '…'} {UNIT_LABEL[unit] ?? unit}</Text>
           </View>
-          <Text style={{ color: t.faint, fontSize: 11, marginTop: 6 }}>Cambia el stock desde Más → Compras / reabastecer para que quede registrado cada movimiento.</Text>
+          <Text style={{ color: t.faint, fontSize: 11, marginTop: 6 }}>Cambia las unidades desde Más → Compras / reabastecer para que quede registrado cada movimiento.</Text>
         </>
       ) : (
-        field('Stock inicial', stock, setStock, { kb: 'number-pad', ph: '0' })
+        field('Cantidad inicial', stock, setStock, { kb: 'number-pad', ph: '0' })
       )}
-      {field('Alerta de stock bajo en', lowStock, setLowStock, { kb: 'number-pad', ph: `${DEFAULT_LOW_STOCK} (predeterminado)` })}
+      {field('Avisar cuando queden', lowStock, setLowStock, { kb: 'number-pad', ph: `${DEFAULT_LOW_STOCK} (predeterminado)` })}
 
       {/* Save lives at the end of the form (not a pinned bar), so it scrolls up
           with the keyboard the same way the onboarding form does. */}

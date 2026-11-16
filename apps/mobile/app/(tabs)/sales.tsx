@@ -72,7 +72,7 @@ export default function Sales() {
     try {
       await voidSale(store.id, sale.id);
       bumpSales();
-      showAlert('Venta anulada', `${sale.invoice_no} se anuló y el stock volvió al inventario.`);
+      showAlert('Venta anulada', `${sale.invoice_no} se anuló y las unidades volvieron al inventario.`);
     } catch (e) {
       showAlert('No se pudo anular la venta', e instanceof Error ? e.message : String(e));
     }

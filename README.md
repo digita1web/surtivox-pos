@@ -45,7 +45,7 @@ Si el navegador avisa que el archivo puede ser dañino, toca **Descargar de todo
 
 <div align="center">
   <img src="docs/screenshots/01-inicio.png" width="46%" alt="Pantalla de inicio con ventas del día, accesos rápidos y productos frecuentes" />
-  <img src="docs/screenshots/02-productos.png" width="46%" alt="Pantalla de productos con búsqueda, filtros de stock y la lista con precios y existencias" />
+  <img src="docs/screenshots/02-productos.png" width="46%" alt="Pantalla de productos con búsqueda, filtros de inventario y la lista con precios y existencias" />
   <br />
   <img src="docs/screenshots/03-ventas.png" width="46%" alt="Pantalla de ventas con filtros por periodo y total del día" />
   <img src="docs/screenshots/04-mas-respaldo.png" width="46%" alt="Pantalla Más con la opción de respaldo en la nube" />
@@ -59,7 +59,7 @@ Si el navegador avisa que el archivo puede ser dañino, toca **Descargar de todo
   efectivo, tarjeta, transferencia, billeteras o fiado. Calcula el cambio y
   descuenta el inventario.
 - **Inventario:** fotos de productos, categorías, SKU, códigos de barras,
-  alertas de stock bajo y avisos de agotado.
+  alertas de productos por agotarse y avisos de agotado.
 - **Fiados:** clientes con saldo calculado a partir de un libro de movimientos;
   ventas a crédito, abonos y devoluciones a la cuenta del cliente.
 - **Reportes:** consulta hoy, 7 días y 30 días; ventas, ganancia bruta,
