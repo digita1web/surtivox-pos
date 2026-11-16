@@ -259,7 +259,7 @@ export default function Home() {
           </Text>
           <View style={s.todayStats}>
             <View style={s.todayStat}><Ionicons name="receipt-outline" size={16} color={t.accentFg} /><Text style={[s.todayStatTxt, { color: t.accentFg }]}>{stats.orders} {stats.orders === 1 ? 'pedido' : 'pedidos'}</Text></View>
-            <View style={s.todayStat}><Ionicons name="cube-outline" size={16} color={t.accentFg} /><Text style={[s.todayStatTxt, { color: t.accentFg }]}>{stats.itemsSold} artículos vendidos</Text></View>
+            <View style={s.todayStat}><Ionicons name="cube-outline" size={16} color={t.accentFg} /><Text style={[s.todayStatTxt, { color: t.accentFg }]}>{stats.itemsSold} {stats.itemsSold === 1 ? 'artículo vendido' : 'artículos vendidos'}</Text></View>
           </View>
         </Pressable>
 
@@ -377,9 +377,9 @@ const s = StyleSheet.create({
   empty: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: radius.xl, padding: space.lg, alignItems: 'center', justifyContent: 'center' },
   today: { borderRadius: radius.xl, padding: space.xl, marginTop: space.xl },
   todayHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  todayStats: { flexDirection: 'row', gap: space.xl, marginTop: space.md },
-  todayStat: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  todayStatTxt: { fontWeight: '600', opacity: 0.95 },
+  todayStats: { flexDirection: 'row', flexWrap: 'wrap', columnGap: space.xl, rowGap: space.xs, marginTop: space.md },
+  todayStat: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1, maxWidth: '100%' },
+  todayStatTxt: { fontWeight: '600', opacity: 0.95, flexShrink: 1 },
   alert: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
   alertIcon: { ...circle(40), borderRadius: radius.md - 2 },
   upgrade: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.md, marginTop: space.md },
