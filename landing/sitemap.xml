@@ -2,22 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://digita1web.github.io/surtivox-pos/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-11-15</lastmod>
   </url>
   <url>
     <loc>https://digita1web.github.io/surtivox-pos/aviso-legal.html</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <lastmod>2026-11-06</lastmod>
   </url>
   <url>
     <loc>https://digita1web.github.io/surtivox-pos/privacidad.html</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <lastmod>2026-11-06</lastmod>
   </url>
   <url>
     <loc>https://digita1web.github.io/surtivox-pos/terminos.html</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <lastmod>2026-11-06</lastmod>
   </url>
 </urlset>

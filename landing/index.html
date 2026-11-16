@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Surtivox POS — Tu tienda, sin enredos</title>
+  <title>Surtivox POS: punto de venta gratis y sin internet para tu tienda</title>
   <meta name="description" content="Surtivox POS es un punto de venta gratis y sin internet para tiendas de barrio colombianas. Vende, fía y cuadra la caja desde tu celular.">
   <link rel="canonical" href="https://digita1web.github.io/surtivox-pos/">
   <meta name="robots" content="index, follow, max-image-preview:large">
@@ -13,7 +13,7 @@
   <meta name="copyright" content="© 2026 Surtivox. Todos los derechos reservados.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Surtivox POS">
-  <meta property="og:title" content="Surtivox POS — Tu tienda, sin enredos">
+  <meta property="og:title" content="Surtivox POS: punto de venta gratis y sin internet para tu tienda">
   <meta property="og:description" content="Surtivox POS es un punto de venta gratis y sin internet para tiendas de barrio colombianas. Vende, fía y cuadra la caja desde tu celular.">
   <meta property="og:url" content="https://digita1web.github.io/surtivox-pos/">
   <meta property="og:image" content="https://digita1web.github.io/surtivox-pos/assets/og-image.png">
@@ -22,7 +22,7 @@
   <meta property="og:image:alt" content="Surtivox POS, punto de venta offline para tiendas colombianas">
   <meta property="og:locale" content="es_CO">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Surtivox POS — Tu tienda, sin enredos">
+  <meta name="twitter:title" content="Surtivox POS: punto de venta gratis y sin internet para tu tienda">
   <meta name="twitter:description" content="Surtivox POS es un punto de venta gratis y sin internet para tiendas de barrio colombianas. Vende, fía y cuadra la caja desde tu celular.">
   <meta name="twitter:image" content="https://digita1web.github.io/surtivox-pos/assets/og-image.png">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
@@ -32,23 +32,69 @@
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
+    "@id": "https://digita1web.github.io/surtivox-pos/#app",
     "name": "Surtivox POS",
+    "alternateName": "Surtivox",
     "operatingSystem": "Android",
     "applicationCategory": "BusinessApplication",
     "description": "Punto de venta gratis y sin internet para tiendas de barrio colombianas. Vende, fía y cuadra la caja desde tu celular.",
     "url": "https://digita1web.github.io/surtivox-pos/",
+    "inLanguage": "es-CO",
+    "isAccessibleForFree": true,
+    "image": "https://digita1web.github.io/surtivox-pos/assets/og-image.png",
+    "screenshot": [
+      "https://digita1web.github.io/surtivox-pos/assets/screen-home.webp",
+      "https://digita1web.github.io/surtivox-pos/assets/screen-checkout.webp",
+      "https://digita1web.github.io/surtivox-pos/assets/screen-products.webp",
+      "https://digita1web.github.io/surtivox-pos/assets/screen-reports.webp"
+    ],
+    "featureList": [
+      "Ventas y cobro con efectivo, tarjeta, transferencia, Nequi y Daviplata",
+      "Fiado con clientes y saldo pendiente",
+      "Inventario con alerta de stock bajo",
+      "Reportes de ventas y ganancia",
+      "Funciona sin internet"
+    ],
     "downloadUrl": "https://github.com/digita1web/surtivox-pos/releases/latest/download/Surtivox.apk",
     "softwareVersion": "1.1.5",
     "license": "https://github.com/digita1web/surtivox-pos/blob/main/LICENSE",
     "author": {
-      "@type": "Organization",
-      "name": "Surtivox"
+      "@id": "https://digita1web.github.io/surtivox-pos/#organization"
+    },
+    "publisher": {
+      "@id": "https://digita1web.github.io/surtivox-pos/#organization"
     },
     "offers": {
       "@type": "Offer",
       "price": "0",
       "priceCurrency": "COP"
     }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://digita1web.github.io/surtivox-pos/#organization",
+        "name": "Surtivox",
+        "url": "https://digita1web.github.io/surtivox-pos/",
+        "logo": "https://digita1web.github.io/surtivox-pos/assets/icon-180.png",
+        "sameAs": ["https://github.com/digita1web/surtivox-pos"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://digita1web.github.io/surtivox-pos/#website",
+        "name": "Surtivox POS",
+        "alternateName": "Surtivox",
+        "url": "https://digita1web.github.io/surtivox-pos/",
+        "inLanguage": "es-CO",
+        "publisher": {
+          "@id": "https://digita1web.github.io/surtivox-pos/#organization"
+        }
+      }
+    ]
   }
   </script>
   <script type="application/ld+json">
@@ -161,7 +207,7 @@
     <section class="hero" id="inicio">
       <div class="hero-copy">
         <p class="eyebrow">Gratis · Sin internet · Para tiendas de Colombia</p>
-        <h1>Tu tienda, <br><em>sin enredos.</em></h1>
+        <h1><span class="sr-only">Surtivox POS: </span>Tu tienda, <br><em>sin enredos.</em></h1>
         <p class="hero-lead">Vende, fía y cuadra la caja desde tu celular, aunque se caiga el internet. Un punto de venta gratis, en pesos y pensado para la tienda de barrio.</p>
         <div class="hero-actions">
           <a class="button button-primary button-large" href="https://github.com/digita1web/surtivox-pos/releases/latest/download/Surtivox.apk">Descargar gratis para Android</a>
