@@ -181,7 +181,7 @@ export default function Home() {
       />
       <ScrollView {...scrollProps} style={s.flex} contentContainerStyle={{ paddingHorizontal: m.pad, paddingTop: space.xs, paddingBottom: listInset }}>
         <View style={[s.actions, { gap: m.gap }, m.actionsStacked && s.actionsStacked]}>
-          <ActionCard icon="cart" title="Venta rápida" hint="Vende sin complicaciones" tone="green" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={openQuick} />
+          <ActionCard icon="cart" title="Venta rápida" hint="Cobra en segundos" tone="green" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={openQuick} />
           {canProducts
             ? <ActionCard icon="add" title="Agregar producto" hint="Nuevo artículo del catálogo" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={() => router.push('/add-product')} />
             : <ActionCard icon="barcode-outline" title="Escanear y vender" hint="Escanea un código de barras" tone="orange" iconSize={m.actionIcon} chevronSize={m.actionChevron} vertical={m.actionVertical} onPress={() => router.push('/scan')} />}
