@@ -24,7 +24,7 @@ function tableNames(db: DatabaseSync): string[] {
 test('runMigrations applies all schema migrations in order', async () => {
   const db = new DatabaseSync(':memory:');
   const applied = await runMigrations(adapter(db), MIGRATIONS);
-  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops', '0008_market_prices', '0009_barcode_lookups', '0010_local_settings', '0011_catalog_client', '0012_stock_counts']);
+  assert.deepEqual(applied, ['0000_init', '0001_customers', '0002_returns', '0003_suppliers', '0004_staff', '0005_sync', '0006_store_profile', '0007_shops', '0008_market_prices', '0009_barcode_lookups', '0010_local_settings', '0011_catalog_client', '0012_stock_counts', '0013_sync_schema']);
 
   const tables = tableNames(db);
   for (const t of [
@@ -163,7 +163,7 @@ test('0012 adds stock counts on a database that already has sales and stock', as
   const stock = () => (db.prepare(`SELECT SUM(quantity_delta) AS n FROM stock_movements WHERE product_id='p1'`).get() as { n: number }).n;
   assert.equal(stock(), 7);
 
-  assert.deepEqual(await runMigrations(adapter(db), MIGRATIONS), ['0012_stock_counts']);
+  assert.deepEqual(await runMigrations(adapter(db), MIGRATIONS), ['0012_stock_counts', '0013_sync_schema']);
   assert.equal(stock(), 7);
   assert.equal((db.prepare('SELECT COUNT(*) AS c FROM stock_counts').get() as { c: number }).c, 0);
 
@@ -174,4 +174,13 @@ test('0012 adds stock counts on a database that already has sales and stock', as
   assert.throws(() => db.exec(`UPDATE stock_counts SET status='borrado' WHERE id='k1'`));
   assert.throws(() => db.exec(`INSERT INTO stock_count_lines (id,count_id,product_id,product_name_snapshot,expected_qty,counted_qty,created_at,device_id)
                                VALUES ('l2','k1','p1','Arroz',7,-1,5,'d1')`));
+});
+
+test('0013 keeps the sync cursors and marks an upgraded device as schema 1', async () => {
+  const db = new DatabaseSync(':memory:');
+  await runMigrations(adapter(db), MIGRATIONS.filter((m) => m.id < '0013'));
+  db.exec(`UPDATE sync_state SET server_url='https://x', token='T', last_pushed_at=500, last_pulled_at=900 WHERE id=1`);
+  await runMigrations(adapter(db), MIGRATIONS);
+  const row = db.prepare('SELECT last_pushed_at, last_pulled_at, synced_schema FROM sync_state WHERE id=1').get() as Record<string, number>;
+  assert.deepEqual({ ...row }, { last_pushed_at: 500, last_pulled_at: 900, synced_schema: 1 });
 });

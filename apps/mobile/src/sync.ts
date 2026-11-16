@@ -9,9 +9,7 @@
  * Los cursores conservan un solapamiento de seguridad para tolerar desfases
  * breves entre relojes sin perder filas.
  */
-import {
-  SYNC_TABLES, upsertSql, rowValues, changedSinceSql, stripLocalOnly, chunkPushRows, type PushTableRows,
-} from '@surtivox/database';
+import { SYNC_TABLES, upsertSql, rowValues } from '@surtivox/database';
 import * as Crypto from 'expo-crypto';
 import { getDb } from './db';
 import { getStore } from './repos';
@@ -23,9 +21,7 @@ import {
   readKitReminderInputOn, shouldRemindKit, kitReminderText, snoozeKitReminderOn,
   type KitDeps, type KitInfo, type KitStatus,
 } from './kitOps';
-import { NUMBERED_TABLES, resolveNumberCollision } from './numberCollision';
-
-const OVERLAP_MS = 30_000;
+import { syncCycleOn, serverSchemaOn, type SyncRequest } from './syncFlow';
 
 /**
  * URL del Worker de sincronización configurado para esta compilación.
@@ -69,11 +65,12 @@ export interface SyncState {
   last_pushed_at: number;
   last_pulled_at: number;
   last_synced_at: number | null;
+  synced_schema: number;
 }
 
 export async function getSyncState(): Promise<SyncState> {
-  const row = await getDb().getFirstAsync<SyncState>('SELECT server_url, token, last_pushed_at, last_pulled_at, last_synced_at FROM sync_state WHERE id = 1');
-  return row ?? { server_url: null, token: null, last_pushed_at: 0, last_pulled_at: 0, last_synced_at: null };
+  const row = await getDb().getFirstAsync<SyncState>('SELECT server_url, token, last_pushed_at, last_pulled_at, last_synced_at, synced_schema FROM sync_state WHERE id = 1');
+  return row ?? { server_url: null, token: null, last_pushed_at: 0, last_pulled_at: 0, last_synced_at: null, synced_schema: 1 };
 }
 
 export function isConfigured(s: SyncState): boolean {
@@ -101,6 +98,10 @@ async function api(base: string, path: string, token: string, init?: RequestInit
   return body;
 }
 
+function requester(base: string, token: string): SyncRequest {
+  return (path, init) => api(base, path, token, init);
+}
+
 async function sha256Bytes(data: Uint8Array): Promise<Uint8Array> {
   const input = new Uint8Array(new ArrayBuffer(data.length));
   input.set(data);
@@ -122,60 +123,6 @@ async function register(base: string, token: string, storeId: string): Promise<v
   await api(base, '/sync/register', token, { method: 'POST', body: JSON.stringify({ storeId }) });
 }
 
-async function pushChanges(base: string, token: string, since: number): Promise<number> {
-  const db = getDb();
-  const collected: PushTableRows[] = [];
-  let maxTime = since;
-  const from = Math.max(0, since - OVERLAP_MS);
-  for (const t of SYNC_TABLES) {
-    const rows = await db.getAllAsync<Record<string, unknown>>(changedSinceSql(t), [from]);
-    if (rows.length === 0) continue;
-    collected.push({ name: t.name, rows: rows.map((r) => stripLocalOnly(t, r)) });
-    for (const r of rows) {
-      const ts = Number(r[t.timeColumn]);
-      if (Number.isFinite(ts) && ts > maxTime) maxTime = ts;
-    }
-  }
-  const batches = chunkPushRows(collected);
-  if (batches.length === 0) return since;
-  for (const tables of batches) {
-    await api(base, '/sync/push', token, { method: 'POST', body: JSON.stringify({ tables }) });
-  }
-  return maxTime;
-}
-
-/** Apply a server pull payload locally (FK off; parents-before-children order). */
-async function applyPull(payload: { tables: Record<string, Record<string, unknown>[]> }): Promise<number> {
-  const db = getDb();
-  let applied = 0;
-  await db.execAsync('PRAGMA foreign_keys = OFF;');
-  try {
-    await db.withTransactionAsync(async () => {
-      for (const t of SYNC_TABLES) {
-        const rows = payload.tables[t.name];
-        if (!Array.isArray(rows)) continue;
-        const sql = upsertSql(t);
-        const numbered = NUMBERED_TABLES.find((n) => n.table === t.name);
-        for (const row of rows) {
-          if (numbered) await resolveNumberCollision(db, numbered.table, numbered.column, row);
-          await db.runAsync(sql, rowValues(t, row) as (string | number | null)[]);
-          applied++;
-        }
-      }
-    });
-  } finally {
-    await db.execAsync('PRAGMA foreign_keys = ON;');
-  }
-  return applied;
-}
-
-async function pullChanges(base: string, token: string, since: number): Promise<number> {
-  const from = Math.max(0, since - OVERLAP_MS);
-  const payload = await api(base, `/sync/pull?since=${from}`, token, { method: 'GET' });
-  await applyPull(payload);
-  return typeof payload.cursor === 'number' ? payload.cursor : since;
-}
-
 export interface SyncResult { pushedCursor: number; pulledCursor: number; at: number }
 
 /** Full reconcile for the device already bound to this store: push then pull. */
@@ -190,12 +137,13 @@ export async function syncNow(): Promise<SyncResult> {
     if (await hasPendingRotationOn(getDb())) await rotateKitOn(getDb(), kitDeps(base));
     const token = (await getSyncState()).token!;
     await register(base, token, store.id);
-    const pushedCursor = await pushChanges(base, token, state.last_pushed_at);
-    const pulledCursor = await pullChanges(base, token, state.last_pulled_at);
+    const next = await syncCycleOn(getDb(), requester(base, token), state);
+    const pushedCursor = next.last_pushed_at;
+    const pulledCursor = next.last_pulled_at;
     const at = Date.now();
     await getDb().runAsync(
-      'UPDATE sync_state SET last_pushed_at = ?, last_pulled_at = ?, last_synced_at = ? WHERE id = 1',
-      [pushedCursor, pulledCursor, at],
+      'UPDATE sync_state SET last_pushed_at = ?, last_pulled_at = ?, last_synced_at = ?, synced_schema = ? WHERE id = 1',
+      [pushedCursor, pulledCursor, at, next.synced_schema],
     );
     return { pushedCursor, pulledCursor, at };
   } catch (error) {
@@ -310,8 +258,9 @@ export async function restoreFromCloud(serverUrl: string, token: string): Promis
     await db.execAsync('PRAGMA foreign_keys = ON;');
   }
   const cursor = typeof payload.cursor === 'number' ? payload.cursor : Date.now();
+  const schema = await serverSchemaOn(requester(base, tk)).catch(() => 1);
   await saveSyncConfig(base, tk);
-  await db.runAsync('UPDATE sync_state SET last_pulled_at = ?, last_synced_at = ? WHERE id = 1', [cursor, Date.now()]);
+  await db.runAsync('UPDATE sync_state SET last_pulled_at = ?, last_synced_at = ?, synced_schema = ? WHERE id = 1', [cursor, Date.now(), schema]);
   return applied;
 }
 

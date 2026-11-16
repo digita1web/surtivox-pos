@@ -26,7 +26,10 @@ export interface SyncTable {
   columns: string[];
   scope: StoreScope;
   localOnly?: readonly string[];
+  addedIn?: number;
 }
+
+export const SYNC_SCHEMA_VERSION = 2;
 
 // Ordered parents-before-children so a straight replay satisfies foreign keys.
 export const SYNC_TABLES: readonly SyncTable[] = [
@@ -90,7 +93,30 @@ export const SYNC_TABLES: readonly SyncTable[] = [
     name: 'purchase_items', mode: 'append', timeColumn: 'created_at', scope: { kind: 'parent', table: 'purchases', fk: 'purchase_id' },
     columns: ['id', 'purchase_id', 'product_id', 'product_name_snapshot', 'unit_cost', 'quantity', 'line_total', 'created_at', 'device_id'],
   },
+  {
+    name: 'stock_counts', mode: 'mutable', timeColumn: 'updated_at', scope: { kind: 'column' }, addedIn: 2,
+    columns: ['id', 'store_id', 'staff_id', 'status', 'note', 'started_at', 'closed_at', 'created_at', 'updated_at', 'device_id', 'version'],
+  },
+  {
+    name: 'stock_count_lines', mode: 'append', timeColumn: 'created_at', scope: { kind: 'parent', table: 'stock_counts', fk: 'count_id' }, addedIn: 2,
+    columns: ['id', 'count_id', 'product_id', 'product_name_snapshot', 'expected_qty', 'counted_qty', 'unit_cost', 'movement_id', 'created_at', 'device_id'],
+  },
 ];
+
+export const tableSchema = (t: SyncTable): number => t.addedIn ?? 1;
+
+export function tablesUpTo(version: number): SyncTable[] {
+  return SYNC_TABLES.filter((t) => tableSchema(t) <= version);
+}
+
+export function tablesAddedAfter(version: number): SyncTable[] {
+  return SYNC_TABLES.filter((t) => tableSchema(t) > version);
+}
+
+export function serverSchemaOf(health: unknown): number {
+  const v = (health as { schemaVersion?: unknown } | null)?.schemaVersion;
+  return typeof v === 'number' && Number.isInteger(v) && v >= 1 ? v : 1;
+}
 
 const q = (id: string) => `"${id}"`;
 
