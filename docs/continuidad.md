@@ -124,6 +124,8 @@ curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/runs/<id>
 
 **En `main`** (resumen; el detalle con hashes está en `DEUDA_TECNICA.md`): cursores de sync reiniciados al restaurar un respaldo; salida del modo desarrollador; CI con el gate completo; estado de la nube unificado; `ScanModal` con la máquina de estados de la cámara; pie con la versión real; parches de Expo del SDK 57; build más rápido con `all_archs`; acciones de GitHub fijadas por SHA; moneda heredada al agregar una tienda y COP por defecto en el onboarding; capturas reales en README, landing y `og-image`; ids con `expo-crypto`; Worker de sync verificado; rediseño de la landing aprobado por el propietario.
 
+**Rama `feat/conteo-fisico` (2026-11-16, sin subir ni fusionar):** conteo físico, informe de diferencias, aviso semanal y compuerta de versión de esquema del sync (`SYNC_SCHEMA_VERSION = 2`). Detalle y orden de despliegue (migración `0002_stock_counts.sql` de D1, luego Worker, luego APK) en `DEUDA_TECNICA.md`. Falta probarla en el teléfono. La entrega 2 (catálogo estandarizado en `catalog-data/`, licencia ODbL aprobada) no ha empezado: no se ingiere ninguna fuente ni se descargan volcados sin permiso del propietario.
+
 **Pendientes por orden:**
 
 1. **Instalar el APK público del release** (`releases/latest/download/Surtivox.apk`) en el teléfono para confirmar la descarga directa. Necesita el teléfono conectado y desbloqueado; la instalación por USB en MIUI muestra un aviso de 7 s que hay que aceptar a tiempo.

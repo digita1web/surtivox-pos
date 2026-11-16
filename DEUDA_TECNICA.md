@@ -9,6 +9,20 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## Conteo físico de inventario (2026-11-16 09:52)
+
+Rama `feat/conteo-fisico`, commits locales sin subir: `fcf9daa` (migración 0012), `4a10f3b` (compuerta de esquema del sync), `dc0205b` (countOps), `047990f` (pantalla), `4d8c7a3` (informe), `622043c` (recordatorio), `45208c5` (restaurar respaldos viejos). **Verificado** con tests en `node:sqlite` y las migraciones reales, `verify.sh`, `pnpm -r typecheck`, `pnpm test` y `expo export` para Android. **No verificado en el teléfono.**
+
+- **Modelo.** `stock_counts` (sesión, empleado, abierta o cerrada) y `stock_count_lines` (esperado, contado, costo congelado, `movement_id`). Cada diferencia distinta de 0 inserta un movimiento `adjustment` con `reference_type='stock_count'` y `reference_id` igual al conteo. No se edita ni se borra ningún movimiento. Solo productos con `track_inventory`; cantidades enteras (`quantity_delta` es INTEGER: los productos por peso no se pueden contar con decimales).
+- **Permisos.** Capacidad `stock_count`: propietario y administrador; el cajero no ve el menú y el guardián de rutas lo bloquea.
+- **Compuerta del sync (`SYNC_SCHEMA_VERSION = 2`).** `/health` publica `schemaVersion`; la app no sincroniza contra un Worker que declare menos (uno viejo no la declara y cuenta como 1). Un teléfono que viene de una APK vieja trae una sola vez, desde cero, las tablas nuevas (`sync_state.synced_schema`, migración 0013; `/sync/pull?tables=`). Las APK viejas siguen sincronizando con el Worker nuevo y ven el stock ajustado.
+- **Orden de despliegue obligatorio (lo hace el propietario):** 1) desde `apps/sync-worker/`, `npx wrangler d1 execute surtivox-sync --remote --file=./migrations/0002_stock_counts.sql`; 2) desplegar el Worker; 3) publicar la APK. Si la APK sale antes, la nube de esos teléfonos se detiene con el aviso "El servidor de la nube necesita actualizarse…" hasta desplegar el Worker; no se pierden datos.
+- **Informe.** Por producto y por conteo, unidades y valor a costo, faltante y sobrante por separado, filtros por periodo y por quien contó, textos neutrales. Se comparte por WhatsApp (texto) o PDF (`expo-print` y `expo-sharing`, ya instalados).
+- **Recordatorio.** Aviso en Inicio, opcional y apagado por defecto. Sin `expo-notifications`, por decisión del propietario.
+- **Respaldo.** Restaurar un respaldo anterior a esta versión vacía también los conteos, porque reemplaza los movimientos que los sostienen.
+- **Lint:** el repositorio no tiene linter configurado (no hay script `lint` ni eslint/biome). El control es `tsc` estricto. Agregar uno requiere aprobar una dependencia.
+- **Pendiente de verificar en el teléfono:** escaneo y búsqueda en la pantalla de conteo, teclado numérico, aviso de stock cambiado durante el conteo, PDF generado, apertura de WhatsApp, aviso en Inicio, y la sincronización real contra Cloudflare tras desplegar.
+
 ## SEO de la landing (2026-11-15 20:15)
 
 Commit `448e574`: título con marca y palabras clave, `h1` con la marca, datos estructurados (`SoftwareApplication`, `Organization`, `WebSite`), sitemap con `lastmod`, página 404 con `noindex` y `landingSeo.test.ts`. **Verificado** con el gate; **no verificado:** que Google o Bing lo hayan indexado (una búsqueda previa no encontró nada del sitio).
