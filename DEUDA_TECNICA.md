@@ -21,6 +21,7 @@ Rama `feat/conteo-fisico`, commits locales sin subir: `fcf9daa` (migración 0012
 - **Recordatorio.** Aviso en Inicio, opcional y apagado por defecto. Sin `expo-notifications`, por decisión del propietario.
 - **Respaldo.** Restaurar un respaldo anterior a esta versión vacía también los conteos, porque reemplaza los movimientos que los sostienen.
 - **Lint:** el repositorio no tiene linter configurado (no hay script `lint` ni eslint/biome). El control es `tsc` estricto. Agregar uno requiere aprobar una dependencia.
+- **Ajustes posteriores (2026-11-16 10:56), verificados por el propietario en Expo Go:** acceso "Conteo de inventario" en Inicio bajo las dos acciones principales (`9c4e0b3`); "stock" reemplazado por "agotado", "por agotarse", "disponibles" y "unidades" en la app, la landing y el README, conservando la columna `stock` del CSV (`757152b`); la fila de "Ventas de hoy" baja de línea en vez de salirse de la tarjeta (`6a504c9`). Las capturas de la landing y del README aún muestran los textos viejos.
 - **Pendiente de verificar en el teléfono:** escaneo y búsqueda en la pantalla de conteo, teclado numérico, aviso de stock cambiado durante el conteo, PDF generado, apertura de WhatsApp, aviso en Inicio, y la sincronización real contra Cloudflare tras desplegar.
 
 ## SEO de la landing (2026-11-15 20:15)
