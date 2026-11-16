@@ -41,7 +41,7 @@ test('no queda texto blanco sobre las tarjetas claras de las paginas legales', (
 });
 
 test('todas las paginas declaran el theme-color verde de marca', () => {
-  const pages = readdirSync(dir).filter((f) => f.endsWith('.html'));
+  const pages = readdirSync(dir).filter((f) => f.endsWith('.html') && !f.startsWith('google'));
   assert.ok(pages.length >= 4);
   for (const page of pages) {
     const html = readFileSync(new URL(page, dir), 'utf8');

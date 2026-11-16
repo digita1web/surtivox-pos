@@ -5,7 +5,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 const dir = new URL('../../../landing/', import.meta.url);
 const read = (name: string) => readFileSync(new URL(name, dir), 'utf8');
 const BASE = 'https://digita1web.github.io/surtivox-pos/';
-const pages = readdirSync(dir).filter((name) => name.endsWith('.html') && name !== '404.html');
+const pages = readdirSync(dir).filter((name) => name.endsWith('.html') && name !== '404.html' && !/^google[0-9a-f]+\.html$/.test(name));
 const urlOf = (page: string) => (page === 'index.html' ? BASE : BASE + page);
 const sitemap = read('sitemap.xml');
 const index = read('index.html');
@@ -78,4 +78,10 @@ test('la página 404 no se indexa y usa rutas absolutas para cargarse desde cual
   const html = read('404.html');
   assert.match(html, /<meta name="robots" content="noindex, follow">/);
   for (const match of html.matchAll(/(?:href|src)="([^"#]+)"/g)) assert.match(match[1]!, /^https:\/\//, match[1]);
+});
+
+test('el archivo de verificación de Search Console contiene exactamente la línea que Google espera', () => {
+  const files = readdirSync(dir).filter((name) => /^google[0-9a-f]+\.html$/.test(name));
+  assert.equal(files.length, 1);
+  assert.equal(read(files[0]!), `google-site-verification: ${files[0]}`);
 });

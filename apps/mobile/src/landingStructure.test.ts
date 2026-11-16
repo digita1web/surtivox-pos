@@ -24,7 +24,7 @@ test('cada id es único y cada enlace interno de la página apunta a un id que e
 
 test('las páginas legales enlazan a anclas de la portada que existen', () => {
   const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]!);
-  const pages = readdirSync(dir).filter((name) => name.endsWith('.html') && name !== 'index.html');
+  const pages = readdirSync(dir).filter((name) => name.endsWith('.html') && name !== 'index.html' && !name.startsWith('google'));
   assert.ok(pages.length >= 3);
   for (const page of pages) {
     for (const match of read(page).matchAll(/href="index\.html#([^"]+)"/g)) {
