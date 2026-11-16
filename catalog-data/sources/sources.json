@@ -1,12 +1,21 @@
 [
   {
+    "id": "surtivox",
+    "name": "Catálogo propio de Surtivox",
+    "url": "https://github.com/digita1web/surtivox-pos",
+    "license": "ODbL-1.0",
+    "attribution": "Catálogo propio de Surtivox POS, bajo la Open Database License.",
+    "status": "approved",
+    "notes": "Redactado por el proyecto, sin copiar de tiendas ni de otras bases. Aprobado por el propietario el 2026-11-16."
+  },
+  {
     "id": "off",
     "name": "Open Food Facts",
     "url": "https://world.openfoodfacts.org",
     "license": "ODbL-1.0",
     "attribution": "Datos de Open Food Facts (openfoodfacts.org), disponibles bajo la Open Database License; contenidos individuales bajo la Database Contents License.",
-    "status": "pending",
-    "notes": "Licencia comprobada el 2026-11-16 en https://world.openfoodfacts.org/terms-of-use: base ODbL, contenidos DbCL, imágenes CC BY-SA (no se usan). 10.101 productos marcados como vendidos en Colombia. Muestra de 100: 99 con GTIN válido, 91 con prefijo 770, 71 con nombre en español, 88 con marca, 64 con cantidad; hay errores de carga (marca equivocada, nombre en mayúsculas)."
+    "status": "approved",
+    "notes": "Licencia comprobada el 2026-11-16 en https://world.openfoodfacts.org/terms-of-use: base ODbL, contenidos DbCL, imágenes CC BY-SA (no se usan). 10.101 productos marcados como vendidos en Colombia. Muestra de 100: 99 con GTIN válido, 91 con prefijo 770, 71 con nombre en español, 88 con marca, 64 con cantidad; hay errores de carga (marca equivocada, nombre en mayúsculas). Aprobada por el propietario el 2026-11-16, con filtro de calidad y descarga por la API paginada."
   },
   {
     "id": "invima-cum",
@@ -15,6 +24,6 @@
     "license": "CC-BY-SA-4.0",
     "attribution": "Fuente: INVIMA, Código Único de Medicamentos vigentes, publicado en datos.gov.co bajo CC BY-SA 4.0.",
     "status": "pending",
-    "notes": "Licencia según el catálogo de datos.gov.co, consultado el 2026-11-16: CC BY-SA 4.0, incompatible con ODbL; no puede mezclarse con los paquetes ODbL. 156.281 filas (una por principio activo y presentación), sin código de barras, en mayúsculas y con presentaciones institucionales y de venta con fórmula."
+    "notes": "Licencia según el catálogo de datos.gov.co, consultado el 2026-11-16: CC BY-SA 4.0, incompatible con ODbL; no puede mezclarse con los paquetes ODbL. 156.281 filas (una por principio activo y presentación), sin código de barras, en mayúsculas y con presentaciones institucionales y de venta con fórmula. Pospuesta por el propietario el 2026-11-16."
   }
 ]

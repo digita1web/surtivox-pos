@@ -42,3 +42,4 @@ Surtivox-POS.aab
 
 # Paquetes compilados del catálogo
 catalog-dist/
+catalog-data/.cache/

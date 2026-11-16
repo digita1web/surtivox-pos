@@ -53,9 +53,11 @@ test('la licencia ODbL es compatible y la CC BY-SA no', () => {
   assert.equal(taxonomy.licenses.get('CC-BY-SA-4.0')!.compatible, false);
 });
 
-test('no hay fuentes aprobadas hasta que el propietario lo decida', () => {
+test('solo están aprobadas las fuentes que el propietario aprobó', () => {
   const { taxonomy } = loadTaxonomy(ROOT);
-  assert.equal([...taxonomy.sources.values()].filter((s) => s.status === 'approved').length, 0);
+  const approved = [...taxonomy.sources.values()].filter((s) => s.status === 'approved').map((s) => s.id).sort();
+  assert.deepEqual(approved, ['off', 'surtivox']);
+  assert.equal(taxonomy.sources.get('invima-cum')!.status, 'pending');
 });
 
 test('buildTaxonomy rechaza referencias rotas, ids repetidos y fuentes incompatibles', () => {
