@@ -138,6 +138,7 @@ curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/runs/<id>
 - **Moneda:** la app es para Colombia. COP por defecto. La moneda es **global** para todas las tiendas y no convierte precios; se cambia en Más. Agregar una tienda hereda la moneda de la activa y **ya no ofrece selector**.
 - **Respaldo JSON con hashes de PIN:** aceptado para la Beta; a futuro se cifrará el archivo.
 - **Release:** v1.1.5 publicada; no reutilizar tags. Los APK de `main` son solo arm64; los tags llevan las dos arquitecturas.
+- **Dominio:** se queda el subdominio de GitHub Pages hasta validar la app con los primeros tenderos; no propongas comprar uno antes. Search Console y Bing los gestiona él; el código de verificación `<meta>` lo pasa y tú lo pones en la portada.
 - **La nube** es gratis y "en pruebas"; **no** se promete sincronización automática (solo existe el botón).
 - **Dependabot:** se ignoran saltos mayores de Expo, de `react-native-*`, `react` y `wrangler`, y mayores y menores de `react-native`.
 - **Pendiente de su decisión:** tope de filas del sync, umbral del catálogo, retiro de `expo-iap`/`paywall`, `allowBackup`, si `roadmap.md` se reescribe.

@@ -9,6 +9,13 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## SEO de la landing (2026-11-15 20:15)
+
+Commit `448e574`: título con marca y palabras clave, `h1` con la marca, datos estructurados (`SoftwareApplication`, `Organization`, `WebSite`), sitemap con `lastmod`, página 404 con `noindex` y `landingSeo.test.ts`. **Verificado** con el gate; **no verificado:** que Google o Bing lo hayan indexado (una búsqueda previa no encontró nada del sitio).
+
+- **Decisión del propietario:** se mantiene el subdominio `digita1web.github.io/surtivox-pos/`. No se compra un dominio propio hasta validar la app con los primeros tenderos. Un dominio propio rankea mejor; al comprarlo hay que cambiar canonical, Open Graph, sitemap, JSON-LD, `robots.txt` y `pages.yml` (CNAME).
+- **Pendiente del propietario:** crear la propiedad en Google Search Console, pasar el código de verificación `<meta>`, enviar el sitemap y solicitar la indexación de la portada; importar la propiedad en Bing Webmaster Tools; rellenar "Website", descripción y topics del repositorio en GitHub.
+
 ## Prueba de actualización 1.1.4 → 1.1.5 (2026-11-14, 20:59)
 
 Redmi Note 9 por adb, con datos de prueba ficticios. APK 1.1.4: el público de `releases/download/v1.1.4/Surtivox.apk` (`versionCode` 10). APK 1.1.5: artefacto del run #47, `versionCode` 11, 67 MB (las dos arquitecturas), firma de producción `e798f4a4…`. **Verificado** salvo que diga lo contrario.
