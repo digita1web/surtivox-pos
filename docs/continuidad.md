@@ -1,6 +1,6 @@
 # Guía de continuidad para Claude Code
 
-Para quien retome el trabajo en este repositorio (otro chat, otra sesión). Resume **cómo se trabaja aquí**, **en qué estado quedó todo** y **qué errores ya se cometieron** para no repetirlos. Estado verificado el **2026-11-15, 19:55 (UTC-5)**.
+Para quien retome el trabajo en este repositorio (otro chat, otra sesión). Resume **cómo se trabaja aquí**, **en qué estado quedó todo** y **qué errores ya se cometieron** para no repetirlos. Estado actualizado el 16 de noviembre de 2026, en la noche.
 
 Léela junto con [AGENTS.md](../AGENTS.md) (reglas estrictas), [DEUDA_TECNICA.md](../DEUDA_TECNICA.md) (pendientes, hallazgos y verificaciones fechadas) y [RELEASING.md](../RELEASING.md) (firma y publicación).
 
@@ -117,37 +117,46 @@ curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/runs/<id>
 - **Paleta y contraste** fijados por `landingTheme.test.ts` (tokens de color y 4,5:1). `landingVersion.test.ts` obliga a que `softwareVersion` del JSON-LD coincida con `app.json`.
 - **Cómo medir la maqueta sin ver la imagen:** Firefox no baja de ~488 px de ventana, así que se carga la página dentro de un `iframe` del ancho deseado (con la preferencia `privacy.file_unique_origin=false`) y se ejecuta JavaScript por `geckodriver` (API WebDriver) para medir: desbordes horizontales, imágenes rotas, objetivos táctiles menores de 40 px, texto menor de 12 px, **contraste real texto/fondo** y choques entre cajas (el teléfono trasero de la portada pisaba el texto a partir de 1.000 px y el comprobador de desbordes no lo veía). Hay que comprobar también las páginas legales tras cualquier cambio de `styles.css`.
 
-## 9. Estado actual y pendientes (2026-11-15)
+## 9. Estado actual y pendientes (16 de noviembre de 2026)
 
-**Publicado:** el release `v1.1.5` (`versionCode` 11) es el "Latest" y está **verificado**. Lo publica `.github/workflows/build-android.yml`, que valida el tag con `scripts/check-release-tag.mjs` contra `apps/mobile/app.json`. El run #49 del tag terminó en verde, el asset `Surtivox.apk` (67 047 569 bytes, SHA-256 `d4eec978…45768b7`, igual al que publica GitHub) trae `arm64-v8a` y `armeabi-v7a` y está firmado con la clave de producción (`e798f4a4…1cc32d`). **No se deben mover ni recrear los tags `v1.1.4` ni `v1.1.5`.** `versionCode` no puede bajar: un fallo grave se arregla hacia adelante (1.1.6, 12).
+**Publicado:** la versión 1.1.6 (`versionCode` 12) es la última del repositorio y la que baja la gente desde la landing. Trae el conteo de inventario y el informe de diferencias. El APK público se revisó: firma de producción, dos arquitecturas y textos nuevos. Lo que se probó en el teléfono fue el build de `main` con el mismo código, no el APK público.
 
-**Verificado en el teléfono (2026-11-14):** actualización del 1.1.4 público al 1.1.5 con datos (tienda, productos, ventas, cliente y fiado se conservaron) e instalación limpia con onboarding en COP; detalle en `DEUDA_TECNICA.md`. La prueba usó el artefacto del run #47, no el APK público del release.
+**En `main`, sin publicar, para la 1.1.7:** el catálogo sin conexión (Más → Catálogo de productos), la paginación de la nube con el mensaje del tope diario, la autenticación corregida del Worker de pagos y los términos nuevos dentro de la app (`LEGAL_VERSION` 2026-11-16, así que al actualizar se pide aceptarlos otra vez).
 
-**En `main`** (resumen; el detalle con hashes está en `DEUDA_TECNICA.md`): cursores de sync reiniciados al restaurar un respaldo; salida del modo desarrollador; CI con el gate completo; estado de la nube unificado; `ScanModal` con la máquina de estados de la cámara; pie con la versión real; parches de Expo del SDK 57; build más rápido con `all_archs`; acciones de GitHub fijadas por SHA; moneda heredada al agregar una tienda y COP por defecto en el onboarding; capturas reales en README, landing y `og-image`; ids con `expo-crypto`; Worker de sync verificado; rediseño de la landing aprobado por el propietario.
+**Ya publicado en la landing** porque se fusionó: el catálogo 2026.11.16-2 en `landing/catalogo/` (5.423 productos: 814 propios y 4.609 de Open Food Facts), el centro de ayuda (`landing/ayuda.html`) y la licencia nueva. **La licencia se publicó sin revisión de un abogado.**
 
-**v1.1.6 publicada (2026-11-16):** conteo físico, informe de diferencias, aviso semanal, textos sin "stock" y compuerta de versión de esquema del sync (`SYNC_SCHEMA_VERSION = 2`). El Worker de sync y la migración `0002_stock_counts.sql` de D1 ya están desplegados (`/health` responde `schemaVersion: 2`). Detalle, hashes y punto de restauración de D1 en `DEUDA_TECNICA.md`. **No se deben mover ni recrear los tags `v1.1.4`, `v1.1.5` ni `v1.1.6`.**
+**En Cloudflare:** el Worker de sync con la versión de esquema 2 y la migración `0002_stock_counts.sql` están desplegados. Falta desplegar el tope diario (`apps/sync-worker/migrations/0003_store_usage.sql` y el Worker) y el Worker de pagos.
 
-**En `main` sin publicar (para la 1.1.7):** catálogo estandarizado sin conexión (Entrega 2): `catalog-data/` con 1.261 productos (814 propios y 447 de Open Food Facts) publicados en `landing/catalogo/` por GitHub Pages, y la pantalla Más → Catálogo de productos con sugerencias al agregar productos. **Falta probarlo en el teléfono.** Open Food Facts bloquea desde la página 11 a usuarios no identificados; para el resto, cuenta o exportación oficial, **decisión pendiente del propietario**. Al publicar la 1.1.7, agrega el catálogo al centro de ayuda (`landing/ayuda.html`) en el mismo PR. Para R2 hará falta un token nuevo con permiso de R2, guardado en `~/.config/surtivox/cf.env` con `read -rs`, nunca en el chat.
+Cómo se trabaja el catálogo: `node catalog-data/src/cli/validate.ts` valida todo, `node catalog-data/src/cli/build.ts --version=AAAA.MM.DD[-N] --out=landing/catalogo --gzip=false` recompila lo publicado y `catalog-data/test/published.test.ts` falla si alguien cambia los datos sin recompilar. Para Open Food Facts, `catalog-data/src/importers/fetch-off.sh` usa la cuenta del dueño desde `~/.config/surtivox/off.env`; la caché queda en `catalog-data/.cache`, que no se versiona. **No cambies de rama mientras corre una descarga en segundo plano** (ver sección 12).
 
-**Pendientes por orden:**
+**Pendientes, en orden** (el detalle está arriba en `DEUDA_TECNICA.md`):
 
-1. **Instalar el APK público del release** (`releases/latest/download/Surtivox.apk`) en el teléfono para confirmar la descarga directa. Necesita el teléfono conectado y desbloqueado; la instalación por USB en MIUI muestra un aviso de 7 s que hay que aceptar a tiempo.
-2. **Nube y kit de recuperación en un dispositivo:** nunca se probaron de punta a punta en el teléfono.
-3. **Cuota del sync gratuito (P1-1):** falta el número de filas por tienda; conviene medir antes la tienda más grande con una consulta de solo lectura que ejecuta el propietario. Va junto con la paginación de `/sync/pull` (P2-5), un solo despliegue (por la API REST) y el Worker antes que la app.
-4. **Catálogo comunitario (P1-5):** decidir el umbral de consenso (hoy 2) y si se limita por IP.
-5. **Pagos (pospuestos por el propietario):** el P0-1 sigue abierto: `/pagos/crear` valida contra `sync_tokens`, tabla que el sync vacía al migrar a `shop_keys`. Falta el webhook y `entitlements`.
-6. **Menores:** `allowBackup="true"` (decisión de privacidad frente a comodidad), frase de "respaldo automático" en `paywall.tsx` (ruta heredada), `repos.ts` (1.200 líneas, sin leer entero), `roadmap.md` desactualizado. Opcional: captura real de la pantalla de fiado para la landing.
+1. Revisión legal de la licencia. Si cambia, cambia en el `LICENSE`, en `landing/terminos.html` y en `apps/mobile/src/legalText.ts` a la vez.
+2. Que el dueño decida el número del tope diario y despliegue la migración 0003 y el Worker, en ese orden y antes de publicar la app.
+3. Preparar la 1.1.7: probar en el teléfono el escáner con la cámara y guardar un producto desde una sugerencia, agregar el artículo del catálogo al centro de ayuda y ajustar `apps/mobile/src/landingHelp.test.ts`, que hoy prohíbe mencionarlo.
+4. Acompañar el piloto con 20 a 50 tiendas siguiendo [piloto.md](piloto.md).
+5. Probar la nube y el kit de recuperación en un teléfono de punta a punta. Nunca se ha hecho.
+6. Agregar la unidad metro a la app y pasar a ella los productos "(1 metro)" del catálogo.
+7. Decisión del dueño: retirar `paywall.tsx` y `expo-iap` (mejor antes de la 1.1.7).
+8. Pagos, después del piloto: despliegue, webhook, `entitlements` y precio en pesos; para empezar, cobro manual.
+9. Menores: umbral del catálogo comunitario, `allowBackup`, `roadmap.md` y revisar el índice de Search Console.
 
 ## 10. Decisiones del propietario (no las reabras ni decidas por él)
 
-- **Moneda:** la app es para Colombia. COP por defecto. La moneda es **global** para todas las tiendas y no convierte precios; se cambia en Más. Agregar una tienda hereda la moneda de la activa y **ya no ofrece selector**.
-- **Respaldo JSON con hashes de PIN:** aceptado para la Beta; a futuro se cifrará el archivo.
-- **Release:** v1.1.5 publicada; no reutilizar tags. Los APK de `main` son solo arm64; los tags llevan las dos arquitecturas.
-- **Dominio:** se queda el subdominio de GitHub Pages hasta validar la app con los primeros tenderos; no propongas comprar uno antes. Search Console y Bing los gestiona él; el código de verificación `<meta>` lo pasa y tú lo pones en la portada.
-- **La nube** es gratis y "en pruebas"; **no** se promete sincronización automática (solo existe el botón).
-- **Dependabot:** se ignoran saltos mayores de Expo, de `react-native-*`, `react` y `wrangler`, y mayores y menores de `react-native`.
-- **Pendiente de su decisión:** tope de filas del sync, umbral del catálogo, retiro de `expo-iap`/`paywall`, `allowBackup`, si `roadmap.md` se reescribe.
-- Los Workers los despliega él (por la API REST). Tú no ejecutas `wrangler deploy`, `wrangler secret put` ni `d1 execute`.
+- La app es para Colombia: pesos por defecto, una sola moneda para todas las tiendas del teléfono, sin conversión de precios. Agregar una tienda hereda la moneda.
+- El respaldo JSON con huellas de PIN se acepta para la beta; más adelante se cifrará.
+- No se reutilizan tags. Los APK de `main` son solo arm64; los de tag llevan las dos arquitecturas.
+- La landing se queda en el subdominio de GitHub Pages hasta validar con los primeros tenderos. Search Console y Bing los maneja él.
+- La nube es gratis y "en pruebas". No se promete sincronización automática.
+- Dependabot ignora los saltos mayores de Expo, `react-native-*`, `react` y `wrangler`, y los mayores y menores de `react-native`.
+- El catálogo es solo texto, con licencia ODbL, y se publica en GitHub Pages durante las pruebas (R2 más adelante). La droguería se queda en lo básico de venta libre: acetaminofén, ibuprofeno, suero oral y primeros auxilios.
+- Open Food Facts se usa con la cuenta del dueño. Los datos del INVIMA quedan para después porque su licencia (CC BY-SA) no es compatible con ODbL.
+- Nada de `expo-notifications` por ahora: el recordatorio de conteo es un aviso dentro de la app.
+- Solo el dueño y el administrador pueden contar inventario.
+- La app publicada se usa gratis, también en el propio negocio; el código sigue siendo propietario.
+- Para monetizar, primero el piloto. Nada de publicidad ni de vender datos de las tiendas.
+- Pendiente de su decisión: el número del tope diario, el umbral del catálogo comunitario, retirar `expo-iap` y `paywall`, `allowBackup` y si se reescribe `roadmap.md`.
+- Los Workers los despliega él. Solo una vez, el 16 de noviembre y con su autorización expresa, se desplegó desde aquí con un token temporal. Si vuelve a pasar: el token va en `~/.config/surtivox/cf.env` con `read -rs`, nunca en el chat, y se toma un punto de restauración de D1 antes de cambiar nada.
 
 ## 11. Cómo informar al propietario
 
@@ -170,6 +179,10 @@ curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/runs/<id>
 | La landing y la deuda técnica afirmaban cosas falsas ("más vendidos", "código fuente"). | Cada afirmación se verifica en el código y un test prohíbe las frases dudosas. |
 | Una "ejecución verde" del build era un salto sin compilar. | Mira los pasos del job, no solo el resultado. |
 | El primer intento de arreglar el NDK borrando una carpeta fue denegado. | No rodees una denegación: explica y pide. |
+| Cambié de rama en git mientras una descarga corría en segundo plano y git reemplazó el script que esa descarga volvía a ejecutar en cada reintento. | Antes de lanzar algo largo en segundo plano, copia el script fuera del repositorio o no cambies de rama hasta que termine. |
+| Dos "Atrás" de más sacaron la app y un toque abrió el navegador del teléfono. | Comprueba qué app está al frente (`dumpsys window`) antes de cada toque y usa enlaces directos en vez de "Atrás". |
+| Una prueba "en rojo" fallaba por un dato de prueba mal escrito (un código de barras con el dígito de control errado), no por el error que buscaba. | Mira el mensaje del fallo: tiene que fallar por la razón que quieres demostrar. |
+| Proyecté cuántos productos de Open Food Facts entrarían con una muestra de las primeras páginas y me equivoqué. | Las muestras de las primeras páginas no representan el resto; da la cifra solo cuando esté el dato completo. |
 
 ## 13. Lista de cierre de cada tarea
 
