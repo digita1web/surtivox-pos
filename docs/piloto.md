@@ -21,7 +21,7 @@ Objetivo: saber, antes de cobrar, si las tiendas usan Surtivox POS todos los dí
 
 - [ ] Instalar desde la landing ([guía](https://digita1web.github.io/surtivox-pos/ayuda.html#instalar-la-app)).
 - [ ] Crear la tienda con el nombre real; moneda COP.
-- [ ] Cargar productos: catálogo de ejemplo o, desde la 1.1.7, el catálogo de su tipo de negocio; registrar 10 a 20 productos reales con precio.
+- [ ] Cargar productos: catálogo de ejemplo o, desde la 1.1.8, el catálogo de su tipo de negocio; registrar 10 a 20 productos reales con precio.
 - [ ] Si hay empleados: personal con PIN y **código de recuperación guardado** fuera del celular.
 - [ ] Activar el respaldo en la nube (versión de pruebas) y confirmar el kit de recuperación.
 - [ ] Hacer una venta real, un fiado y compartir un recibo.

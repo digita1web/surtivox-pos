@@ -109,7 +109,7 @@ jobs:
           set -euo pipefail
           URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/latest/download/runtime-android.json"
           if ! curl -fsSL --retry 3 -o "${RUNNER_TEMP}/published.json" "${URL}"; then
-            echo "::error::La última release no publica runtime-android.json. Los APK anteriores a 1.1.7 no reciben OTA."
+            echo "::error::La última release no publica runtime-android.json. Los APK anteriores a 1.1.8 no reciben OTA."
             exit 1
           fi
           node scripts/runtime-info.mjs check "${RUNNER_TEMP}/runtime-android.json" "${RUNNER_TEMP}/published.json"

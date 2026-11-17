@@ -35,7 +35,7 @@ Pantallas (Expo Router en `app/`), componentes del punto de venta (`src/pos/`) y
 ## Nube y suscripción
 
 - "Nube activa" se decide con `sync_state` mediante `useCloudConnected` (`src/useCloudConnected.ts`). Inicio, Más y Respaldo en la nube usan la misma fuente. Una pantalla nueva no decide el estado de la nube por su cuenta.
-- La app no cobra. `paywall.tsx`, `subscription.ts`, `payments.ts` y `expo-iap` se retiraron en la 1.1.7; `cloudStatusWiring.test.ts` impide que vuelvan. El cobro, cuando llegue, se diseña de nuevo.
+- La app no cobra. `paywall.tsx`, `subscription.ts`, `payments.ts` y `expo-iap` se retiraron en la 1.1.8; `cloudStatusWiring.test.ts` impide que vuelvan. El cobro, cuando llegue, se diseña de nuevo.
 - El modo desarrollador se activa con 7 toques sobre la versión en Más y se desactiva tocándola de nuevo (`src/developerMode.ts`). Solo controla la configuración técnica de servidor.
 
 ## Respaldo local
