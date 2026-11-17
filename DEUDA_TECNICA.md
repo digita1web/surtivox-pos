@@ -25,14 +25,13 @@ En Cloudflare está desplegado el Worker de sync que entiende la versión de esq
 
 1. **Revisar la licencia con un abogado.** El `LICENSE`, los términos de la landing y los de la app dicen ahora que la app se puede usar gratis, también para manejar tu propio negocio, y que el código no se puede copiar ni redistribuir. Antes decían que el "uso comercial" necesitaba licencia, lo cual chocaba con ofrecerla gratis a tiendas. El texto nuevo ya está en la landing; si el abogado pide cambios, hay que hacerlos en los tres lugares a la vez (un test exige que la app y la landing digan lo mismo).
 2. **Decidir el tope diario de la nube y desplegarlo.** El Worker trae 20.000 filas por tienda al día como valor por defecto y se cambia con la variable `QUOTA_DAILY_ROWS` sin tocar código. El límite que importa es el de escrituras diarias de D1 en el plan gratuito, que se reparte entre todas las tiendas. Orden: aplicar `apps/sync-worker/migrations/0003_store_usage.sql`, desplegar el Worker y después publicar la app. Si el Worker sale sin la tabla, no bloquea a nadie.
-3. **Preparar la 1.1.7.** Falta probar en el teléfono dos cosas del catálogo: escanear con la cámara y guardar un producto a partir de una sugerencia. También hay que agregar el artículo del catálogo al centro de ayuda; hoy un test impide mencionarlo porque la versión publicada no lo tiene, así que ese test se ajusta en el mismo PR del release.
+3. **Publicar la 1.1.7, la primera que recibe actualizaciones sin APK.** Está lista en la rama `feat/v1.1.7-ota`: retira `expo-iap` y el paywall, escucha un canal de actualizaciones, publica su huella nativa en la release y trae el workflow "Publicar actualización OTA" (procedimiento y reversión en [RELEASING.md](RELEASING.md)). La ayuda ya tiene el artículo del catálogo. Falta: agregar el secreto `EXPO_TOKEN`, probar en el teléfono un APK de `preview` de la rama (escáner, guardar desde una sugerencia y una OTA de prueba), fusionar y crear el tag `v1.1.7` enseguida, porque al fusionar Pages ya publica la ayuda con la versión 1.1.7.
 4. **Arrancar el piloto con 20 a 50 tiendas.** La guía está en [docs/piloto.md](docs/piloto.md): a quién buscar, cómo instalarles la app, qué no prometerles, cómo medir sin rastrear a nadie y cómo preguntar por el precio.
 5. **Probar la nube y el kit de recuperación en un teléfono de punta a punta.** Nunca se ha hecho con una tienda real.
 6. **Agregar la unidad metro (`m`) a la app.** Ferreterías y mercerías venden cable, cuerda o malla por metro. Mientras tanto, en el catálogo esos productos se llaman "(1 metro)" y usan `unit`. Cuando la app tenga `m`, se marca como unidad de venta en `catalog-data` y se actualizan sus tests.
-7. **Decidir si se retira `paywall.tsx` y `expo-iap`.** La pantalla sigue existiendo, se abre por enlace directo y muestra "USD 5/mes", un precio que no corresponde. Quitar `expo-iap` cambia la parte nativa de la app, así que conviene hacerlo antes de la 1.1.7 y no después.
-8. **Pagos, cuando el piloto diga que vale la pena.** La autenticación ya está corregida (P0-1). Faltan el despliegue, el webhook de Wompi, los `entitlements` y un precio en pesos. Para empezar se propone cobrar a mano: pago por Nequi y activación manual.
-9. **Revocar el token de Cloudflare** del 16 de noviembre, si no se ha hecho. Quedó escrito en el historial de la conversación.
-10. Pendientes menores de antes: el umbral del catálogo comunitario (hoy 2 votos), `allowBackup="true"`, `roadmap.md` desactualizado, y en Search Console revisar si Google ya indexó el sitio.
+7. **Pagos, cuando el piloto diga que vale la pena.** La autenticación ya está corregida (P0-1). Faltan el despliegue, el webhook de Wompi, los `entitlements` y un precio en pesos. Para empezar se propone cobrar a mano: pago por Nequi y activación manual.
+8. **Revocar el token de Cloudflare** del 16 de noviembre, si no se ha hecho. Quedó escrito en el historial de la conversación.
+9. Pendientes menores de antes: el umbral del catálogo comunitario (hoy 2 votos), `allowBackup="true"`, `roadmap.md` desactualizado, y en Search Console revisar si Google ya indexó el sitio.
 
 ## Decisiones que siguen vigentes
 
@@ -157,7 +156,7 @@ Hecha entre las 18:51 y las 19:24 (UTC-5). Cada punto dice si fue **verificado**
 - **`expo install --fix` puede dejar el trabajo a medias** con una red lenta: dejó `pnpm-lock.yaml` y `package.json` inconsistentes y `pnpm install --frozen-lockfile` fallaba. Verificar siempre con `--frozen-lockfile` y `expo install --check`.
 - **Compilar en este equipo no es posible:** el NDK 27.1.12297006 de `~/Android/Sdk/ndk/` es una carpeta vacía (resto de una descarga fallida del 2026-10-28) y React Native 0.86 exige esa versión. `sdkmanager` no lee las variables de proxy: necesita `--proxy_host 192.168.49.1 --proxy_port 8228`. Mientras tanto, los APK de prueba salen del artefacto de CI.
 - **Pagos: `/pagos/crear` autentica contra `sync_tokens`** ([payments-worker/src/index.ts](apps/payments-worker/src/index.ts), `authorized`), tabla que el sync-worker vacía al migrar tokens a `shop_keys` (hash). Con el código actual, una tienda registrada no podría autorizar el pago. **Inferencia por lectura de código; el Worker de pagos no está desplegado.** Pospuesto con el resto del cobro.
-- ~~**La pantalla de nube prometía "Respaldo automático".**~~ *Cerrado el 2026-11-13 20:04 (`cecfe5b`):* `syncNow` solo se llama con el botón, así que la promesa era falsa y una tienda que la creyera perdería ventas al dañarse el teléfono. Ahora dice "Guarda tu tienda en la nube con un toque". **La misma frase sigue en [paywall.tsx](apps/mobile/app/paywall.tsx)** (ruta heredada, alcanzable por deep link). Si se quiere sincronización automática, es una función nueva.
+- ~~**La pantalla de nube prometía "Respaldo automático".**~~ *Cerrado el 2026-11-13 20:04 (`cecfe5b`):* `syncNow` solo se llama con el botón, así que la promesa era falsa y una tienda que la creyera perdería ventas al dañarse el teléfono. Ahora dice "Guarda tu tienda en la nube con un toque". La misma frase seguía en `paywall.tsx`, retirado el 2026-11-16. Si se quiere sincronización automática, es una función nueva.
 - **Pull sin tope de filas y sin cuota por tienda.** El sync gratuito no limita registros exitosos ni filas por tienda (ver [sync-spec.md](docs/sync-spec.md), "No implementado"). Pendiente de decisión del tope.
 
 ## Estado de la infraestructura (Cloudflare)
@@ -201,15 +200,13 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 
 *Verificado:* la app todavía no puede cobrar.
 
-- [payments.ts](apps/mobile/src/payments.ts) tiene `CHECKOUT_ENDPOINT = ''` y **ya no lo llama ninguna pantalla** (código muerto hasta conectar el pago).
+- La app no tiene código de cobro: `payments.ts` (con `CHECKOUT_ENDPOINT = ''` y sin llamadores) se retiró el 2026-11-16. El cliente del pago se escribe de nuevo cuando se conecte.
 - El Worker de pagos solo expone `POST /pagos/crear`. **No hay webhook**, no se escribe `entitlements` y no hay conciliación de `wompi_tx_id`.
 - Las tablas `payment_intents`, `entitlements` y `wompi_events` **no existen** en la D1 `surtivox-sync` (falta aplicar [payments-worker/schema.sql](apps/payments-worker/schema.sql)).
 - Los secretos `WOMPI_*` no están configurados.
 - Círculo sin salida: `/pagos/crear` exige un token ya registrado en `sync_tokens`, y registrarlo exige sincronizar. El token debería emitirse al crear el pago.
 - Falta idempotencia: cada llamada crea un `payment_intent` nuevo.
-- **Dos fuentes de verdad de la suscripción.** *Resuelto en las pantallas el 2026-11-13:* Inicio, Más y Respaldo en la nube usan `sync_state` ([useCloudConnected.ts](apps/mobile/src/useCloudConnected.ts)) y un test impide que otra pantalla vuelva a usar [subscription.ts](apps/mobile/src/subscription.ts). `subscription.ts`, `paywall.tsx` y `expo-iap` siguen existiendo sin uso.
-- **`paywall.tsx` sigue existiendo** y se alcanza por deep link `surtivoxpos://paywall`. Muestra "USD 5/mes". Eliminarlo junto con el IAP.
-- Quitar `expo-iap` cambia el fingerprint nativo (`runtimeVersion`): los APK ya instalados dejan de recibir OTA. El fingerprint ya cambió el 2026-11-13 por los parches de Expo, así que quitarlo antes del próximo release no añade un corte de OTA; quitarlo después sí.
+- ~~**Dos fuentes de verdad de la suscripción, `paywall.tsx` por deep link con "USD 5/mes" y `expo-iap` sin uso.**~~ *Cerrado el 2026-11-16 en la rama de la 1.1.7:* se borraron `paywall.tsx`, `subscription.ts` y `payments.ts`, se quitó `expo-iap` (dependencia y plugin) y la ruta `/paywall`. `cloudStatusWiring.test.ts` falla si alguno vuelve. Cambió la huella nativa, pero la 1.1.6 de todos modos no podía recibir OTA (su APK no lleva canal: revisado en `assets/app.config`).
 - **Precios inconsistentes** en el código: "$2/mes", "$5.00", "USD 5/mes", "≈ 20.000 COP". El cargo real es 20.000 COP. Definir un solo precio y moneda.
 - Decidir si el Worker de pagos conserva la D1 compartida con sync o se separa con un Service Binding.
 

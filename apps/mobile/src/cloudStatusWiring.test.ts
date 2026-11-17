@@ -18,14 +18,19 @@ test('Inicio y Más leen el estado de la nube del mismo hook, basado en la confi
   assert.match(cloudScreen, /isConfigured\(state\)/);
 });
 
-test('ninguna pantalla activa fuera de la ruta heredada del paywall depende de la compra dentro de la app', () => {
-  const dirs = ['../app', '../app/(tabs)', '../app/customer', '../app/sale'];
+test('el cobro heredado ya no existe: sin paywall, sin suscripción, sin expo-iap', async () => {
+  const { existsSync, readdirSync: list } = await import('node:fs');
+  for (const path of ['../app/paywall.tsx', './subscription.ts', './payments.ts']) {
+    assert.equal(existsSync(new URL(path, import.meta.url)), false, path);
+  }
+  const pkg = JSON.parse(read('../package.json')) as { dependencies: Record<string, string> };
+  assert.equal(pkg.dependencies['expo-iap'], undefined);
+  assert.doesNotMatch(read('../app.json'), /expo-iap/);
+  const dirs = ['../app', '../app/(tabs)', '../app/customer', '../app/sale', './', './pos'];
   const offenders: string[] = [];
   for (const dir of dirs) {
-    let names: string[] = [];
-    try { names = readdirSync(new URL(`${dir}/`, import.meta.url)); } catch { continue; }
-    for (const name of names.filter((n) => n.endsWith('.tsx') && n !== 'paywall.tsx')) {
-      if (/src\/subscription'/.test(read(`${dir}/${name}`))) offenders.push(`${dir}/${name}`);
+    for (const name of list(new URL(`${dir}/`, import.meta.url)).filter((n) => /\.tsx?$/.test(n) && !n.endsWith('.test.ts'))) {
+      if (/expo-iap|\/subscription'|\/payments'|paywall/.test(read(`${dir}/${name}`))) offenders.push(`${dir}/${name}`);
     }
   }
   assert.deepEqual(offenders, []);

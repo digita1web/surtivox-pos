@@ -110,6 +110,24 @@ jobs:
         working-directory: apps/mobile
         run: npx expo install --check
 
+      - name: Fijar el canal de actualizaciones
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            CHANNEL=production
+          else
+            CHANNEL=preview
+          fi
+          node scripts/set-update-channel.mjs "${CHANNEL}"
+          echo "UPDATE_CHANNEL=${CHANNEL}" >> "${GITHUB_ENV}"
+
+      - name: Calcular la huella nativa
+        working-directory: apps/mobile
+        run: |
+          set -euo pipefail
+          CI=1 npx expo-updates fingerprint:generate --platform android > "${RUNNER_TEMP}/fingerprint.json"
+          node ../../scripts/runtime-info.mjs write "${RUNNER_TEMP}/fingerprint.json" app.json "${RUNNER_TEMP}/runtime-android.json"
+
       - name: Prebuild Android project
         working-directory: apps/mobile
         run: npx expo prebuild --platform android
@@ -223,6 +241,25 @@ jobs:
           grep -E 'certificate (DN|SHA-256 digest)' "${RUNNER_TEMP}/apk-certs.txt" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Verificar la huella y el canal dentro del APK
+        run: |
+          set -euo pipefail
+          APK=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          INFO="${RUNNER_TEMP}/runtime-android.json"
+          EXPECTED=$(node -p 'require(process.argv[1]).runtimeVersion' "${INFO}")
+          EMBEDDED=$(unzip -p "${APK}" assets/fingerprint)
+          CHANNEL=$(unzip -p "${APK}" assets/app.config | node -e 'let d="";process.stdin.on("data",(c)=>d+=c).on("end",()=>console.log(JSON.parse(d).updates?.requestHeaders?.["expo-channel-name"]??""))')
+          if [ "${EMBEDDED}" != "${EXPECTED}" ]; then
+            echo "::error::La huella dentro del APK (${EMBEDDED}) no es la calculada (${EXPECTED}). Las OTA no llegarían a este APK."
+            exit 1
+          fi
+          if [ "${CHANNEL}" != "${UPDATE_CHANNEL}" ]; then
+            echo "::error::El APK escucha el canal '${CHANNEL}' y se esperaba '${UPDATE_CHANNEL}'"
+            exit 1
+          fi
+          echo '### Actualizaciones OTA' >> "$GITHUB_STEP_SUMMARY"
+          echo "Canal \`${CHANNEL}\`, huella nativa \`${EMBEDDED}\`" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Report APK size
         run: |
           APK=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
@@ -237,6 +274,14 @@ jobs:
         with:
           name: app-release-apk
           path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Subir la huella como artefacto
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: runtime-android
+          path: ${{ runner.temp }}/runtime-android.json
           retention-days: 14
           if-no-files-found: error
 
@@ -255,13 +300,30 @@ jobs:
           name: app-release-apk
           path: release-apk
 
+      - name: Descargar la huella
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: runtime-android
+          path: release-apk
+
+      - name: Exigir el canal production en la huella de la release
+        run: |
+          set -euo pipefail
+          CHANNEL=$(node -p 'require(process.argv[1]).channel' release-apk/runtime-android.json)
+          if [ "${CHANNEL}" != "production" ]; then
+            echo "::error::La release solo publica APK del canal production (llegó '${CHANNEL}')"
+            exit 1
+          fi
+
       - name: Renombrar el APK de la release
         run: mv release-apk/app-release.apk release-apk/Surtivox.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
-          files: release-apk/Surtivox.apk
+          files: |
+            release-apk/Surtivox.apk
+            release-apk/runtime-android.json
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
