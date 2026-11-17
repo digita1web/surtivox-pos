@@ -127,7 +127,7 @@ jobs:
           set -euo pipefail
           CI=1 npx expo-updates fingerprint:generate --platform android > "${RUNNER_TEMP}/fingerprint.json"
           node ../../scripts/runtime-info.mjs write "${RUNNER_TEMP}/fingerprint.json" app.json "${RUNNER_TEMP}/runtime-android.json"
-          echo "EXPO_UPDATES_FINGERPRINT_OVERRIDE=$(node -p 'require(process.argv[1]).runtimeVersion' "${RUNNER_TEMP}/runtime-android.json")" >> "${GITHUB_ENV}"
+          echo "EXPO_UPDATES_FINGERPRINT_OVERRIDE=$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).runtimeVersion' "${RUNNER_TEMP}/runtime-android.json")" >> "${GITHUB_ENV}"
 
       - name: Prebuild Android project
         working-directory: apps/mobile
@@ -251,7 +251,7 @@ jobs:
             exit 0
           fi
           node -e '
-            const [before, after] = process.argv.slice(1).map((f) => require(f));
+            const [before, after] = process.argv.slice(1).map((f) => JSON.parse(require("fs").readFileSync(f, "utf8")));
             if (before.hash === after.hash) { console.log(`La compilación no cambió la huella (${before.hash})`); process.exit(0); }
             const key = (s) => `${s.type} ${s.filePath ?? s.id ?? ""}`;
             const index = (fp) => new Map(fp.sources.map((s) => [key(s), s.hash]));
@@ -266,7 +266,7 @@ jobs:
           set -euo pipefail
           APK=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
           INFO="${RUNNER_TEMP}/runtime-android.json"
-          EXPECTED=$(node -p 'require(process.argv[1]).runtimeVersion' "${INFO}")
+          EXPECTED=$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).runtimeVersion' "${INFO}")
           EMBEDDED=$(unzip -p "${APK}" assets/fingerprint)
           CHANNEL=$(unzip -p "${APK}" assets/app.config | node -e 'let d="";process.stdin.on("data",(c)=>d+=c).on("end",()=>console.log(JSON.parse(d).updates?.requestHeaders?.["expo-channel-name"]??""))')
           if [ "${EMBEDDED}" != "${EXPECTED}" ]; then
@@ -329,7 +329,7 @@ jobs:
       - name: Exigir el canal production en la huella de la release
         run: |
           set -euo pipefail
-          CHANNEL=$(node -p 'require(process.argv[1]).channel' release-apk/runtime-android.json)
+          CHANNEL=$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).channel' release-apk/runtime-android.json)
           if [ "${CHANNEL}" != "production" ]; then
             echo "::error::La release solo publica APK del canal production (llegó '${CHANNEL}')"
             exit 1

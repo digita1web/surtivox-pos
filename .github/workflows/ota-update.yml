@@ -101,7 +101,7 @@ jobs:
           set -euo pipefail
           CI=1 npx expo-updates fingerprint:generate --platform android > "${RUNNER_TEMP}/fingerprint.json"
           node ../../scripts/runtime-info.mjs write "${RUNNER_TEMP}/fingerprint.json" app.json "${RUNNER_TEMP}/runtime-android.json"
-          echo "RUNTIME_VERSION=$(node -p 'require(process.argv[1]).runtimeVersion' "${RUNNER_TEMP}/runtime-android.json")" >> "${GITHUB_ENV}"
+          echo "RUNTIME_VERSION=$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).runtimeVersion' "${RUNNER_TEMP}/runtime-android.json")" >> "${GITHUB_ENV}"
 
       - name: Comparar con la huella de la última release
         if: inputs.channel == 'production'

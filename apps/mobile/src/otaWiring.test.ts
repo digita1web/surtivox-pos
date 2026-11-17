@@ -256,3 +256,33 @@ test('el diagnóstico dice qué fuente cambió al compilar y nunca hace fallar e
   assert.equal(broken.status, 0, broken.output);
   assert.match(broken.output, /::warning::No se pudo recalcular/);
 });
+
+function releaseChannelCheck(info: unknown | null) {
+  const dir = mkdtempSync(join(tmpdir(), 'release-'));
+  mkdirSync(join(dir, 'release-apk'));
+  if (info !== null) writeFileSync(join(dir, 'release-apk', 'runtime-android.json'), JSON.stringify(info));
+  const release = build.slice(build.indexOf('\n  release:'));
+  const result = spawnSync('bash', ['-c', script(release, 'Exigir el canal production en la huella de la release')], {
+    cwd: dir,
+    env: { PATH: process.env.PATH ?? '' },
+    encoding: 'utf8',
+  });
+  rmSync(dir, { recursive: true, force: true });
+  return { status: result.status, output: result.stdout + result.stderr };
+}
+
+test('la release lee la huella descargada con ruta relativa y solo acepta el canal production', () => {
+  const ok = releaseChannelCheck({ runtimeVersion: HASH, channel: 'production' });
+  assert.equal(ok.status, 0, ok.output);
+  const preview = releaseChannelCheck({ runtimeVersion: HASH, channel: 'preview' });
+  assert.equal(preview.status, 1);
+  assert.match(preview.output, /::error::La release solo publica APK del canal production \(llegó 'preview'\)/);
+  const missing = releaseChannelCheck(null);
+  assert.notEqual(missing.status, 0);
+});
+
+test('los workflows leen los JSON con fs y nunca con require, que confunde una ruta relativa con un paquete', () => {
+  for (const workflow of [build, ota]) {
+    assert.doesNotMatch(workflow, /require\(process\.argv|=> require\(f\)/);
+  }
+});
