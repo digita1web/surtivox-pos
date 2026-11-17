@@ -154,8 +154,11 @@ proceso privado descrito en [SECURITY.md](SECURITY.md).
 ## Licencia
 
 **Software propietario. © 2026 Mateo Castro (Surtivox POS). Todos los derechos
-reservados.** Consulta [LICENSE](LICENSE). Para una licencia comercial, usa el
-canal indicado en ese archivo.
+reservados.** La app publicada se puede instalar y usar gratis, también para
+administrar tu propio negocio; el código no se puede copiar, modificar ni
+redistribuir. Consulta [LICENSE](LICENSE). Para otros usos (integrarlo en otro
+producto, revenderlo o distribuirlo con tu marca), usa el canal indicado en ese
+archivo. Los datos de `catalog-data/` se publican bajo ODbL 1.0.
 
 El código base inicial fue heredado de OpenPocket POS (licencia MIT); su aviso
 original se conserva en [LICENSES/MIT_LICENSE.txt](LICENSES/MIT_LICENSE.txt).

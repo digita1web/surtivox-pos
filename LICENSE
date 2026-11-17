@@ -1,8 +1,11 @@
 Copyright (c) 2026 Mateo Castro (Surtivox POS). Todos los derechos reservados.
 
-Este software y su código fuente son propiedad exclusiva de Mateo Castro y del producto Surtivox POS. 
-Queda estrictamente prohibida la copia, distribución, modificación, sublicenciamiento o uso comercial de este software, en su totalidad o en parte, sin el consentimiento previo y por escrito del titular de los derechos de autor.
+1. Uso de la aplicación. Puedes descargar la aplicación Surtivox POS publicada oficialmente (en https://github.com/digita1web/surtivox-pos/releases o en las tiendas de aplicaciones donde se publique), instalarla y usarla sin costo, incluso para administrar tu propio negocio. Los servicios opcionales que en el futuro tengan costo se regirán por sus propias condiciones, que se informarán antes de cobrar.
 
-El uso de esta aplicación en entornos comerciales requiere la adquisición de una licencia comercial. Para obtener una licencia de uso, por favor contacte a: contacto3rillodivino@gmail.com
+2. Código fuente. Este software, su código fuente, su diseño y su infraestructura son propiedad exclusiva de Mateo Castro y del producto Surtivox POS. Que el código sea visible en GitHub no concede ninguna licencia sobre él. Sin el consentimiento previo y por escrito del titular queda prohibido copiarlo, modificarlo, distribuirlo o sublicenciarlo, total o parcialmente; publicar versiones modificadas de la aplicación; o venderla u ofrecerla a terceros.
 
-Se exceptúan de esta licencia los datos de la carpeta catalog-data/ (taxonomías, registro de fuentes, datos maestros y los paquetes generados a partir de ellos), que se publican bajo la Open Database License 1.0 según catalog-data/LICENSE, y los archivos de terceros que conservan su propia licencia (apps/mobile/LICENSE y LICENSES/).
+3. Otros usos. Para usos distintos del punto 1, como integrar el software en otro producto, revenderlo o distribuirlo con otra marca, se requiere una licencia por escrito. Contacto: contacto3rillodivino@gmail.com
+
+4. Excepciones. Se exceptúan de esta licencia los datos de la carpeta catalog-data/ (taxonomías, registro de fuentes, datos maestros y los paquetes generados a partir de ellos), que se publican bajo la Open Database License 1.0 según catalog-data/LICENSE, y los archivos de terceros que conservan su propia licencia (apps/mobile/LICENSE y LICENSES/).
+
+5. El uso de la aplicación se rige además por sus Términos y Condiciones y su Aviso de Privacidad.
