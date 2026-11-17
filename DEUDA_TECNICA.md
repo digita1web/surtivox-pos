@@ -1,88 +1,82 @@
-# Deuda técnica
+# Deuda técnica y estado del proyecto
 
-Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](apps/mobile/app.json)). No es un lanzamiento comercial. Este archivo es la lista de pendientes. Cada punto indica si fue **verificado** en el código o es una **hipótesis**. Última revisión: 2026-11-13 (19:24, UTC-5).
+Este archivo es la libreta del proyecto: dónde estamos, qué falta y qué se aprendió en el camino. Arriba va lo vigente; abajo queda el historial con el detalle técnico de cada revisión. Cuando algo no se pudo comprobar, se dice. Última actualización: 16 de noviembre de 2026, en la noche.
 
-## Decisiones tomadas para la beta
+## Dónde estamos
 
-- El respaldo en la nube es **gratis y está abierto a todos los propietarios** de tienda. La tarjeta de precio y el botón "Suscribirme" se ocultaron en [cloud-sync.tsx](apps/mobile/app/cloud-sync.tsx).
-- El Worker de sync **no consulta `entitlements`**: no hay forma de limitar el uso por tienda.
-- La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
-- Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
+La versión publicada es la **1.1.6** (`versionCode` 12). Es la que descarga cualquiera desde la landing y la que tienen los tenderos de prueba. Trae el conteo de inventario, el informe de faltantes y sobrantes, el aviso semanal para contar y los textos en español sin "stock". Todavía no es un lanzamiento comercial: estamos en pruebas con tiendas piloto.
 
-## Etapa 0 antes de monetizar (2026-11-16)
+En `main` hay trabajo terminado que aún no está en ninguna APK publicada. Saldrá en la 1.1.7:
 
-Decisión del propietario: antes de cobrar, llegar a 20–50 tiendas, cerrar P0-1, alinear licencia y landing y fijar el tope de la nube. Ramas locales, sin desplegar:
+- El catálogo sin conexión: Más → Catálogo de productos. La tienda elige su tipo de negocio, descarga la lista y, al agregar un producto, la app le sugiere el nombre, la categoría, la unidad y el código. El precio siempre lo pone el tendero. Funciona en modo avión.
+- El mensaje que pide reintentar cuando falla la conexión al bajar el catálogo.
+- La paginación de la descarga desde la nube y el mensaje del tope diario.
+- Los términos nuevos dentro de la app (versión legal 2026-11-16). Al actualizar, la app pide aceptarlos otra vez.
 
-- **P0-1 cerrado en código** (`fix/p0-1-pagos`, `b627a72`): `/pagos/crear` autentica con `shop_keys` (hash) como el sync. Tests con el handler real. **El Worker de pagos sigue sin desplegar**, sin webhook ni `entitlements`; para empezar se propone cobro manual.
-- **Tope diario y paginación** (`feat/cuota-nube`, `bed8a63`): `QUOTA_DAILY_ROWS` (20.000 por defecto, configurable) y pull paginado opcional; detalle en `docs/sync-spec.md`. **Pendiente:** aplicar `apps/sync-worker/migrations/0003_store_usage.sql`, desplegar el Worker y decidir el número.
-- **Licencia** (`docs/licencia-y-piloto`, `f512fbc`): LICENSE, Términos de la landing y de la app permiten usar gratis la app publicada en el propio negocio; `LEGAL_VERSION` 2026-11-16 (la próxima versión pide aceptar de nuevo). **Borrador sin revisión jurídica.**
-- **Piloto:** guía en `docs/piloto.md` (reclutamiento, instalación, medición sin rastreo, pregunta de precio, criterios de éxito).
-- Sin cambios y pendiente de decisión: retirar `paywall.tsx` (muestra "USD 5/mes") y `expo-iap`.
+Lo que ya está publicado en la landing (GitHub Pages) porque se fusionó en `main`:
 
-## Prueba en el teléfono del catálogo sin conexión (2026-11-16 18:40)
+- El catálogo 2026.11.16-2, con 5.423 productos: 814 que escribimos nosotros y 4.609 de Open Food Facts. La app 1.1.6 no lo usa; la 1.1.7 sí.
+- El centro de ayuda en `ayuda.html`, con 52 artículos sobre la versión 1.1.6.
+- Los términos y la licencia nuevos. Ojo: este texto se publicó sin que lo revisara un abogado. Ver pendientes.
 
-Redmi Note 9 por adb, APK del build #58 de `main` (1.1.6, `versionCode` 12, firma de producción `e798f4a4…`), instalado encima con datos ficticios. **Verificado:**
+En Cloudflare está desplegado el Worker de sync que entiende la versión de esquema 2 (conteos de inventario). No están desplegados ni el tope diario de la nube (falta la migración `0003_store_usage.sql` y el Worker nuevo) ni el Worker de pagos.
 
-- Sin red: "Descargar catálogo" muestra el error de conexión y no deja nada a medias. Con el WiFi recién conectado falló una vez más y funcionó al reintentar (el teléfono descarga el manifest con `curl` sin problema); el mensaje ahora pide revisar la conexión e intentar de nuevo.
-- Descarga de Tienda de barrio: 747 productos, 0,2 MB, versión 2026.11.16, atribución de Open Food Facts y del catálogo propio en pantalla.
-- **En modo avión:** "tinto" sugiere "Tinto · Bebidas" y "Vino tinto botella · Licores"; al tocar "Tinto" se completan nombre y la categoría existente "Bebidas". El código `7702004013514` con "Buscar" completa "Pony Malta Bavaria 1500 ml" y "Bebidas", sin avisos de error.
-- Cambio a Ferretería (419 productos): "puntilla 2" sugiere las puntillas de 2 pulgadas, "clavo" encuentra "Puntilla" por sinónimo y "tinto" ya no aparece.
-- "Eliminar catálogo" lo borra y dejan de salir sugerencias; reinstalado Tienda de barrio, "Buscar actualización" responde "Ya tienes la última versión".
-- **No probado:** escaneo con la cámara (no se puede por adb) y guardar un producto desde una sugerencia.
+## Pendientes, en orden
 
-## Catálogo estandarizado sin conexión (Entrega 2, 2026-11-16)
+1. **Revisar la licencia con un abogado.** El `LICENSE`, los términos de la landing y los de la app dicen ahora que la app se puede usar gratis, también para manejar tu propio negocio, y que el código no se puede copiar ni redistribuir. Antes decían que el "uso comercial" necesitaba licencia, lo cual chocaba con ofrecerla gratis a tiendas. El texto nuevo ya está en la landing; si el abogado pide cambios, hay que hacerlos en los tres lugares a la vez (un test exige que la app y la landing digan lo mismo).
+2. **Decidir el tope diario de la nube y desplegarlo.** El Worker trae 20.000 filas por tienda al día como valor por defecto y se cambia con la variable `QUOTA_DAILY_ROWS` sin tocar código. El límite que importa es el de escrituras diarias de D1 en el plan gratuito, que se reparte entre todas las tiendas. Orden: aplicar `apps/sync-worker/migrations/0003_store_usage.sql`, desplegar el Worker y después publicar la app. Si el Worker sale sin la tabla, no bloquea a nadie.
+3. **Preparar la 1.1.7.** Falta probar en el teléfono dos cosas del catálogo: escanear con la cámara y guardar un producto a partir de una sugerencia. También hay que agregar el artículo del catálogo al centro de ayuda; hoy un test impide mencionarlo porque la versión publicada no lo tiene, así que ese test se ajusta en el mismo PR del release.
+4. **Arrancar el piloto con 20 a 50 tiendas.** La guía está en [docs/piloto.md](docs/piloto.md): a quién buscar, cómo instalarles la app, qué no prometerles, cómo medir sin rastrear a nadie y cómo preguntar por el precio.
+5. **Probar la nube y el kit de recuperación en un teléfono de punta a punta.** Nunca se ha hecho con una tienda real.
+6. **Agregar la unidad metro (`m`) a la app.** Ferreterías y mercerías venden cable, cuerda o malla por metro. Mientras tanto, en el catálogo esos productos se llaman "(1 metro)" y usan `unit`. Cuando la app tenga `m`, se marca como unidad de venta en `catalog-data` y se actualizan sus tests.
+7. **Decidir si se retira `paywall.tsx` y `expo-iap`.** La pantalla sigue existiendo, se abre por enlace directo y muestra "USD 5/mes", un precio que no corresponde. Quitar `expo-iap` cambia la parte nativa de la app, así que conviene hacerlo antes de la 1.1.7 y no después.
+8. **Pagos, cuando el piloto diga que vale la pena.** La autenticación ya está corregida (P0-1). Faltan el despliegue, el webhook de Wompi, los `entitlements` y un precio en pesos. Para empezar se propone cobrar a mano: pago por Nequi y activación manual.
+9. **Revocar el token de Cloudflare** del 16 de noviembre, si no se ha hecho. Quedó escrito en el historial de la conversación.
+10. Pendientes menores de antes: el umbral del catálogo comunitario (hoy 2 votos), `allowBackup="true"`, `roadmap.md` desactualizado, y en Search Console revisar si Google ya indexó el sitio.
 
-Rama `feat/catalogo-datos`, commits locales. **Verificado** con tests (583 de la app y 59 de `catalog-data`), `verify.sh`, `pnpm -r typecheck` y `expo export`. **No verificado en el teléfono.**
+## Decisiones que siguen vigentes
 
-- `catalog-data/`: taxonomías, registro de fuentes con licencias, validador, generador de paquetes SQLite con FTS5 y manifest con sha256; detalle en `catalog-data/README.md`.
-- Publicado en `landing/catalogo/` (GitHub Pages, aprobado por el propietario para la fase de pruebas): 1.261 productos (814 propios y 447 de Open Food Facts), seis paquetes de 68 a 184 KB, versión 2026.11.16.
-- App: Más → Catálogo de productos (permiso de productos) descarga el paquete del tipo de negocio, compara tamaño y sha256, comprueba `meta` y lo instala como base aparte en `SQLite/`. Al agregar un producto sugiere del catálogo mientras se escribe el nombre y busca el código primero en el teléfono; completa nombre, unidad, categoría y código, nunca el precio. Atribución ODbL en Licencias y en la pantalla del catálogo.
-- **Open Food Facts bloquea desde la página 11 a usuarios no identificados.** Se usaron las 10 primeras (1.000 productos, 447 aceptados). Para el resto hace falta una cuenta de Open Food Facts o su exportación oficial; **decisión pendiente del propietario.** No se rodeó el bloqueo.
-- Pendiente de verificar en el teléfono: descarga, verificación, sugerencias al escribir, búsqueda por código sin internet, cambio de tipo de negocio y eliminación.
+- La nube es gratis mientras dure la prueba y no se promete sincronización automática: se sincroniza con el botón. La pantalla de la nube lo aclara.
+- El Worker de sync no revisa suscripciones; por eso el tope diario es la única forma de limitar el uso.
+- La app es para Colombia: pesos colombianos por defecto, la moneda es la misma para todas las tiendas del teléfono y no convierte precios.
+- Mientras se valida con los primeros tenderos, la landing se queda en el subdominio de GitHub Pages y el catálogo se publica ahí mismo, no en R2.
+- El catálogo es solo texto, sin fotos, y la droguería se queda en lo básico de venta libre.
+- Primero el piloto, después cobrar. Nada de publicidad ni de vender datos de las tiendas.
 
-## Unidad de venta por metro (anotado 2026-11-16, decisión del propietario)
+## Datos que conviene tener a mano
 
-La app solo vende en `unit`, `pcs`, `pack`, `box`, `dozen`, `kg`, `g`, `L`, `ml`, `lb`, `bulto` y `bottle` (`UNITS` en `apps/mobile/app/add-product.tsx`). No hay metro, así que en el catálogo estandarizado los productos que se venden por metro (cables, cuerda, malla, lona, plástico, manguera) usan `unit` y se llaman "(1 metro)". **Pendiente para la próxima versión de la app:** agregar la unidad `m` (metro) para que ferreterías y mercerías puedan vender por metro, con su etiqueta en `stockLabel` y su test, y después pasar esos productos de `catalog-data` a `unit: "m"` (la taxonomía ya tiene `m` como unidad de presentación; habría que marcarla `sale: true` y actualizar `taxonomy.test.ts` y `data.test.ts`).
-## Release v1.1.6 publicado (2026-11-16 15:20)
+- Base D1 de producción: `surtivox-sync` (`1faf3ce0-aa7a-414d-bc0e-e28d9be9d336`). Punto de restauración (Time Travel) tomado el 16 de noviembre antes de crear las tablas de conteo: `00000017-00000000-00005125-baebeed7d3ddc45a60278608f2ec528e`.
+- APK publicado de la 1.1.6: `Surtivox.apk`, 67.109.293 bytes, SHA-256 `c19256d647281b8ec4fad6667e752d91f4edd292f205fe56b7128bf2ca256e1c`. Firma de producción con huella `e798f4a4…1cc32d`.
+- Los tags `v1.1.4`, `v1.1.5` y `v1.1.6` no se mueven ni se recrean. El `versionCode` nunca baja.
+- Las credenciales de Open Food Facts están en `~/.config/surtivox/off.env` (permisos 600, fuera del repositorio) y las usa `catalog-data/src/importers/fetch-off.sh`.
 
-Tag `v1.1.6` sobre `bc5b999`; run #56 en verde (compilar y publicar). **Verificado** descargando el APK público de `releases/latest`: `Surtivox.apk` de 67 109 293 bytes, SHA-256 `c19256d647281b8ec4fad6667e752d91f4edd292f205fe56b7128bf2ca256e1c` (igual al que publica GitHub), firma de producción `e798f4a4…1cc32d`, `versionCode` 12, `versionName` 1.1.6, `arm64-v8a` y `armeabi-v7a`. El bundle trae "Conteo de inventario", "Por agotarse", "Cobra en segundos", "Borrar búsqueda" y "botellas", y ya no "Stock bajo" ni "Vende sin complicaciones". La landing publicada dice `softwareVersion` 1.1.6 y anuncia el conteo. **No verificado:** instalar este APK público en el teléfono.
+## Lo que hicimos el 16 de noviembre
 
-## Despliegue del Worker de sync con schemaVersion 2 (2026-11-16 13:49)
+Fue un día largo. Esto es lo principal, en orden.
 
-Hecho por la API REST de Cloudflare con un token temporal del propietario (D1 Edit y Workers Scripts Edit), con su autorización expresa. **Verificado.**
+**Conteo de inventario (1.1.6).** Se puede contar el inventario producto por producto, escaneando o buscando, y la app muestra cuánto esperaba según el sistema, cuánto se contó y la diferencia en unidades y en plata a costo. Cada diferencia queda como un ajuste registrado a nombre de quien contó; nunca se edita ni se borra un movimiento. El informe separa faltantes de sobrantes, se filtra por fechas y por persona y se comparte por WhatsApp o en PDF, con un lenguaje que no acusa a nadie. Solo el dueño y el administrador pueden contar. Hay un aviso opcional en Inicio si pasan 7 días sin contar; no usamos notificaciones del sistema para no tocar la parte nativa.
 
-- Antes: D1 `surtivox-sync` (`1faf3ce0…`) con 18 tablas y sin tablas de conteo; el Worker solo tenía el binding `DB`; `/health` = `{"tables":15}`.
-- Punto de restauración de D1 (Time Travel) tomado antes de cambiar nada: `00000017-00000000-00005125-baebeed7d3ddc45a60278608f2ec528e`.
-- Aplicada `apps/sync-worker/migrations/0002_stock_counts.sql`: existen `stock_counts` y `stock_count_lines`.
-- Worker subido desde `main` (paquete de `wrangler deploy --dry-run`), mismo binding `DB`. `/health` = `{"tables":17,"schemaVersion":2}`; `/sync/pull` sin token o con token falso responde 401.
-- **Pendiente del propietario:** revocar el token en Cloudflare (quedó en el historial de la conversación); el archivo local ya se borró.
-- **No verificado:** una sincronización real de un teléfono contra el Worker nuevo.
+Para que la nube aguantara las tablas nuevas sin dañar a quienes tienen la versión anterior, la app y el Worker ahora se dicen qué versión de esquema manejan. Si la app es más nueva que el servidor, no sube nada y avisa. Si un teléfono viene de una versión vieja, trae una sola vez lo que se perdió. Lo probamos con el Worker real en tests y lo desplegamos en Cloudflare con autorización del dueño, tomando antes un punto de restauración de la base.
 
-## Prueba en dispositivo de la actualización 1.1.5 → main con conteo (2026-11-16 12:37)
+**Prueba en el teléfono.** En el Redmi Note 9, con datos inventados, instalamos la 1.1.5 pública, hicimos ventas y un fiado, y actualizamos encima. No se perdió nada y el conteo funcionó de punta a punta. Esa prueba dejó tres arreglos: el informe tenía márgenes dobles, el botón de borrar búsqueda decía "Clear search" para el lector de pantalla y las unidades no tenían plural ("10 botella").
 
-Redmi Note 9 (Android 12) por adb, datos ficticios. **Verificado** salvo que diga lo contrario.
+**Release 1.1.6.** Publicado y comprobado descargando el APK público: firma de producción, `versionCode` 12, las dos arquitecturas y los textos nuevos dentro. Las capturas de la landing y del README se tomaron otra vez con la versión nueva. Lo que no hicimos fue instalar ese APK público en el teléfono; lo que se probó fue el build de `main`, con el mismo código.
 
-- **Partida:** `pm clear` (con permiso del propietario; la app no tenía tienda) e instalación de la APK pública v1.1.5 (SHA-256 `d4eec978…45768b7`, firma `e798f4a4…`). Onboarding con COP preseleccionado, "Tienda Don Pepe", catálogo de ejemplo, INV-0001 $11.000 en efectivo, INV-0002 $7.000 a fiado a "Cliente Prueba".
-- **Actualización** con `adb install -r` a la APK del build #53 de `main` (arm64, misma firma, aún `versionCode` 11): se conservaron tienda, ventas del día ($18.000, 2 pedidos, 3 artículos), stock y el fiado de $7.000. Las migraciones 0012 y 0013 corrieron sin error sobre datos reales.
-- **Conteo:** tarjeta en Inicio; aviso semanal ("Aún no has hecho un conteo") tras activarlo y sin conteos, y desaparece al contar; búsqueda por nombre; Aceite esperado 9 → contado 7 (faltante 2, $14.250 a costo) y Agua Cristal 9 → 10 (sobrante 1, $1.125); el stock quedó en 7 y 10; terminar abre el informe con faltante y sobrante separados; el PDF `conteo-inventario-2026-11-16.pdf` se genera y abre el selector de compartir.
-- **Corregido tras la prueba:** relleno doble del informe que cortaba el chip "Todo" (`51b0deb`); etiqueta de accesibilidad "Clear search" → "Borrar búsqueda" (`b34e3f9`). Capturas de Inicio y Productos y `og-image.png` actualizadas (`c89044b`).
-- **No probado:** escaneo con la cámara en el conteo (no se puede por adb), envío por WhatsApp (no está instalado en el Redmi; el enlace `wa.me` se abriría en el navegador), contenido visual del PDF, conteo con personal y PIN (la tienda de prueba no tiene personal), sincronización con la nube.
-- **Detalle previo, sin tocar:** las unidades se muestran sin plural ("10 botella").
+**Catálogo de productos.** Armamos `catalog-data/`, una base de productos solo de texto, con licencia ODbL. Tiene categorías con emoji, unidades iguales a las de la app, un registro de fuentes con su licencia y un validador que rechaza cualquier dato de una fuente que el dueño no haya aprobado. De ahí salen paquetes SQLite por tipo de negocio que la app descarga, verifica y usa sin internet. Lo medimos con 200.000 productos inventados: el paquete de una tienda pesaba 14 MB y la búsqueda mientras se escribe tardaba 14 ms en el computador.
 
-## Conteo físico de inventario (2026-11-16 09:52)
+Las fuentes: 814 productos escritos por nosotros (ferretería, papelería, frutas, genéricos de tienda y una droguería mínima, solo con analgésicos comunes, suero oral y primeros auxilios) y los productos vendidos en Colombia que hay en Open Food Facts. Open Food Facts no deja pasar de la página 10 sin cuenta; el dueño creó una, guardó las credenciales fuera del repositorio y con eso bajamos las 10.101 fichas. Entraron 4.609. El resto quedó por fuera por no tener nombre en español, categoría reconocible, marca o código válido. Al revisar a mano encontramos errores en los datos de origen (chorizos y yogures marcados como huevos, gaseosas como dulces) y los corregimos con reglas probadas. Los datos del gobierno (INVIMA) se dejaron para después porque su licencia no es compatible con la nuestra.
 
-Rama `feat/conteo-fisico`, commits locales sin subir: `fcf9daa` (migración 0012), `4a10f3b` (compuerta de esquema del sync), `dc0205b` (countOps), `047990f` (pantalla), `4d8c7a3` (informe), `622043c` (recordatorio), `45208c5` (restaurar respaldos viejos). **Verificado** con tests en `node:sqlite` y las migraciones reales, `verify.sh`, `pnpm -r typecheck`, `pnpm test` y `expo export` para Android. **No verificado en el teléfono.**
+En el teléfono el catálogo funcionó en modo avión: "tinto" sugiere el tinto, "clavo" encuentra las puntillas y un código de Pony Malta se completa solo. No se pudo probar el escáner de la cámara, porque por cable no hay cómo apuntarla.
 
-- **Modelo.** `stock_counts` (sesión, empleado, abierta o cerrada) y `stock_count_lines` (esperado, contado, costo congelado, `movement_id`). Cada diferencia distinta de 0 inserta un movimiento `adjustment` con `reference_type='stock_count'` y `reference_id` igual al conteo. No se edita ni se borra ningún movimiento. Solo productos con `track_inventory`; cantidades enteras (`quantity_delta` es INTEGER: los productos por peso no se pueden contar con decimales).
-- **Permisos.** Capacidad `stock_count`: propietario y administrador; el cajero no ve el menú y el guardián de rutas lo bloquea.
-- **Compuerta del sync (`SYNC_SCHEMA_VERSION = 2`).** `/health` publica `schemaVersion`; la app no sincroniza contra un Worker que declare menos (uno viejo no la declara y cuenta como 1). Un teléfono que viene de una APK vieja trae una sola vez, desde cero, las tablas nuevas (`sync_state.synced_schema`, migración 0013; `/sync/pull?tables=`). Las APK viejas siguen sincronizando con el Worker nuevo y ven el stock ajustado.
-- **Orden de despliegue obligatorio (lo hace el propietario):** 1) desde `apps/sync-worker/`, `npx wrangler d1 execute surtivox-sync --remote --file=./migrations/0002_stock_counts.sql`; 2) desplegar el Worker; 3) publicar la APK. Si la APK sale antes, la nube de esos teléfonos se detiene con el aviso "El servidor de la nube necesita actualizarse…" hasta desplegar el Worker; no se pierden datos.
-- **Informe.** Por producto y por conteo, unidades y valor a costo, faltante y sobrante por separado, filtros por periodo y por quien contó, textos neutrales. Se comparte por WhatsApp (texto) o PDF (`expo-print` y `expo-sharing`, ya instalados).
-- **Recordatorio.** Aviso en Inicio, opcional y apagado por defecto. Sin `expo-notifications`, por decisión del propietario.
-- **Respaldo.** Restaurar un respaldo anterior a esta versión vacía también los conteos, porque reemplaza los movimientos que los sostienen.
-- **Lint:** el repositorio no tiene linter configurado (no hay script `lint` ni eslint/biome). El control es `tsc` estricto. Agregar uno requiere aprobar una dependencia.
-- **Ajustes posteriores (2026-11-16 10:56), verificados por el propietario en Expo Go:** acceso "Conteo de inventario" en Inicio bajo las dos acciones principales (`9c4e0b3`); "stock" reemplazado por "agotado", "por agotarse", "disponibles" y "unidades" en la app, la landing y el README, conservando la columna `stock` del CSV (`757152b`); la fila de "Ventas de hoy" baja de línea en vez de salirse de la tarjeta (`6a504c9`). Las capturas de la landing y del README aún muestran los textos viejos.
-- **Pendiente de verificar en el teléfono:** escaneo y búsqueda en la pantalla de conteo, teclado numérico, aviso de stock cambiado durante el conteo, PDF generado, apertura de WhatsApp, aviso en Inicio, y la sincronización real contra Cloudflare tras desplegar.
+**Centro de ayuda.** 52 artículos en 10 temas con buscador. Cada afirmación se comprobó contra la app publicada, y un test revisa que cada ruta "Más → …" que se menciona exista de verdad.
+
+**Antes de cobrar.** Corregimos la autenticación del Worker de pagos (P0-1): buscaba la llave en una tabla que el sync vacía, así que nadie podía pagar. Agregamos el tope diario de la nube y la descarga por páginas, sin cambiar nada para las versiones viejas. Reescribimos la licencia para que no contradiga la app gratuita y escribimos la guía del piloto. Lo de cobrar queda para después del piloto.
+
+**Errores nuestros que vale la pena recordar.** Cambiar de rama en git mientras corría la descarga de Open Food Facts reemplazó el script por la versión vieja; la descarga en curso no se afectó, pero un reintento habría salido sin sesión, así que la relanzamos desde una copia fuera del repositorio. En el teléfono, dos "Atrás" de más sacaron la app y un toque abrió el navegador; desde ahí se comprueba la pantalla antes de cada toque. Y un par de pruebas "en rojo" fallaban por un dato de prueba mal escrito y no por el error que buscábamos; se repitieron hasta que fallaron por la razón correcta.
+
+---
+
+Lo que sigue es el registro anterior, con más detalle técnico. Se conserva tal cual.
 
 ## SEO de la landing (2026-11-15 20:15)
 
