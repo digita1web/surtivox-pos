@@ -56,12 +56,30 @@ function validToken(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length >= 12 && value.trim().length <= 256;
 }
 
-async function authorized(env: Env, storeId: string, token: string): Promise<boolean> {
-  const row = await env.DB
-    .prepare('SELECT store_id FROM sync_tokens WHERE token=? AND store_id=?')
-    .bind(token.trim(), storeId)
+async function sha256Hex(text: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+export async function authorized(env: Pick<Env, 'DB'>, storeId: string, token: string): Promise<boolean> {
+  const hash = await sha256Hex(token.trim());
+  const key = await env.DB
+    .prepare('SELECT store_id, key_hash FROM shop_keys WHERE key_hash=?')
+    .bind(hash)
+    .first<{ store_id: string; key_hash: string }>();
+  if (key) return key.store_id === storeId && constantTimeEqual(key.key_hash, hash);
+  const legacy = await env.DB
+    .prepare('SELECT store_id FROM sync_tokens WHERE token=?')
+    .bind(token.trim())
     .first<{ store_id: string }>();
-  return row?.store_id === storeId;
+  return legacy?.store_id === storeId;
 }
 
 async function createPayment(request: Request, env: Env): Promise<Response> {
