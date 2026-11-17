@@ -41,7 +41,8 @@ Es un bucle corto, repetido para cada hallazgo. No te saltes pasos.
 - **Lógica de escritura con SQL:** módulos `*Ops.ts` (`saleOps`, `checkoutOps`, `returnOps`, `staffOps`, `kitOps`, `recoveryOps`, `reportOps`, `restoreOps`). Reciben la base como parámetro (`Pick<SQLiteDatabase, ...>`), nunca llaman a `getDb()`, y se prueban con `node:sqlite` y las migraciones reales (`MIGRATIONS` de `@surtivox/database`).
 - **Contratos entre pantallas:** tests de *wiring* (`*Wiring.test.ts`) que leen el código fuente de las pantallas con `readFileSync` y exigen, por ejemplo, que Inicio, Productos y Ventas lean `salesVersion`, o que solo `ScannerCamera` use `CameraView`. No hay pruebas de renderizado de componentes.
 - **Pruebas de workflows:** `buildWorkflowWiring.test.ts` incluso **ejecuta con `bash`** el script de un paso del workflow para varias combinaciones de entorno.
-- **Estado de la nube:** una sola fuente, `useCloudConnected` (lee `sync_state`). `subscription.ts` y `paywall.tsx` son código heredado sin uso real.
+- **Estado de la nube:** una sola fuente, `useCloudConnected` (lee `sync_state`). El cobro heredado (`paywall.tsx`, `subscription.ts`, `payments.ts`, `expo-iap`) se retiró en la 1.1.7.
+- **OTA:** canales `production` (APK de tag) y `preview` (todo lo demás); `app.json` versionado trae `preview`. La huella nativa cambia con dependencias nativas, plugins, `version`, `versionCode` y el canal, pero no con cambios de JS (comprobado el 2026-11-16). Procedimiento y reversión en `RELEASING.md`; guardas en `otaWiring.test.ts`.
 - **Regla de pestañas:** una pantalla de pestaña que liste ventas o stock debe recargar con `salesVersion`, porque el cobro puede cerrarse con cualquier pestaña enfocada.
 
 ## 4. Comandos de verificación
@@ -121,6 +122,8 @@ curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/runs/<id>
 
 **Publicado:** la versión 1.1.6 (`versionCode` 12) es la última del repositorio y la que baja la gente desde la landing. Trae el conteo de inventario y el informe de diferencias. El APK público se revisó: firma de producción, dos arquitecturas y textos nuevos. Lo que se probó en el teléfono fue el build de `main` con el mismo código, no el APK público.
 
+**En la rama `feat/v1.1.7-ota`, para la 1.1.7:** retiro de `expo-iap` y del paywall, canales OTA, huella en la release, workflow "Publicar actualización OTA" y el artículo del catálogo en la ayuda (versión 1.1.7, `versionCode` 13). Al fusionarla, Pages publica la ayuda con 1.1.7: hay que crear el tag `v1.1.7` enseguida.
+
 **En `main`, sin publicar, para la 1.1.7:** el catálogo sin conexión (Más → Catálogo de productos), la paginación de la nube con el mensaje del tope diario, la autenticación corregida del Worker de pagos y los términos nuevos dentro de la app (`LEGAL_VERSION` 2026-11-16, así que al actualizar se pide aceptarlos otra vez).
 
 **Ya publicado en la landing** porque se fusionó: el catálogo 2026.11.16-2 en `landing/catalogo/` (5.423 productos: 814 propios y 4.609 de Open Food Facts), el centro de ayuda (`landing/ayuda.html`) y la licencia nueva. **La licencia se publicó sin revisión de un abogado.**
@@ -133,13 +136,12 @@ Cómo se trabaja el catálogo: `node catalog-data/src/cli/validate.ts` valida to
 
 1. Revisión legal de la licencia. Si cambia, cambia en el `LICENSE`, en `landing/terminos.html` y en `apps/mobile/src/legalText.ts` a la vez.
 2. Que el dueño decida el número del tope diario y despliegue la migración 0003 y el Worker, en ese orden y antes de publicar la app.
-3. Preparar la 1.1.7: probar en el teléfono el escáner con la cámara y guardar un producto desde una sugerencia, agregar el artículo del catálogo al centro de ayuda y ajustar `apps/mobile/src/landingHelp.test.ts`, que hoy prohíbe mencionarlo.
+3. Publicar la 1.1.7: agregar el secreto `EXPO_TOKEN`, probar en el teléfono un APK de `preview` de la rama (escáner con la cámara, guardar un producto desde una sugerencia y una OTA de prueba en `preview`), fusionar y crear el tag `v1.1.7` enseguida.
 4. Acompañar el piloto con 20 a 50 tiendas siguiendo [piloto.md](piloto.md).
 5. Probar la nube y el kit de recuperación en un teléfono de punta a punta. Nunca se ha hecho.
 6. Agregar la unidad metro a la app y pasar a ella los productos "(1 metro)" del catálogo.
-7. Decisión del dueño: retirar `paywall.tsx` y `expo-iap` (mejor antes de la 1.1.7).
-8. Pagos, después del piloto: despliegue, webhook, `entitlements` y precio en pesos; para empezar, cobro manual.
-9. Menores: umbral del catálogo comunitario, `allowBackup`, `roadmap.md` y revisar el índice de Search Console.
+7. Pagos, después del piloto: despliegue, webhook, `entitlements` y precio en pesos; para empezar, cobro manual.
+8. Menores: umbral del catálogo comunitario, `allowBackup`, `roadmap.md` y revisar el índice de Search Console.
 
 ## 10. Decisiones del propietario (no las reabras ni decidas por él)
 
@@ -155,7 +157,8 @@ Cómo se trabaja el catálogo: `node catalog-data/src/cli/validate.ts` valida to
 - Solo el dueño y el administrador pueden contar inventario.
 - La app publicada se usa gratis, también en el propio negocio; el código sigue siendo propietario.
 - Para monetizar, primero el piloto. Nada de publicidad ni de vender datos de las tiendas.
-- Pendiente de su decisión: el número del tope diario, el umbral del catálogo comunitario, retirar `expo-iap` y `paywall`, `allowBackup` y si se reescribe `roadmap.md`.
+- Se retiraron `expo-iap` y el paywall (decidido el 2026-11-16, para la 1.1.7). Las OTA de `production` solo salen de `main` y después de probarlas en `preview`.
+- Pendiente de su decisión: el número del tope diario, el umbral del catálogo comunitario, `allowBackup` y si se reescribe `roadmap.md`.
 - Los Workers los despliega él. Solo una vez, el 16 de noviembre y con su autorización expresa, se desplegó desde aquí con un token temporal. Si vuelve a pasar: el token va en `~/.config/surtivox/cf.env` con `read -rs`, nunca en el chat, y se toma un punto de restauración de D1 antes de cambiar nada.
 
 ## 11. Cómo informar al propietario

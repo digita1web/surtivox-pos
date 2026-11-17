@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { BUSINESS_TYPES } from './catalogPack.ts';
 
 const landing = new URL('../../../landing/', import.meta.url);
 const read = (name: string) => readFileSync(new URL(name, landing), 'utf8');
@@ -36,7 +37,7 @@ test('cada ruta "Más → …" que nombra la ayuda existe en el menú Más de la
 
 test('la ayuda no anuncia funciones que la versión publicada no tiene', () => {
   const visible = text(help.replace(/<code>[^<]*<\/code>/g, ''));
-  for (const phrase of [/catálogo de productos sin conexión/i, /Catálogo de productos/, /sincroniza(ción)? automática/i, /Google Play\b(?! y no)/, /factura electrónica(?! de la DIAN)/i, /\bstock\b/i]) {
+  for (const phrase of [/sincroniza(ción)? automática/i, /Google Play\b(?! y no)/, /factura electrónica(?! de la DIAN)/i, /\bstock\b/i]) {
     assert.doesNotMatch(visible, phrase);
   }
   assert.match(visible, /no es una factura electrónica de la DIAN/);
@@ -48,4 +49,18 @@ test('la ayuda no carga recursos externos ni rastreadores y se enlaza desde toda
   assert.doesNotMatch(help + read('ayuda.js'), /googletagmanager|google-analytics|gtag\(|facebook\.net|fbq\(|hotjar|utm_/i);
   assert.doesNotMatch(read('ayuda.js'), /fetch\(|XMLHttpRequest|localStorage|document\.cookie/);
   for (const page of ['index.html', 'aviso-legal.html', 'privacidad.html', 'terminos.html']) assert.match(read(page), /href="ayuda\.html"/, page);
+});
+
+test('la ayuda explica el catálogo por tipo de negocio sin prometer precios y con su licencia', () => {
+  const article = help.match(/<details class="help-article" id="catalogo-de-productos">([\s\S]*?)<\/details>/)?.[1];
+  assert.ok(article, 'falta el artículo catalogo-de-productos');
+  const body = text(article);
+  assert.match(body, /Más → Catálogo de productos/);
+  assert.match(body, /no trae precios ni fotos/);
+  assert.match(body, /ODbL/);
+  const screen = readFileSync(new URL('../app/catalog-pack.tsx', import.meta.url), 'utf8');
+  for (const label of ['Descargar catálogo', 'Buscar actualización', 'Eliminar catálogo de este teléfono', 'Origen de los datos']) {
+    assert.ok(body.includes(label) && screen.includes(label), label);
+  }
+  for (const { name } of BUSINESS_TYPES) assert.match(body, new RegExp(name, 'i'), name);
 });

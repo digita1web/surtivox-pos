@@ -2,7 +2,7 @@
   "expo": {
     "name": "Surtivox POS",
     "slug": "digita1web",
-    "version": "1.1.6",
+    "version": "1.1.7",
     "orientation": "portrait",
     "scheme": "surtivoxpos",
     "userInterfaceStyle": "automatic",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "android": {
       "package": "io.surtivox.pos",
-      "versionCode": 12,
+      "versionCode": 13,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B0E12"
@@ -46,7 +46,6 @@
       ],
       "expo-image",
       "expo-sharing",
-      "expo-iap",
       [
         "expo-splash-screen",
         {
@@ -63,7 +62,10 @@
           "android": {
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
-            "buildArchs": ["arm64-v8a", "armeabi-v7a"]
+            "buildArchs": [
+              "arm64-v8a",
+              "armeabi-v7a"
+            ]
           }
         }
       ]
@@ -76,7 +78,10 @@
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/e9fd4450-8f1d-4490-be62-34de756bf454"
+      "url": "https://u.expo.dev/e9fd4450-8f1d-4490-be62-34de756bf454",
+      "requestHeaders": {
+        "expo-channel-name": "preview"
+      }
     },
     "runtimeVersion": {
       "policy": "fingerprint"

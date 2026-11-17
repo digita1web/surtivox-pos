@@ -33,7 +33,7 @@
     <section class="help-hero" aria-labelledby="ayuda-titulo">
       <p class="eyebrow">Centro de ayuda</p>
       <h1 id="ayuda-titulo">¿En qué te ayudamos?</h1>
-      <p class="help-lead">Guías paso a paso para usar Surtivox POS en tu tienda. Corresponde a la versión <span data-help-version>1.1.6</span> para Android.</p>
+      <p class="help-lead">Guías paso a paso para usar Surtivox POS en tu tienda. Corresponde a la versión <span data-help-version>1.1.7</span> para Android.</p>
       <form class="help-search" role="search" onsubmit="return false">
         <label for="buscar-ayuda" class="help-sr">Buscar en la ayuda</label>
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.2-4.2"/></svg>
@@ -53,7 +53,7 @@
     <nav class="help-topics" aria-label="Temas de ayuda">
       <a class="help-topic" href="#primeros-pasos"><span aria-hidden="true">🚀</span><strong>Primeros pasos</strong><small>Instalar, crear tu tienda y actualizar</small></a>
       <a class="help-topic" href="#vender"><span aria-hidden="true">🛒</span><strong>Vender y cobrar</strong><small>Escanear, cobrar, recibos, anular y devolver</small></a>
-      <a class="help-topic" href="#productos"><span aria-hidden="true">📦</span><strong>Productos</strong><small>Agregar, editar, unidades, alertas y CSV</small></a>
+      <a class="help-topic" href="#productos"><span aria-hidden="true">📦</span><strong>Productos</strong><small>Agregar, catálogo, editar, unidades, alertas y CSV</small></a>
       <a class="help-topic" href="#inventario"><span aria-hidden="true">📋</span><strong>Inventario</strong><small>Compras, proveedores, conteo y pedidos</small></a>
       <a class="help-topic" href="#fiados"><span aria-hidden="true">🤝</span><strong>Clientes y fiados</strong><small>Fiar, recibir abonos y recordar por WhatsApp</small></a>
       <a class="help-topic" href="#reportes"><span aria-hidden="true">📊</span><strong>Reportes</strong><small>Ventas, ganancia y medios de pago</small></a>
@@ -130,6 +130,7 @@
             <li>Toca <b>Descargar</b> e instala el archivo encima de la app que ya tienes. No la desinstales.</li>
           </ol>
           <p class="help-warn">Importante: desinstalar la app borra los datos guardados en el celular. Para actualizar, instala encima.</p>
+          <p>Desde la versión 1.1.7, algunas mejoras pequeñas llegan solas: con internet, la app las descarga en segundo plano y las aplica la próxima vez que la cierras y la vuelves a abrir. No tienes que instalar nada ni se borran tus datos.</p>
         </div>
       </details>
     </section>
@@ -251,6 +252,23 @@
             <li>Agrega una foto si quieres y toca <b>Guardar producto</b>.</li>
           </ol>
           <p class="help-tip">Si escaneas un código que ya está en tu catálogo, la app te avisa y te ofrece editar ese producto, para que no quede duplicado.</p>
+        </div>
+      </details>
+
+      <details class="help-article" id="catalogo-de-productos">
+        <summary><h3>Catálogo de productos de tu tipo de negocio</h3></summary>
+        <div class="help-body-text">
+          <p class="help-req">Quién puede: propietario y administrador.</p>
+          <p>Es una lista de productos comunes para que no tengas que escribirlos desde cero. Se descarga una vez y después funciona sin internet.</p>
+          <ol>
+            <li>Ve a <b>Más → Catálogo de productos</b>.</li>
+            <li>En <b>Tipo de negocio</b> elige el tuyo: tienda de barrio, minimercado, droguería, ferretería, papelería o licorera.</li>
+            <li>Toca <b>Descargar catálogo</b>. Necesitas internet solo para este paso.</li>
+          </ol>
+          <p>Después, al <a href="#agregar-un-producto">agregar un producto</a>, escribe parte del nombre: aparecen sugerencias bajo <b>Del catálogo · toca para completar</b>. Al tocar una se completan el nombre, la categoría, la unidad y, si lo tiene, el código de barras. Si escaneas un código que está en el catálogo, los datos se completan solos, aun sin internet. <b>El precio lo pones tú</b>: el catálogo no trae precios ni fotos.</p>
+          <p>El catálogo es solo una ayuda para llenar el formulario: nada se agrega a tus productos hasta que tocas <b>Guardar producto</b>.</p>
+          <p>Para traer la versión más reciente, toca <b>Buscar actualización</b>. Para cambiar de tipo de negocio, elige otro y toca <b>Cambiar a…</b>. Para liberar espacio, toca <b>Eliminar catálogo de este teléfono</b>: tus productos, ventas e inventario no cambian.</p>
+          <p class="help-tip">Los datos vienen en parte de Open Food Facts y se publican bajo la licencia abierta ODbL. El origen se muestra en la misma pantalla, en <b>Origen de los datos</b>.</p>
         </div>
       </details>
 

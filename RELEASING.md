@@ -56,7 +56,46 @@ El AAB solo debe generarse cuando exista una llave de subida propia y una config
 
 ## Actualizaciones OTA y huella nativa
 
-`app.json` usa `runtimeVersion` con la política `fingerprint`. Cambiar permisos, plugins o arquitecturas nativas cambia la huella del runtime. Un teléfono con el APK anterior no recibirá por OTA el JavaScript de un runtime nuevo: debe instalar el APK nuevo. Las actualizaciones OTA deben publicarse solo para la misma huella nativa.
+Desde la 1.1.7 la app puede recibir cambios de JavaScript sin instalar un APK nuevo (EAS Update). Al abrirla con internet, la app descarga la actualización en segundo plano y la aplica la siguiente vez que se abre desde cero. Las versiones 1.1.6 y anteriores **no** reciben OTA: no llevan canal.
+
+### Qué puede ir por OTA y qué no
+
+`app.json` usa `runtimeVersion` con la política `fingerprint`: la huella resume todo lo nativo. Una OTA solo llega a los APK que tienen **exactamente la misma huella**. Comprobado el 2026-11-16 con `expo-updates fingerprint:generate`:
+
+- **No cambian la huella:** cambios en `src/`, `app/`, textos, estilos o lógica en TypeScript. Eso va por OTA.
+- **Sí la cambian:** agregar o quitar dependencias con código nativo, plugins, permisos, el ícono o el splash, **`version` y `versionCode` de `app.json`**, y el canal. Eso necesita un APK nuevo con su tag.
+
+Por eso una OTA se publica **sin** subir la versión de `app.json`. La versión que muestra la app es la del APK.
+
+### Canales
+
+| Canal | Lo escuchan | De dónde sale |
+|---|---|---|
+| `production` | El APK de la release (el que descargan las tiendas) | Workflow de tag `v*` |
+| `preview` | APK de `main` o compilados a mano (artefacto de Actions) | Cualquier build que no sea de tag |
+
+`app.json` versionado trae `preview`. El paso "Fijar el canal de actualizaciones" (`scripts/set-update-channel.mjs`) lo cambia a `production` solo en los tags. Así, un build o un `eas update` hecho a mano desde un computador nunca cae en los teléfonos de las tiendas.
+
+El build calcula la huella antes del prebuild, compila, y después **comprueba que la huella y el canal que quedaron dentro del APK** (`assets/fingerprint` y `assets/app.config`) sean los calculados. Si no coinciden, falla. La release publica `runtime-android.json` junto a `Surtivox.apk` y el resumen del job muestra canal y huella.
+
+### Publicar una OTA
+
+Requisito único: el secreto `EXPO_TOKEN` en GitHub (Settings → Secrets and variables → Actions), un token de acceso de la cuenta de Expo dueña del proyecto `e9fd4450-…`. Nunca se pega en el chat ni en el repo.
+
+1. Con el cambio ya en una rama, ve a **Actions → Publicar actualización OTA → Run workflow**, elige la rama, `preview`, `publicar` y escribe qué cambia.
+2. En un teléfono con un APK de `preview` de la **misma huella** (compara la huella del resumen de ambos workflows), cierra y abre la app dos veces y prueba el cambio.
+3. Con el cambio en `main`, repite con `production`. El workflow:
+   - exige que la corrida sea de `main`;
+   - pasa el gate completo (`verify.sh`, typecheck y tests);
+   - calcula la huella y la compara con `runtime-android.json` de la última release. Si no coincide, se detiene y dice que hace falta un APK nuevo.
+
+`eas-cli` va fijado a una versión exacta (`27.2.0`). Para subirlo, cámbialo en el workflow y en su test (`otaWiring.test.ts`).
+
+### Si una OTA sale mal
+
+En el mismo workflow elige el canal y la acción **`volver-al-apk`**. Publica un "volver al código embebido": los teléfonos vuelven a correr el JavaScript que trae el APK la próxima vez que abran la app dos veces. Esta acción no pasa por el gate, para que sirva aunque `main` esté roto. Para volver a una OTA anterior concreta (en lugar del APK), desde un computador con sesión de Expo: `npx eas-cli@27.2.0 update:republish --group <id> --non-interactive` (el id sale de `eas update:list`).
+
+Una OTA nunca toca la base de datos por sí sola, pero el JavaScript nuevo sí corre las migraciones al abrir. **No publiques por OTA una migración de SQLite** sin probarla antes en `preview`: volver al APK no deshace una migración ya aplicada.
 
 ## Medición del APK
 
