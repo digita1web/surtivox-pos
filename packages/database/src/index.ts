@@ -2,7 +2,7 @@ export { runMigrations, type Migration, type SqlExecutor } from './runner.ts';
 export {
   SYNC_TABLES, upsertSql, serverUpsertSql, stripLocalOnly, serverRowValues, rowValues, changedSinceSql, pullSql, rowStoreId,
   PUSH_LIMITS, PUSH_BATCH, chunkPushRows,
-  SYNC_SCHEMA_VERSION, tableSchema, tablesUpTo, tablesAddedAfter, serverSchemaOf,
+  SYNC_SCHEMA_VERSION, pullPageSql, PULL_FIRST_ID, tableSchema, tablesUpTo, tablesAddedAfter, serverSchemaOf,
   type SyncTable, type SyncMode, type StoreScope, type PushTableRows,
 } from './sync.ts';
 import { migration as m0000 } from './migrations/0000_init.ts';

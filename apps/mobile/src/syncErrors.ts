@@ -26,7 +26,10 @@ export function waitMessage(seconds: number): string {
   return `Demasiados intentos. Espera ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'} e inténtalo de nuevo.`;
 }
 
+export const QUOTA_MESSAGE = 'Tu tienda llegó al límite diario de sincronización de la versión de pruebas. Tus datos siguen guardados en este teléfono; vuelve a sincronizar mañana.';
+
 export function syncErrorMessage(serverError: unknown, status: number, retryAfterSeconds: number | null = null): string {
+  if (serverError === 'quota_exceeded') return QUOTA_MESSAGE;
   if (status === 429) return waitMessage(retryAfterSeconds ?? 60);
   if (typeof serverError === 'string' && Object.prototype.hasOwnProperty.call(MESSAGES, serverError)) {
     return MESSAGES[serverError]!;

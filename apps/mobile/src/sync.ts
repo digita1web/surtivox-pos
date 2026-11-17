@@ -21,7 +21,7 @@ import {
   readKitReminderInputOn, shouldRemindKit, kitReminderText, snoozeKitReminderOn,
   type KitDeps, type KitInfo, type KitStatus,
 } from './kitOps';
-import { syncCycleOn, serverSchemaOn, type SyncRequest } from './syncFlow';
+import { syncCycleOn, serverSchemaOn, pullAllOn, type PulledPayload, type SyncRequest } from './syncFlow';
 
 /**
  * URL del Worker de sincronización configurado para esta compilación.
@@ -228,8 +228,11 @@ export async function restoreFromCloud(serverUrl: string, token: string): Promis
   const base = serverUrl.trim().replace(/\/+$/, '');
   const tk = token.trim();
   // Verify the token resolves to a store before wiping anything.
-  const payload = await api(base, '/sync/pull?since=0', tk, { method: 'GET' });
-  if (!payload || typeof payload.tables !== 'object' || payload.tables === null) {
+  let payload: PulledPayload;
+  try {
+    payload = await pullAllOn(requester(base, tk), 0);
+  } catch (e) {
+    if (e instanceof SyncHttpError) throw e;
     throw new Error('La nube devolvió una respuesta inválida. No se modificó nada.');
   }
   const db = getDb();

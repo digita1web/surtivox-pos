@@ -298,3 +298,10 @@ CREATE TABLE IF NOT EXISTS stock_count_lines (
   device_id             TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_stock_count_lines_count ON stock_count_lines(count_id, created_at);
+
+CREATE TABLE IF NOT EXISTS store_usage (
+  store_id TEXT NOT NULL,
+  day      TEXT NOT NULL,
+  rows     INTEGER NOT NULL,
+  PRIMARY KEY (store_id, day)
+);

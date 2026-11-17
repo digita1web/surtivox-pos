@@ -199,6 +199,20 @@ export function pullSql(t: SyncTable): string {
     `WHERE ${q(p.table)}."store_id" = ? AND ${time} > ? ORDER BY ${time} ASC`;
 }
 
+export const PULL_FIRST_ID = '~';
+
+export function pullPageSql(t: SyncTable): string {
+  const time = `${q(t.name)}.${q(t.timeColumn)}`;
+  const id = `${q(t.name)}."id"`;
+  const keyset = `(${time} > ? OR (${time} = ? AND ${id} > ?))`;
+  const order = `ORDER BY ${time} ASC, ${id} ASC LIMIT ?`;
+  if (t.scope.kind === 'self') return `SELECT * FROM ${q(t.name)} WHERE ${id} = ? AND ${keyset} ${order}`;
+  if (t.scope.kind === 'column') return `SELECT * FROM ${q(t.name)} WHERE ${q(t.name)}."store_id" = ? AND ${keyset} ${order}`;
+  const p = t.scope;
+  return `SELECT ${q(t.name)}.* FROM ${q(t.name)} JOIN ${q(p.table)} ON ${q(p.table)}."id" = ${q(t.name)}.${q(p.fk)} ` +
+    `WHERE ${q(p.table)}."store_id" = ? AND ${keyset} ${order}`;
+}
+
 /** The store_id a pushed row belongs to, for server-side ownership checks. */
 export function rowStoreId(t: SyncTable, row: Record<string, unknown>): string | null {
   if (t.scope.kind === 'self') return (row['id'] as string) ?? null;
