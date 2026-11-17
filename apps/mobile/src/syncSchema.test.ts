@@ -5,6 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { MIGRATIONS, SYNC_SCHEMA_VERSION, SYNC_TABLES, tablesUpTo } from '@surtivox/database';
 import worker from '../../sync-worker/src/index.ts';
 import { fakeD1 } from '../../sync-worker/test/support.ts';
+import { QUOTA_MESSAGE, toSyncHttpError } from './syncErrors.ts';
 import {
   SERVER_OUTDATED_MESSAGE, applyPullOn, pushChangesOn, syncCycleOn, type SyncDb, type SyncRequest,
 } from './syncFlow.ts';
@@ -39,10 +40,10 @@ function on(db: DatabaseSync): SyncDb {
   } as unknown as SyncDb;
 }
 
-function cloud() {
+function cloud(vars: Record<string, string> = {}) {
   const db = new DatabaseSync(':memory:');
   db.exec(readFileSync(new URL('../../sync-worker/schema.sql', import.meta.url), 'utf8'));
-  const env = { DB: fakeD1(db) } as never;
+  const env = { DB: fakeD1(db), ...vars } as never;
   const paths: string[] = [];
   const request: SyncRequest = async (path, init) => {
     paths.push(path);
@@ -52,7 +53,7 @@ function cloud() {
       body: init.body,
     }), env);
     const body = await res.json() as Record<string, unknown>;
-    if (!res.ok) throw new Error(`${res.status} ${JSON.stringify(body)}`);
+    if (!res.ok) throw toSyncHttpError(body, res.status, res.headers.get('retry-after'));
     return body;
   };
   return { db, request, paths };
@@ -148,4 +149,38 @@ test('a device upgraded from the old APK backfills counts its old cursor already
   const again = server.paths.length;
   await syncCycleOn(on(fixed.db), server.request, fixed.next);
   assert.equal(server.paths.slice(again).filter((p) => p.includes('tables=')).length, 0);
+});
+
+test('un teléfono nuevo recibe la tienda completa aunque el Worker entregue páginas de 3 filas', async () => {
+  const server = cloud({ PULL_MAX_PAGE: '3' });
+  const a = device();
+  seedShopWithCount(a);
+  await server.request('/sync/register', { method: 'POST', body: JSON.stringify({ storeId: 's1' }) });
+  await syncCycleOn(on(a), server.request, FRESH);
+  const b = device();
+  await syncCycleOn(on(b), server.request, FRESH);
+  assert.equal(stockOf(b, 'p1'), 8);
+  assert.equal(countOf(b, 'products'), 2);
+  assert.equal(countOf(b, 'stock_count_lines'), 1);
+  assert.ok(server.paths.filter((p) => p.includes('after=')).length >= 2, 'debió pedir varias páginas');
+});
+
+test('la app nueva sigue funcionando con un Worker que ignora la paginación', async () => {
+  const server = cloud();
+  const a = device();
+  seedShopWithCount(a);
+  await server.request('/sync/register', { method: 'POST', body: JSON.stringify({ storeId: 's1' }) });
+  const legacy: SyncRequest = (path, init) => server.request(path.replace(/&limit=\d+/, '').replace(/&after=[^&]*/, ''), init);
+  await syncCycleOn(on(a), legacy, FRESH);
+  const b = device();
+  await syncCycleOn(on(b), legacy, FRESH);
+  assert.equal(stockOf(b, 'p1'), 8);
+});
+
+test('al superar el tope diario la app muestra el mensaje de límite', async () => {
+  const server = cloud({ QUOTA_DAILY_ROWS: '3' });
+  const a = device();
+  seedShopWithCount(a);
+  await server.request('/sync/register', { method: 'POST', body: JSON.stringify({ storeId: 's1' }) });
+  await assert.rejects(syncCycleOn(on(a), server.request, FRESH), { message: QUOTA_MESSAGE });
 });

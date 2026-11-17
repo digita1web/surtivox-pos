@@ -59,11 +59,17 @@ CORS responde `*` con métodos `GET, POST, OPTIONS`.
 - Cambiar el contrato de un endpoint exige desplegar el Worker antes de publicar la app que lo usa.
 - Nunca se registran tokens ni llaves en logs ni en mensajes de error.
 
+## Tope diario y paginación
+
+- **Tope diario por tienda:** el push suma las filas aplicadas en `store_usage` (día UTC). Si una petición haría pasar el total de `QUOTA_DAILY_ROWS` (variable del Worker, 20.000 por defecto; `0` lo desactiva), responde `429 {"error":"quota_exceeded","limit","used"}` con `retry-after` hasta la medianoche UTC y no aplica nada. La app muestra un mensaje propio, distinto del de demasiados intentos. Si la tabla `store_usage` no existe, no se bloquea a nadie.
+- **Pull paginado, solo si se pide:** con `limit` (máximo `PULL_MAX_PAGE`, 5.000 por defecto) el Worker recorre las tablas en orden y corta por `(tiempo, id)`; responde `more` y `next` (`tabla|tiempo|id`), que se envía como `after` en la página siguiente. Así no se pierden ni repiten filas aunque muchas compartan el mismo milisegundo. La app nueva pide páginas de 2.000 y aplica todo al final. Sin `limit` la respuesta es la de siempre: las APK anteriores no cambian.
+- Orden de despliegue: aplicar `migrations/0003_store_usage.sql` y después desplegar el Worker (aunque sin la tabla el Worker no bloquea).
+
 ## No implementado
 
-- No hay cuota de filas por tienda ni límite de registros exitosos.
+- No hay límite de filas totales por tienda, solo el diario. Un lote rechazado por el tope se reenvía completo al día siguiente.
 - No hay verificación de suscripción ni consulta de `entitlements` en este Worker.
-- `/sync/pull` devuelve todas las filas posteriores al cursor en una sola respuesta, sin paginación.
+- `/sync/pull` sin `limit` (APK anteriores) sigue devolviendo todo en una sola respuesta.
 
 ## Pruebas
 

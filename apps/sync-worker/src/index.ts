@@ -1,10 +1,47 @@
 import {
-  SYNC_TABLES, SYNC_SCHEMA_VERSION, serverUpsertSql, serverRowValues, pullSql, rowStoreId, PUSH_LIMITS, type SyncTable,
+  SYNC_TABLES, SYNC_SCHEMA_VERSION, PULL_FIRST_ID, pullPageSql, serverUpsertSql, serverRowValues, pullSql, rowStoreId, PUSH_LIMITS, type SyncTable,
 } from '@surtivox/database';
 import { handleMarketPrices } from './marketPrices.ts';
 
 export interface Env {
   DB: D1Database;
+  QUOTA_DAILY_ROWS?: string;
+  PULL_MAX_PAGE?: string;
+}
+
+export const DEFAULT_QUOTA_DAILY_ROWS = 20_000;
+export const DEFAULT_PULL_MAX_PAGE = 5_000;
+
+const positiveInt = (raw: string | undefined, fallback: number) => {
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 0 ? n : fallback;
+};
+
+const utcDay = (now: number) => new Date(now).toISOString().slice(0, 10);
+
+function secondsToNextUtcDay(now: number): number {
+  const d = new Date(now);
+  return Math.max(1, Math.ceil((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1) - now) / 1000));
+}
+
+async function usedToday(env: Env, storeId: string, day: string): Promise<number | null> {
+  try {
+    const row = await env.DB.prepare('SELECT rows FROM store_usage WHERE store_id = ? AND day = ?').bind(storeId, day).first<{ rows: number }>();
+    return row?.rows ?? 0;
+  } catch {
+    return null;
+  }
+}
+
+async function addUsage(env: Env, storeId: string, day: string, rows: number): Promise<void> {
+  if (rows <= 0) return;
+  try {
+    await env.DB.prepare(
+      'INSERT INTO store_usage (store_id, day, rows) VALUES (?, ?, ?) ON CONFLICT(store_id, day) DO UPDATE SET rows = rows + excluded.rows',
+    ).bind(storeId, day, rows).run();
+  } catch {
+    return;
+  }
 }
 
 type Row = Record<string, unknown>;
@@ -184,6 +221,13 @@ export default {
         total += rows?.length ?? 0;
       }
       if (total > PUSH_LIMITS.maxRows) return json({ error: 'too_many_rows' }, 413);
+      const now = Date.now();
+      const day = utcDay(now);
+      const quota = positiveInt(env.QUOTA_DAILY_ROWS, DEFAULT_QUOTA_DAILY_ROWS);
+      const used = quota > 0 ? await usedToday(env, storeId, day) : null;
+      if (used !== null && used + total > quota) {
+        return json({ error: 'quota_exceeded', limit: quota, used }, 429, { 'retry-after': String(secondsToNextUtcDay(now)) });
+      }
       let applied = 0;
       for (const t of SYNC_TABLES) {
         const rows = tables[t.name] as Row[] | undefined;
@@ -197,6 +241,7 @@ export default {
         }
         if (batch.length) { await env.DB.batch(batch); applied += batch.length; }
       }
+      if (quota > 0) await addUsage(env, storeId, day, applied);
       return json({ ok: true, applied, serverTime: Date.now() });
     }
 
@@ -206,10 +251,58 @@ export default {
       const since = Number(url.searchParams.get('since') ?? '0') || 0;
       const only = url.searchParams.get('tables');
       const wanted = only ? new Set(only.split(',')) : null;
+      const tables = SYNC_TABLES.filter((t) => !wanted || wanted.has(t.name));
+      const limitParam = url.searchParams.get('limit');
+      if (limitParam !== null) {
+        const max = positiveInt(env.PULL_MAX_PAGE, DEFAULT_PULL_MAX_PAGE) || DEFAULT_PULL_MAX_PAGE;
+        const limit = Math.min(max, Math.max(1, positiveInt(limitParam, max) || max));
+        const afterRaw = url.searchParams.get('after');
+        let after: { table: string; time: number; id: string } | null = null;
+        if (afterRaw !== null) {
+          const [table, time, ...rest] = afterRaw.split('|');
+          const id = rest.join('|');
+          if (!table || !tables.some((t) => t.name === table) || !Number.isFinite(Number(time)) || !id) return json({ error: 'invalid_request' }, 400);
+          after = { table, time: Number(time), id };
+        }
+        const out: Record<string, Row[]> = {};
+        let cursor = since;
+        let remaining = limit;
+        let next: string | null = null;
+        let started = after === null;
+        for (let i = 0; i < tables.length; i++) {
+          const t = tables[i]!;
+          let keyTime = since;
+          let keyId = PULL_FIRST_ID;
+          if (!started) {
+            if (t.name !== after!.table) continue;
+            started = true;
+            keyTime = after!.time;
+            keyId = after!.id;
+          }
+          const res = await env.DB.prepare(pullPageSql(t)).bind(storeId, keyTime, keyTime, keyId, remaining + 1).all<Row>();
+          const rows = res.results ?? [];
+          const page = rows.length > remaining ? rows.slice(0, remaining) : rows;
+          out[t.name] = page;
+          for (const r of page) {
+            const ts = Number(r[t.timeColumn]);
+            if (Number.isFinite(ts) && ts > cursor) cursor = ts;
+          }
+          remaining -= page.length;
+          if (rows.length > page.length) {
+            const last = page[page.length - 1]!;
+            next = `${t.name}|${Number(last[t.timeColumn])}|${String(last['id'])}`;
+            break;
+          }
+          if (remaining === 0 && i + 1 < tables.length) {
+            next = `${tables[i + 1]!.name}|${since}|${PULL_FIRST_ID}`;
+            break;
+          }
+        }
+        return json({ ok: true, tables: out, cursor, more: next !== null, next });
+      }
       const out: Record<string, Row[]> = {};
       let cursor = since;
-      for (const t of SYNC_TABLES) {
-        if (wanted && !wanted.has(t.name)) continue;
+      for (const t of tables) {
         const res = await env.DB.prepare(pullSql(t)).bind(storeId, since).all<Row>();
         const rows = res.results ?? [];
         out[t.name] = rows;
