@@ -78,6 +78,8 @@ Por eso una OTA se publica **sin** subir la versión de `app.json`. La versión 
 
 El build calcula la huella antes del prebuild, compila, y después **comprueba que la huella y el canal que quedaron dentro del APK** (`assets/fingerprint` y `assets/app.config`) sean los calculados. Si no coinciden, falla. La release publica `runtime-android.json` junto a `Surtivox.apk` y el resumen del job muestra canal y huella.
 
+Gradle vuelve a calcular la huella a mitad de la compilación y en CI le salía otra (build #68 de `main`: `def3c2…` antes de compilar, `d72058…` dentro del APK), aunque en un computador las dos coinciden. Como `eas update` la calcula sobre un checkout limpio, el build le pasa a Gradle la huella del árbol limpio con `EXPO_UPDATES_FINGERPRINT_OVERRIDE`, que es lo que hace EAS Build. El paso "Diagnosticar si la compilación cambió las fuentes de la huella" la recalcula después de compilar y, si cambió, deja un aviso con las fuentes que cambiaron, sin hacer fallar el build.
+
 ### Publicar una OTA
 
 Requisito único: el secreto `EXPO_TOKEN` en GitHub (Settings → Secrets and variables → Actions), un token de acceso de la cuenta de Expo dueña del proyecto `e9fd4450-…`. Nunca se pega en el chat ni en el repo.
