@@ -16,7 +16,7 @@ export const TERMS_SECTIONS: readonly LegalSection[] = [
   },
   {
     title: '3. Licencia del software',
-    body: 'El software es propiedad exclusiva de Mateo Castro y se ofrece bajo una licencia propietaria: todos los derechos reservados. Queda prohibida la copia, distribución, modificación, sublicenciamiento o uso comercial sin el consentimiento previo y por escrito del titular. El uso en entornos comerciales requiere una licencia comercial. La licencia no concede derechos sobre marcas, logotipos o contenidos de terceros, ni obliga a ofrecer soporte, actualizaciones o mantenimiento.',
+    body: 'El software es propiedad exclusiva de Mateo Castro: todos los derechos reservados. Puedes descargar la aplicación publicada oficialmente, instalarla y usarla sin costo, incluso para administrar tu propio negocio. Sin el consentimiento previo y por escrito del titular queda prohibido copiar, modificar, distribuir o sublicenciar el código o la aplicación, publicar versiones modificadas, o venderla u ofrecerla a terceros. Los servicios opcionales que en el futuro tengan costo se regirán por sus propias condiciones, que se informarán antes de cobrar. La licencia no concede derechos sobre marcas, logotipos o contenidos de terceros, ni obliga a ofrecer soporte, actualizaciones o mantenimiento.',
   },
   {
     title: '4. Uso permitido',

@@ -9,6 +9,16 @@ Estado: **v1.1.5, pruebas con tiendas piloto** (`versionCode` 11, [app.json](app
 - La app usa `DEFAULT_SYNC_URL` = `https://surtivox-sync.surtivox.workers.dev` ([sync.ts](apps/mobile/src/sync.ts)).
 - Los avisos de la pantalla de nube dicen que es una versión de pruebas y que puede cambiar.
 
+## Etapa 0 antes de monetizar (2026-11-16)
+
+Decisión del propietario: antes de cobrar, llegar a 20–50 tiendas, cerrar P0-1, alinear licencia y landing y fijar el tope de la nube. Ramas locales, sin desplegar:
+
+- **P0-1 cerrado en código** (`fix/p0-1-pagos`, `b627a72`): `/pagos/crear` autentica con `shop_keys` (hash) como el sync. Tests con el handler real. **El Worker de pagos sigue sin desplegar**, sin webhook ni `entitlements`; para empezar se propone cobro manual.
+- **Tope diario y paginación** (`feat/cuota-nube`, `bed8a63`): `QUOTA_DAILY_ROWS` (20.000 por defecto, configurable) y pull paginado opcional; detalle en `docs/sync-spec.md`. **Pendiente:** aplicar `apps/sync-worker/migrations/0003_store_usage.sql`, desplegar el Worker y decidir el número.
+- **Licencia** (`docs/licencia-y-piloto`, `f512fbc`): LICENSE, Términos de la landing y de la app permiten usar gratis la app publicada en el propio negocio; `LEGAL_VERSION` 2026-11-16 (la próxima versión pide aceptar de nuevo). **Borrador sin revisión jurídica.**
+- **Piloto:** guía en `docs/piloto.md` (reclutamiento, instalación, medición sin rastreo, pregunta de precio, criterios de éxito).
+- Sin cambios y pendiente de decisión: retirar `paywall.tsx` (muestra "USD 5/mes") y `expo-iap`.
+
 ## Prueba en el teléfono del catálogo sin conexión (2026-11-16 18:40)
 
 Redmi Note 9 por adb, APK del build #58 de `main` (1.1.6, `versionCode` 12, firma de producción `e798f4a4…`), instalado encima con datos ficticios. **Verificado:**

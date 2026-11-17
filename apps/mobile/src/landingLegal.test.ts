@@ -46,3 +46,14 @@ for (const page of pages) {
     assert.ok(article.includes('mailto:pragramademateo@gmail.com'));
   });
 }
+
+test('la licencia, los términos y la landing coinciden: la app publicada se puede usar gratis en tu negocio', () => {
+  const license = readFileSync(new URL('../../../LICENSE', import.meta.url), 'utf8');
+  const clause = TERMS_SECTIONS.find((s) => s.title === '3. Licencia del software')!.body;
+  for (const text of [license, clause]) {
+    assert.match(text, /usarla sin costo, incluso para administrar tu propio negocio/);
+    assert.doesNotMatch(text, /uso comercial|entornos comerciales requiere/i);
+  }
+  assert.match(license, /catalog-data\/ .*Open Database License 1\.0/s);
+  assert.match(readFileSync(new URL('../../../landing/index.html', import.meta.url), 'utf8'), /punto de venta gratis/);
+});
