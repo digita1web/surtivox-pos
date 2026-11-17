@@ -91,13 +91,36 @@ export function composeName(base: string, brand: string | null, pres: Presentati
   return name.charAt(0).toLocaleUpperCase('es') + name.slice(1);
 }
 
-export const NAME_RULES: readonly { pattern: RegExp; category: string }[] = [
-  { pattern: /\bmalta\b/, category: 'bebidas' },
+export interface NameRule {
+  pattern: RegExp;
+  category: string;
+}
+
+export const NAME_RULES: readonly NameRule[] = [
+  { pattern: /^(pony )?malta\b/, category: 'bebidas' },
+  { pattern: /^(gaseosa|refresco|jugo|nectar)\b/, category: 'bebidas' },
+  { pattern: /^(chorizos?|salchichas?|salchichon|mortadela|jamon|jamonada|butifarras?|longanizas?|tocineta|salami|pepperoni|hamburguesas?)\b/, category: 'carnes-frias' },
+  { pattern: /^combo\b.*\b(salchichas?|salchichon|mortadela|jamon)\b/, category: 'carnes-frias' },
+  { pattern: /^(huevos?|claras de huevo)\b/, category: 'huevos' },
+  { pattern: /^arepas?\b/, category: 'panaderia' },
 ];
 
-export function categoryByName(name: string): string | null {
+export const NAME_FALLBACK: readonly NameRule[] = [
+  { pattern: /^leche\b(?! (de|en) (almendras?|soya|soja|coco|avena|arroz|marañon)\b)(?! condensada)/, category: 'lacteos' },
+  { pattern: /^(quesos?|quesito|yogurt|yogur|kumis|kefir|mantequilla|arequipe|cuajada)\b/, category: 'lacteos' },
+  { pattern: /^(salsas?|mayonesa|caldo|vinagre|sazonador|condimento)\b/, category: 'condimentos' },
+  { pattern: /^(pan|panes|tostadas|ponque|torta|arepas?|tortillas|mogolla|almojabana)\b/, category: 'panaderia' },
+  { pattern: /^(galletas?|papas|mani|chicharron|chicharrones|platanitos|snack|rosquitas)\b/, category: 'snacks' },
+  { pattern: /^bebida\b(?! lactea)|^(gaseosa|refresco|jugo|nectar)\b|^agua\b(?! (micelar|oxigenada|de rosas|termal))/, category: 'bebidas' },
+  { pattern: /^(helado|paleta)\b/, category: 'congelados' },
+  { pattern: /^(chocolatina|chocolates|bombones|gomas|gomitas|caramelos|masmelos|chicles?|chupetas?)\b/, category: 'dulces' },
+  { pattern: /^(atun|cereal|granola|cafe|mermelada|aceitunas|sardinas)\b|^aceite\b(?! (corporal|para bebe|de almendras|de argan|de ricino|esencial|capilar))/, category: 'abarrotes' },
+  { pattern: /^(arroz|frijol|frijoles|lentejas?|garbanzos?)\b/, category: 'granos' },
+];
+
+export function categoryByName(name: string, rules: readonly NameRule[] = NAME_RULES): string | null {
   const key = foldKey(name);
-  return NAME_RULES.find((r) => r.pattern.test(key))?.category ?? null;
+  return rules.find((r) => r.pattern.test(key))?.category ?? null;
 }
 
 export function mapCategory(tags: unknown, rules: readonly CategoryRule[]): string | null {
@@ -131,8 +154,14 @@ export function brandCase(brand: string): string {
   return brand.replace(/\p{L}+/gu, (word) => (single && word.length <= 3 ? word : word.charAt(0) + word.slice(1).toLowerCase()));
 }
 
-export function transformOff(raw: OffRaw, rules: readonly CategoryRule[], tax: Taxonomy, retrievedAt: string): TransformResult {
+export interface Exclusion {
+  code: string;
+  reason: string;
+}
+
+export function transformOff(raw: OffRaw, rules: readonly CategoryRule[], tax: Taxonomy, retrievedAt: string, excluded: ReadonlySet<string> = new Set()): TransformResult {
   const code = typeof raw.code === 'string' ? raw.code.trim() : '';
+  if (excluded.has(code)) return { ok: false, reason: 'excluido_a_mano', detail: code };
   if (!isValidGtin(code)) return { ok: false, reason: 'gtin_invalido', detail: code };
   if (!Array.isArray(raw.countries_tags) || !raw.countries_tags.includes('en:colombia')) return { ok: false, reason: 'no_vendido_en_colombia' };
   const base = spanishName(raw, code);
@@ -142,7 +171,7 @@ export function transformOff(raw: OffRaw, rules: readonly CategoryRule[], tax: T
   if (foldKey(base).length < 3) return { ok: false, reason: 'nombre_muy_corto', detail: base };
   const brand = pickBrand(raw.brands);
   if (!brand) return { ok: false, reason: 'sin_marca' };
-  const category = categoryByName(base) ?? mapCategory(raw.categories_tags, rules);
+  const category = categoryByName(base) ?? mapCategory(raw.categories_tags, rules) ?? categoryByName(base, NAME_FALLBACK);
   if (!category) return { ok: false, reason: 'categoria_sin_equivalencia' };
   const cat = tax.categories.get(category);
   if (!cat) return { ok: false, reason: 'categoria_inexistente', detail: category };

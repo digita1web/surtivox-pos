@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { brandCase, categoryByName, composeName, hasMeasure, looksSpanish, mapCategory, presentationFits, parseQuantity, pickBrand, presentationText, transformOff, type CategoryRule, type OffRaw } from '../src/importers/off.ts';
+import { NAME_FALLBACK, brandCase, categoryByName, composeName, hasMeasure, looksSpanish, mapCategory, presentationFits, parseQuantity, pickBrand, presentationText, transformOff, type CategoryRule, type OffRaw } from '../src/importers/off.ts';
 import { loadTaxonomy } from '../src/taxonomy.ts';
 import { ROOT } from './fixtures.ts';
 
@@ -89,7 +89,7 @@ test('lo dudoso queda en cuarentena con su motivo', () => {
   assert.equal(reason({ product_name_es: 'YANBAL' }), 'nombre_en_mayusculas');
   assert.equal(reason({ product_name_es: 'Pa' }), 'nombre_muy_corto');
   assert.equal(reason({ brands: '' }), 'sin_marca');
-  assert.equal(reason({ categories_tags: ['en:cheeses'] }), 'categoria_sin_equivalencia');
+  assert.equal(reason({ product_name_es: 'Producto especial de prueba', categories_tags: ['en:cheeses'] }), 'categoria_sin_equivalencia');
   assert.equal(reason({ product_name_es: '707244561689 Agua Cielo' }), 'nombre_con_codigo');
   assert.equal(reason({ quantity: 'DHP' }), 'ok');
 });
@@ -160,4 +160,51 @@ test('los nombres empiezan en mayúscula y la malta colombiana va a bebidas aunq
   assert.equal(categoryByName('Cerveza Club Colombia'), null);
   const r = transformOff(raw({ product_name_es: 'Pony Malta', brands: 'Bavaria', categories_tags: ['en:beers'] }), RULES, tax, '2026-11-16');
   assert.ok(r.ok && r.product['category'] === 'bebidas');
+});
+
+test('las carnes frías y los huevos se reconocen por el nombre aunque traigan etiquetas de lácteos', () => {
+  const r = (name: string, tags: string[]) => { const t = transformOff(raw({ product_name_es: name, brands: 'Zenú', categories_tags: tags }), RULES, tax, '2026-11-16'); return t.ok ? t.product['category'] : t.reason; };
+  assert.equal(r('Chorizo santarrosano 360 g', ['en:dairies', 'en:eggs']), 'carnes-frias');
+  assert.equal(r('Salchicha ranchera 240 g', ['en:dairies']), 'carnes-frias');
+  assert.equal(r('Claras de huevo 1 kg', ['en:eggs']), 'huevos');
+  assert.equal(r('Pasta al huevo 250 g', ['en:biscuits']), 'snacks');
+});
+
+test('el respaldo por nombre solo actúa sin categoría de etiquetas y evita las palabras ambiguas', () => {
+  const fb = (name: string) => categoryByName(name, NAME_FALLBACK);
+  assert.equal(fb('Queso campesino 500 g'), 'lacteos');
+  assert.equal(fb('Leche entera 1 L'), 'lacteos');
+  assert.equal(fb('Leche de almendras'), null);
+  assert.equal(fb('Leche condensada'), null);
+  assert.equal(fb('Bebida láctea fresa'), null);
+  assert.equal(fb('Bebida de avena'), 'bebidas');
+  assert.equal(fb('Agua Cristal 600 ml'), 'bebidas');
+  assert.equal(fb('Agua micelar'), null);
+  assert.equal(fb('Aceite de girasol 1 L'), 'abarrotes');
+  assert.equal(fb('Aceite corporal'), null);
+  assert.equal(fb('Pasta dental'), null);
+  for (const amb of ['Crema de leche', 'Chocolate de mesa', 'Avena en hojuelas', 'Té verde', 'Mezcla para pancakes']) assert.equal(fb(amb), null, amb);
+  const tagged = transformOff(raw({ product_name_es: 'Galletas de soda', categories_tags: ['en:beverages'] }), [...RULES], tax, '2026-11-16');
+  assert.ok(tagged.ok && tagged.product['category'] === 'bebidas', 'las etiquetas mandan sobre el respaldo por nombre');
+});
+
+test('la malta solo cuenta al inicio del nombre, y gaseosas, refrescos, hamburguesas y arepas mandan sobre etiquetas en bloque', () => {
+  const r = (name: string, tags: string[]) => { const t = transformOff(raw({ product_name_es: name, categories_tags: tags }), RULES, tax, '2026-11-16'); return t.ok ? t.product['category'] : t.reason; };
+  assert.equal(r('Nuggets chocolate Milo con malta', ['en:biscuits']), 'snacks');
+  assert.equal(r('Malta Leona 330 ml', ['en:beers']), 'bebidas');
+  assert.equal(r('Gaseosa uva 400 ml', ['en:confectioneries']), 'bebidas');
+  assert.equal(r('Refresco salpicón 946 ml', ['en:candies']), 'bebidas');
+  assert.equal(r('Hamburguesa mixta res cerdo 400 g', ['en:dairies']), 'carnes-frias');
+  assert.equal(r('Arepas de queso 600 g', ['en:dairies', 'en:cheeses']), 'panaderia');
+  assert.equal(r('Combo salchichón + mortadela 700 g', ['en:dairies']), 'carnes-frias');
+  assert.equal(r('Galletas sabor jamón ahumado 144 g', ['en:biscuits']), 'snacks');
+});
+
+test('los códigos excluidos a mano no entran y la lista de exclusiones explica cada uno', async () => {
+  const { readFileSync } = await import('node:fs');
+  const list = JSON.parse(readFileSync(new URL('../src/importers/off-exclusions.json', import.meta.url), 'utf8')) as { code: string; reason: string }[];
+  assert.ok(list.length >= 1);
+  for (const e of list) assert.ok(e.code && e.reason.length > 20, e.code);
+  const r = transformOff(raw(), RULES, tax, '2026-11-16', new Set(['7702011000019']));
+  assert.deepEqual(r, { ok: false, reason: 'excluido_a_mano', detail: '7702011000019' });
 });
