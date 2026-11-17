@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { transformOff, type CategoryRule, type OffRaw } from '../importers/off.ts';
+import { transformOff, type CategoryRule, type Exclusion, type OffRaw } from '../importers/off.ts';
 import { loadTaxonomy } from '../taxonomy.ts';
 
 const args = new Map(process.argv.slice(2).map((a) => a.replace(/^--/, '').split('=') as [string, string]));
@@ -15,6 +15,7 @@ if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day)) {
 const cache = join(root, '.cache/off', day);
 const meta = JSON.parse(readFileSync(join(cache, 'meta.json'), 'utf8')) as { count: number; pages: number };
 const rules = JSON.parse(readFileSync(join(root, 'src/importers/off-categories.json'), 'utf8')) as CategoryRule[];
+const excluded = new Set((JSON.parse(readFileSync(join(root, 'src/importers/off-exclusions.json'), 'utf8')) as Exclusion[]).map((e) => e.code));
 const { taxonomy, issues } = loadTaxonomy(root);
 if (issues.length) throw new Error(`Taxonomía inválida: ${JSON.stringify(issues)}`);
 for (const r of rules) if (!taxonomy.categories.has(r.category)) throw new Error(`off-categories.json usa una categoría inexistente: ${r.category}`);
@@ -30,7 +31,7 @@ for (const file of readdirSync(cache).filter((f) => /^page-\d{3}\.json$/.test(f)
     const code = typeof raw.code === 'string' ? raw.code : '';
     if (seen.has(code)) continue;
     seen.add(code);
-    const r = transformOff(raw, rules, taxonomy, day);
+    const r = transformOff(raw, rules, taxonomy, day, excluded);
     if (r.ok) accepted.push(r.product);
     else {
       const entry: (typeof quarantine)[number] = { code: raw.code, reason: r.reason, name: raw.product_name_es || raw.product_name, brands: raw.brands, categories: raw.categories_tags };
