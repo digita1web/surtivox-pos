@@ -6,7 +6,7 @@ Este archivo es la libreta del proyecto: dónde estamos, qué falta y qué se ap
 
 La versión publicada es la **1.1.6** (`versionCode` 12). Es la que descarga cualquiera desde la landing y la que tienen los tenderos de prueba. Trae el conteo de inventario, el informe de faltantes y sobrantes, el aviso semanal para contar y los textos en español sin "stock". Todavía no es un lanzamiento comercial: estamos en pruebas con tiendas piloto.
 
-En `main` hay trabajo terminado que aún no está en ninguna APK publicada. Saldrá en la 1.1.7:
+En `main` hay trabajo terminado que aún no está en ninguna APK publicada. Saldrá en la 1.1.8 (la 1.1.7 no llegó a publicarse: su build falló en la firma):
 
 - El catálogo sin conexión: Más → Catálogo de productos. La tienda elige su tipo de negocio, descarga la lista y, al agregar un producto, la app le sugiere el nombre, la categoría, la unidad y el código. El precio siempre lo pone el tendero. Funciona en modo avión.
 - El mensaje que pide reintentar cuando falla la conexión al bajar el catálogo.
@@ -15,7 +15,7 @@ En `main` hay trabajo terminado que aún no está en ninguna APK publicada. Sald
 
 Lo que ya está publicado en la landing (GitHub Pages) porque se fusionó en `main`:
 
-- El catálogo 2026.11.16-2, con 5.423 productos: 814 que escribimos nosotros y 4.609 de Open Food Facts. La app 1.1.6 no lo usa; la 1.1.7 sí.
+- El catálogo 2026.11.16-2, con 5.423 productos: 814 que escribimos nosotros y 4.609 de Open Food Facts. La app 1.1.6 no lo usa; la 1.1.8 sí.
 - El centro de ayuda en `ayuda.html`, con 52 artículos sobre la versión 1.1.6.
 - Los términos y la licencia nuevos. Ojo: este texto se publicó sin que lo revisara un abogado. Ver pendientes.
 
@@ -25,7 +25,7 @@ En Cloudflare está desplegado el Worker de sync que entiende la versión de esq
 
 1. **Revisar la licencia con un abogado.** El `LICENSE`, los términos de la landing y los de la app dicen ahora que la app se puede usar gratis, también para manejar tu propio negocio, y que el código no se puede copiar ni redistribuir. Antes decían que el "uso comercial" necesitaba licencia, lo cual chocaba con ofrecerla gratis a tiendas. El texto nuevo ya está en la landing; si el abogado pide cambios, hay que hacerlos en los tres lugares a la vez (un test exige que la app y la landing digan lo mismo).
 2. **Decidir el tope diario de la nube y desplegarlo.** El Worker trae 20.000 filas por tienda al día como valor por defecto y se cambia con la variable `QUOTA_DAILY_ROWS` sin tocar código. El límite que importa es el de escrituras diarias de D1 en el plan gratuito, que se reparte entre todas las tiendas. Orden: aplicar `apps/sync-worker/migrations/0003_store_usage.sql`, desplegar el Worker y después publicar la app. Si el Worker sale sin la tabla, no bloquea a nadie.
-3. **Publicar la 1.1.7, la primera que recibe actualizaciones sin APK.** Está lista en la rama `feat/v1.1.7-ota`: retira `expo-iap` y el paywall, escucha un canal de actualizaciones, publica su huella nativa en la release y trae el workflow "Publicar actualización OTA" (procedimiento y reversión en [RELEASING.md](RELEASING.md)). La ayuda ya tiene el artículo del catálogo. Falta: agregar el secreto `EXPO_TOKEN`, probar en el teléfono un APK de `preview` de la rama (escáner, guardar desde una sugerencia y una OTA de prueba), fusionar y crear el tag `v1.1.7` enseguida, porque al fusionar Pages ya publica la ayuda con la versión 1.1.7.
+3. **Publicar la 1.1.8, la primera que recibe actualizaciones sin APK.** El tag `v1.1.7` falló en "Configurar firma de release" porque la plantilla nueva de `expo prebuild` escribe `signingConfig signingConfigs.debug` sin `=`; el parche de firma ahora recorre los bloques de Groovy y no depende de ese texto (rama `fix/firma-plantilla-expo`). Como no se reutilizan tags, sale como 1.1.8 (`versionCode` 14). Ya está en `main`: retira `expo-iap` y el paywall, escucha un canal de actualizaciones, publica su huella nativa en la release y trae el workflow "Publicar actualización OTA" (procedimiento y reversión en [RELEASING.md](RELEASING.md)). La ayuda ya tiene el artículo del catálogo. Falta: fusionar la rama de la firma, ver el build de `main` en verde, agregar el secreto `EXPO_TOKEN`, probar en el teléfono el APK de `preview` (escáner, guardar desde una sugerencia y una OTA de prueba) y crear el tag `v1.1.8`. Al fusionar, Pages publica la ayuda con la versión 1.1.8, así que conviene crear el tag pronto.
 4. **Arrancar el piloto con 20 a 50 tiendas.** La guía está en [docs/piloto.md](docs/piloto.md): a quién buscar, cómo instalarles la app, qué no prometerles, cómo medir sin rastrear a nadie y cómo preguntar por el precio.
 5. **Probar la nube y el kit de recuperación en un teléfono de punta a punta.** Nunca se ha hecho con una tienda real.
 6. **Agregar la unidad metro (`m`) a la app.** Ferreterías y mercerías venden cable, cuerda o malla por metro. Mientras tanto, en el catálogo esos productos se llaman "(1 metro)" y usan `unit`. Cuando la app tenga `m`, se marca como unidad de venta en `catalog-data` y se actualizan sus tests.
@@ -206,7 +206,7 @@ El duplicado `surtivox-catalogo` fue borrado. El token de API usado para el desp
 - Los secretos `WOMPI_*` no están configurados.
 - Círculo sin salida: `/pagos/crear` exige un token ya registrado en `sync_tokens`, y registrarlo exige sincronizar. El token debería emitirse al crear el pago.
 - Falta idempotencia: cada llamada crea un `payment_intent` nuevo.
-- ~~**Dos fuentes de verdad de la suscripción, `paywall.tsx` por deep link con "USD 5/mes" y `expo-iap` sin uso.**~~ *Cerrado el 2026-11-16 en la rama de la 1.1.7:* se borraron `paywall.tsx`, `subscription.ts` y `payments.ts`, se quitó `expo-iap` (dependencia y plugin) y la ruta `/paywall`. `cloudStatusWiring.test.ts` falla si alguno vuelve. Cambió la huella nativa, pero la 1.1.6 de todos modos no podía recibir OTA (su APK no lleva canal: revisado en `assets/app.config`).
+- ~~**Dos fuentes de verdad de la suscripción, `paywall.tsx` por deep link con "USD 5/mes" y `expo-iap` sin uso.**~~ *Cerrado el 2026-11-16 (sale en la 1.1.8):* se borraron `paywall.tsx`, `subscription.ts` y `payments.ts`, se quitó `expo-iap` (dependencia y plugin) y la ruta `/paywall`. `cloudStatusWiring.test.ts` falla si alguno vuelve. Cambió la huella nativa, pero la 1.1.6 de todos modos no podía recibir OTA (su APK no lleva canal: revisado en `assets/app.config`).
 - **Precios inconsistentes** en el código: "$2/mes", "$5.00", "USD 5/mes", "≈ 20.000 COP". El cargo real es 20.000 COP. Definir un solo precio y moneda.
 - Decidir si el Worker de pagos conserva la D1 compartida con sync o se separa con un Service Binding.
 

@@ -56,7 +56,7 @@ El AAB solo debe generarse cuando exista una llave de subida propia y una config
 
 ## Actualizaciones OTA y huella nativa
 
-Desde la 1.1.7 la app puede recibir cambios de JavaScript sin instalar un APK nuevo (EAS Update). Al abrirla con internet, la app descarga la actualización en segundo plano y la aplica la siguiente vez que se abre desde cero. Las versiones 1.1.6 y anteriores **no** reciben OTA: no llevan canal.
+Desde la 1.1.8 la app puede recibir cambios de JavaScript sin instalar un APK nuevo (EAS Update). Al abrirla con internet, la app descarga la actualización en segundo plano y la aplica la siguiente vez que se abre desde cero. Las versiones 1.1.6 y anteriores **no** reciben OTA: no llevan canal. La 1.1.7 nunca se publicó: su build de tag falló en la firma por un cambio en la plantilla de Expo (detalle en `DEUDA_TECNICA.md`).
 
 ### Qué puede ir por OTA y qué no
 

@@ -98,7 +98,7 @@ test('runtimeInfo exige un hash de 40 caracteres, un canal válido y la polític
 
 test('compareRuntime solo deja pasar la misma huella y el mismo canal que la última release', async () => {
   const { compareRuntime } = await loadRuntime();
-  const local: Info = { platform: 'android', runtimeVersion: HASH, channel: 'production', version: '1.1.7', versionCode: 13 };
+  const local: Info = { platform: 'android', runtimeVersion: HASH, channel: 'production', version: '1.1.8', versionCode: 14 };
   assert.equal(compareRuntime(local, { ...local }), null);
   assert.match(compareRuntime(local, null) ?? '', /no publica runtime-android\.json/);
   assert.match(compareRuntime(local, {}) ?? '', /no publica runtime-android\.json/);
