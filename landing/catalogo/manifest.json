@@ -1,14 +1,14 @@
 {
   "format_version": 1,
-  "catalog_version": "2026.11.16",
+  "catalog_version": "2026.11.16-2",
   "license": "ODbL-1.0",
   "packages": [
     {
       "id": "drogueria",
       "file": "drogueria.sqlite",
-      "items": 134,
-      "bytes": 73728,
-      "sha256": "99d8fdd9e4d13910e2422d3847d4906911a33e32c4d43ab07cf128b75c12da00",
+      "items": 555,
+      "bytes": 163840,
+      "sha256": "2b5dfe98768cf49677ba8c3994044fc1fe9fa99efee130ec3bda55433a2152d8",
       "sources": [
         "off",
         "surtivox"
@@ -19,7 +19,7 @@
       "file": "ferreteria.sqlite",
       "items": 419,
       "bytes": 135168,
-      "sha256": "c6cc4eff2b3a1662262d1129bc115bcae3e1e9097eea67aebe3bc4a7d05e5d1a",
+      "sha256": "240bf1c1d4d4f3c73abf67f4bae307c2941f7fc1b0449171abc6795b4e354de8",
       "sources": [
         "surtivox"
       ]
@@ -27,9 +27,9 @@
     {
       "id": "licorera",
       "file": "licorera.sqlite",
-      "items": 207,
-      "bytes": 90112,
-      "sha256": "4e95409d52ee0411fc3dbca32080349eeee5eb7da94d1c2dd59ece566e61d9e9",
+      "items": 1628,
+      "bytes": 352256,
+      "sha256": "931e465b565a1e39c3e0fc75be03ff133959f2705b44f44fec4ef32e1f9571ff",
       "sources": [
         "off",
         "surtivox"
@@ -38,9 +38,9 @@
     {
       "id": "minimercado",
       "file": "minimercado.sqlite",
-      "items": 749,
-      "bytes": 188416,
-      "sha256": "4e170e3445294a97ca4ef1a8c0d9052ec92e888cb318ebc6aebfa0b2946973c8",
+      "items": 4911,
+      "bytes": 921600,
+      "sha256": "7c129dd4eaedf612d02c317971e1a4563b345ea7d4c4ebeaea449ba6b1ea46c5",
       "sources": [
         "off",
         "surtivox"
@@ -49,9 +49,9 @@
     {
       "id": "papeleria",
       "file": "papeleria.sqlite",
-      "items": 133,
-      "bytes": 69632,
-      "sha256": "fc9078eb1fa32f75fee92a8ab66ac62f360c1bd2ffa2c28068cfb41a6280f9d7",
+      "items": 616,
+      "bytes": 180224,
+      "sha256": "8032ff687baf3340552aaf08d50668f909c49aee7d745dbd89c0d4f4a5922a68",
       "sources": [
         "off",
         "surtivox"
@@ -60,9 +60,9 @@
     {
       "id": "tienda",
       "file": "tienda.sqlite",
-      "items": 747,
-      "bytes": 188416,
-      "sha256": "6f4ab04dd8a57029285286e21a38c63eae373f64e3dc4ee475e24decdcb181bb",
+      "items": 4771,
+      "bytes": 888832,
+      "sha256": "7e1eaa92d44a5ab8aab49782437ebf642fcaa8034a84b0f292dfeb9466e219a9",
       "sources": [
         "off",
         "surtivox"

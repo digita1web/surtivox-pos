@@ -93,12 +93,12 @@ Pendiente de medir en un Android de gama baja: descarga, verificación del sha25
 | Fuente | Estado | Productos | Cómo se obtiene |
 |---|---|---:|---|
 | `surtivox` (propio) | aprobada | 814 | Redactado por el proyecto; los JSONL de `data/surtivox/` se editan a mano o se regeneran. |
-| `off` (Open Food Facts) | aprobada | 447 | `src/importers/fetch-off.sh` descarga a `.cache/off/<día>/` y `src/cli/import-off.ts --day=<día>` escribe `data/off/colombia.jsonl`. |
+| `off` (Open Food Facts) | aprobada | 4.609 | `src/importers/fetch-off.sh` descarga a `.cache/off/<día>/` (con la cuenta del propietario en `~/.config/surtivox/off.env`) y `src/cli/import-off.ts --day=<día>` escribe `data/off/colombia.jsonl`. |
 | `invima-cum` | pendiente | 0 | Pospuesta; CC BY-SA 4.0, incompatible con ODbL. |
 
-**Open Food Facts solo entrega 10 páginas (1.000 productos) a usuarios no identificados.** Desde la página 11 responde "Due to heavy abuse from robots, we are unable to serve this page to unidentified users". No se rodea ese bloqueo partiendo consultas: para el resto hay que usar una cuenta de Open Food Facts o su exportación oficial de datos, con aprobación del propietario.
+**Open Food Facts solo entrega 10 páginas a usuarios no identificados.** Con la cuenta del propietario (sesión en `/cgi/session.pl`, credenciales fuera del repositorio) se descargaron las 102 páginas, los 10.101 productos marcados como vendidos en Colombia, el 2026-11-16. Aceptados 4.609; en cuarentena 5.492 (sin nombre en español 2.631, sin categoría reconocible 2.081, sin marca 448, código inválido 234, otros).
 
-Reglas del importador (`src/importers/off.ts`, probadas en `test/off.test.ts`): nombre en español; marca obligatoria y con mayúscula inicial si viene en mayúsculas; si el nombre ya trae una medida no se agrega otra y una presentación que la contradiga se descarta; categoría por nombre (`NAME_RULES`: la malta va a bebidas) o por la tabla `off-categories.json`; los suplementos y las proteínas no tienen equivalencia a propósito. Lo demás queda en cuarentena en la caché con su motivo.
+Reglas del importador (`src/importers/off.ts`, probadas en `test/off.test.ts`): nombre en español; marca obligatoria y con mayúscula inicial si viene en mayúsculas; si el nombre ya trae una medida no se agrega otra y una presentación que la contradiga se descarta. Categoría, en este orden: `NAME_RULES` por el inicio del nombre (malta, gaseosas, carnes frías, huevos, arepas: corrigen etiquetas puestas en bloque por importaciones de supermercados); la tabla `off-categories.json`; y `NAME_FALLBACK` por la primera palabra, solo con palabras inequívocas (no "crema", "chocolate", "avena", "té", "pasta"). Los suplementos y las proteínas no tienen equivalencia a propósito. `off-exclusions.json` lista los códigos revisados a mano y descartados, con su motivo. Lo demás queda en cuarentena en la caché con su motivo.
 
 ## Publicar una actualización
 
