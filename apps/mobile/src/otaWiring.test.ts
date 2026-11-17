@@ -210,3 +210,49 @@ test('el bundle de la OTA lleva las mismas variables públicas que el del APK', 
   assert.ok(used.size > 0);
   for (const name of used) assert.ok(vars(ota).some((v) => v.startsWith(`${name}=`)), name);
 });
+
+test('Gradle embebe la huella calculada sobre el árbol limpio, no la que ve a mitad de compilación', () => {
+  order(build, ['Calcular la huella nativa', 'Prebuild Android project', 'Build release APK', 'Diagnosticar si la compilación cambió las fuentes de la huella', 'Verificar la huella y el canal dentro del APK']);
+  const dir = mkdtempSync(join(tmpdir(), 'override-'));
+  const envFile = join(dir, 'github_env');
+  writeFileSync(envFile, '');
+  writeFileSync(join(dir, 'runtime-android.json'), JSON.stringify({ runtimeVersion: HASH }));
+  const line = script(build, 'Calcular la huella nativa').split('\n').find((l) => l.includes('EXPO_UPDATES_FINGERPRINT_OVERRIDE'));
+  assert.ok(line);
+  const result = spawnSync('bash', ['-c', line], { env: { PATH: process.env.PATH ?? '', RUNNER_TEMP: dir, GITHUB_ENV: envFile }, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(readFileSync(envFile, 'utf8'), `EXPO_UPDATES_FINGERPRINT_OVERRIDE=${HASH}\n`);
+  rmSync(dir, { recursive: true, force: true });
+  assert.doesNotMatch(step(build, 'Build release APK'), /EXPO_UPDATES_FINGERPRINT_OVERRIDE/);
+  assert.doesNotMatch(ota, /EXPO_UPDATES_FINGERPRINT_OVERRIDE/);
+});
+
+function diagnose(after: unknown | null) {
+  const dir = mkdtempSync(join(tmpdir(), 'diag-'));
+  const bin = join(dir, 'bin');
+  mkdirSync(bin);
+  const before = { hash: HASH, sources: [{ type: 'dir', filePath: 'node_modules/a/android', hash: '1' }, { type: 'contents', id: 'expoConfig', hash: '2' }] };
+  writeFileSync(join(dir, 'fingerprint.json'), JSON.stringify(before));
+  writeFileSync(join(bin, 'npx'), after === null ? '#!/bin/sh\nexit 1\n' : `#!/bin/sh\ncat <<'JSON'\n${JSON.stringify(after)}\nJSON\n`, { mode: 0o755 });
+  const result = spawnSync('bash', ['-c', script(build, 'Diagnosticar si la compilación cambió las fuentes de la huella')], {
+    env: { PATH: `${bin}:${process.env.PATH ?? ''}`, RUNNER_TEMP: dir },
+    encoding: 'utf8',
+  });
+  rmSync(dir, { recursive: true, force: true });
+  return { status: result.status, output: result.stdout + result.stderr, before };
+}
+
+test('el diagnóstico dice qué fuente cambió al compilar y nunca hace fallar el build', () => {
+  const same = diagnose({ hash: HASH, sources: [] });
+  assert.equal(same.status, 0, same.output);
+  assert.match(same.output, /no cambió la huella/);
+  const changed = diagnose({ hash: 'f'.repeat(40), sources: [{ type: 'dir', filePath: 'node_modules/a/android', hash: '9' }, { type: 'contents', id: 'expoConfig', hash: '2' }, { type: 'file', filePath: 'nuevo.gradle', hash: '3' }] });
+  assert.equal(changed.status, 0, changed.output);
+  assert.match(changed.output, /::warning::La compilación cambió las fuentes de la huella/);
+  assert.match(changed.output, /dir node_modules\/a\/android: 1 → 9/);
+  assert.match(changed.output, /file nuevo\.gradle: \(no estaba\) → 3/);
+  assert.doesNotMatch(changed.output, /expoConfig/);
+  const broken = diagnose(null);
+  assert.equal(broken.status, 0, broken.output);
+  assert.match(broken.output, /::warning::No se pudo recalcular/);
+});

@@ -127,6 +127,7 @@ jobs:
           set -euo pipefail
           CI=1 npx expo-updates fingerprint:generate --platform android > "${RUNNER_TEMP}/fingerprint.json"
           node ../../scripts/runtime-info.mjs write "${RUNNER_TEMP}/fingerprint.json" app.json "${RUNNER_TEMP}/runtime-android.json"
+          echo "EXPO_UPDATES_FINGERPRINT_OVERRIDE=$(node -p 'require(process.argv[1]).runtimeVersion' "${RUNNER_TEMP}/runtime-android.json")" >> "${GITHUB_ENV}"
 
       - name: Prebuild Android project
         working-directory: apps/mobile
@@ -240,6 +241,25 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           grep -E 'certificate (DN|SHA-256 digest)' "${RUNNER_TEMP}/apk-certs.txt" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Diagnosticar si la compilación cambió las fuentes de la huella
+        working-directory: apps/mobile
+        run: |
+          set -uo pipefail
+          if ! CI=1 npx expo-updates fingerprint:generate --platform android > "${RUNNER_TEMP}/fingerprint-after.json"; then
+            echo "::warning::No se pudo recalcular la huella después de compilar"
+            exit 0
+          fi
+          node -e '
+            const [before, after] = process.argv.slice(1).map((f) => require(f));
+            if (before.hash === after.hash) { console.log(`La compilación no cambió la huella (${before.hash})`); process.exit(0); }
+            const key = (s) => `${s.type} ${s.filePath ?? s.id ?? ""}`;
+            const index = (fp) => new Map(fp.sources.map((s) => [key(s), s.hash]));
+            const a = index(before), b = index(after);
+            const changed = [...new Set([...a.keys(), ...b.keys()])].filter((k) => a.get(k) !== b.get(k));
+            console.log(`::warning::La compilación cambió las fuentes de la huella (${before.hash} → ${after.hash}). El APK lleva la de antes por EXPO_UPDATES_FINGERPRINT_OVERRIDE.`);
+            for (const k of changed) console.log(`  ${k}: ${a.get(k) ?? "(no estaba)"} → ${b.get(k) ?? "(ya no está)"}`);
+          ' "${RUNNER_TEMP}/fingerprint.json" "${RUNNER_TEMP}/fingerprint-after.json" || echo "::warning::No se pudo comparar la huella"
 
       - name: Verificar la huella y el canal dentro del APK
         run: |
