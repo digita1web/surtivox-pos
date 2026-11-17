@@ -36,11 +36,11 @@
     "expo-sqlite": "~57.0.5",
     "expo-status-bar": "~57.0.1",
     "expo-updates": "~57.0.28",
-    "react": "19.2.3",
+    "react": "19.2.9",
     "react-native": "0.86.3",
-    "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "~4.26.2",
-    "zustand": "^5.0.2"
+    "react-native-safe-area-context": "~5.11.1",
+    "react-native-screens": "~4.30.1",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
