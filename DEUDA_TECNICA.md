@@ -1,22 +1,28 @@
 # Deuda técnica y estado del proyecto
 
-Este archivo es la libreta del proyecto: dónde estamos, qué falta y qué se aprendió en el camino. Arriba va lo vigente; abajo queda el historial con el detalle técnico de cada revisión. Cuando algo no se pudo comprobar, se dice. Última actualización: 16 de noviembre de 2026, en la noche.
+Este archivo es la libreta del proyecto: dónde estamos, qué falta y qué se aprendió en el camino. Arriba va lo vigente; abajo queda el historial con el detalle técnico de cada revisión. Cuando algo no se pudo comprobar, se dice. Última actualización: 18 de noviembre de 2026, en la mañana.
 
 ## Dónde estamos
 
-La versión publicada es la **1.1.6** (`versionCode` 12). Es la que descarga cualquiera desde la landing y la que tienen los tenderos de prueba. Trae el conteo de inventario, el informe de faltantes y sobrantes, el aviso semanal para contar y los textos en español sin "stock". Todavía no es un lanzamiento comercial: estamos en pruebas con tiendas piloto.
+La versión publicada es la **1.1.8** (`versionCode` 14), en la release `v1.1.8` desde el 17 de noviembre. Es la que descarga cualquiera desde la landing. Todavía no es un lanzamiento comercial: estamos en pruebas con tiendas piloto. La 1.1.7 nunca se publicó: su build falló en la firma.
 
-En `main` hay trabajo terminado que aún no está en ninguna APK publicada. Saldrá en la 1.1.8 (la 1.1.7 no llegó a publicarse: su build falló en la firma):
+La 1.1.8 trae:
 
-- El catálogo sin conexión: Más → Catálogo de productos. La tienda elige su tipo de negocio, descarga la lista y, al agregar un producto, la app le sugiere el nombre, la categoría, la unidad y el código. El precio siempre lo pone el tendero. Funciona en modo avión.
-- El mensaje que pide reintentar cuando falla la conexión al bajar el catálogo.
+- El catálogo sin conexión: Más → Catálogo de productos. La tienda elige su tipo de negocio, descarga la lista y, al agregar un producto, la app le sugiere el nombre, la categoría, la unidad y el código. El precio siempre lo pone el tendero.
 - La paginación de la descarga desde la nube y el mensaje del tope diario.
-- Los términos nuevos dentro de la app (versión legal 2026-11-16). Al actualizar, la app pide aceptarlos otra vez.
+- Los términos nuevos (versión legal 2026-11-16). Al actualizar, la app pide aceptarlos otra vez.
+- El retiro del cobro heredado (`expo-iap`, paywall).
+- **Actualizaciones OTA**: es la primera versión que recibe cambios de JavaScript sin instalar un APK. Las 1.1.6 y anteriores no las reciben; esos teléfonos tienen que instalar la 1.1.8 una vez, encima y sin desinstalar.
 
-Lo que ya está publicado en la landing (GitHub Pages) porque se fusionó en `main`:
+**Las OTA ya funcionan de punta a punta.** Se publicaron dos en `production` y las dos llegaron a un Redmi con el APK de la release (comprobado en Más → Diagnóstico):
 
-- El catálogo 2026.11.16-2, con 5.423 productos: 814 que escribimos nosotros y 4.609 de Open Food Facts. La app 1.1.6 no lo usa; la 1.1.8 sí.
-- El centro de ayuda en `ayuda.html`, con 52 artículos sobre la versión 1.1.6.
+1. Diagnóstico muestra el canal y si el código viene del APK o de una OTA (actualización `01a1ec3e…`, workflow OTA #1).
+2. La copia de seguridad previa a migraciones ya funciona (actualización `01a1eee5…`, workflow OTA #3; antes se probó en `preview` con el workflow #2). Ver "Lo que hicimos el 17 y 18 de noviembre".
+
+Lo que está publicado en la landing (GitHub Pages):
+
+- El catálogo 2026.11.16-2, con 5.423 productos: 814 que escribimos nosotros y 4.609 de Open Food Facts.
+- El centro de ayuda en `ayuda.html`, con 53 artículos sobre la versión 1.1.8.
 - Los términos y la licencia nuevos. Ojo: este texto se publicó sin que lo revisara un abogado. Ver pendientes.
 
 En Cloudflare está desplegado el Worker de sync que entiende la versión de esquema 2 (conteos de inventario). No están desplegados ni el tope diario de la nube (falta la migración `0003_store_usage.sql` y el Worker nuevo) ni el Worker de pagos.
@@ -25,13 +31,14 @@ En Cloudflare está desplegado el Worker de sync que entiende la versión de esq
 
 1. **Revisar la licencia con un abogado.** El `LICENSE`, los términos de la landing y los de la app dicen ahora que la app se puede usar gratis, también para manejar tu propio negocio, y que el código no se puede copiar ni redistribuir. Antes decían que el "uso comercial" necesitaba licencia, lo cual chocaba con ofrecerla gratis a tiendas. El texto nuevo ya está en la landing; si el abogado pide cambios, hay que hacerlos en los tres lugares a la vez (un test exige que la app y la landing digan lo mismo).
 2. **Decidir el tope diario de la nube y desplegarlo.** El Worker trae 20.000 filas por tienda al día como valor por defecto y se cambia con la variable `QUOTA_DAILY_ROWS` sin tocar código. El límite que importa es el de escrituras diarias de D1 en el plan gratuito, que se reparte entre todas las tiendas. Orden: aplicar `apps/sync-worker/migrations/0003_store_usage.sql`, desplegar el Worker y después publicar la app. Si el Worker sale sin la tabla, no bloquea a nadie.
-3. **Publicar la 1.1.8, la primera que recibe actualizaciones sin APK.** El tag `v1.1.7` falló en "Configurar firma de release" porque la plantilla nueva de `expo prebuild` escribe `signingConfig signingConfigs.debug` sin `=`; el parche de firma ahora recorre los bloques de Groovy y no depende de ese texto (rama `fix/firma-plantilla-expo`). Como no se reutilizan tags, sale como 1.1.8 (`versionCode` 14). Ya está en `main`: retira `expo-iap` y el paywall, escucha un canal de actualizaciones, publica su huella nativa en la release y trae el workflow "Publicar actualización OTA" (procedimiento y reversión en [RELEASING.md](RELEASING.md)). La ayuda ya tiene el artículo del catálogo. Falta: fusionar la rama de la firma, ver el build de `main` en verde, agregar el secreto `EXPO_TOKEN`, probar en el teléfono el APK de `preview` (escáner, guardar desde una sugerencia y una OTA de prueba) y crear el tag `v1.1.8`. Al fusionar, Pages publica la ayuda con la versión 1.1.8, así que conviene crear el tag pronto.
-4. **Arrancar el piloto con 20 a 50 tiendas.** La guía está en [docs/piloto.md](docs/piloto.md): a quién buscar, cómo instalarles la app, qué no prometerles, cómo medir sin rastrear a nadie y cómo preguntar por el precio.
-5. **Probar la nube y el kit de recuperación en un teléfono de punta a punta.** Nunca se ha hecho con una tienda real.
-6. **Agregar la unidad metro (`m`) a la app.** Ferreterías y mercerías venden cable, cuerda o malla por metro. Mientras tanto, en el catálogo esos productos se llaman "(1 metro)" y usan `unit`. Cuando la app tenga `m`, se marca como unidad de venta en `catalog-data` y se actualizan sus tests.
-7. **Pagos, cuando el piloto diga que vale la pena.** La autenticación ya está corregida (P0-1). Faltan el despliegue, el webhook de Wompi, los `entitlements` y un precio en pesos. Para empezar se propone cobrar a mano: pago por Nequi y activación manual.
-8. **Revocar el token de Cloudflare** del 16 de noviembre, si no se ha hecho. Quedó escrito en el historial de la conversación.
-9. Pendientes menores de antes: el umbral del catálogo comunitario (hoy 2 votos), `allowBackup="true"`, `roadmap.md` desactualizado, y en Search Console revisar si Google ya indexó el sitio.
+3. **Probar en el teléfono dos cosas del catálogo**: escanear con la cámara y guardar un producto a partir de una sugerencia. Se quedaron sin probar en la 1.1.8. Si algo falla y el arreglo es solo de JavaScript, sale por OTA (primero `preview`, luego `production`; procedimiento en [RELEASING.md](RELEASING.md)).
+4. **Averiguar qué cambia la compilación en la huella.** En CI, después de compilar, la huella calculada cambia (`def3c2…` → `d72058…` en `preview`, `a7a2f5…` → `e7724d…` en `production`). No afecta a los usuarios: el APK lleva la huella del árbol limpio gracias a `EXPO_UPDATES_FINGERPRINT_OVERRIDE`, que es la que calcula `eas update`. La lista de fuentes que cambian está en el log del paso "Diagnosticar si la compilación cambió las fuentes de la huella" (builds #69 y #70), que necesita la sesión de GitHub del dueño. En este computador las dos huellas coinciden.
+5. **Arrancar el piloto con 20 a 50 tiendas.** La guía está en [docs/piloto.md](docs/piloto.md): a quién buscar, cómo instalarles la app, qué no prometerles, cómo medir sin rastrear a nadie y cómo preguntar por el precio.
+6. **Probar la nube y el kit de recuperación en un teléfono de punta a punta.** Nunca se ha hecho con una tienda real.
+7. **Agregar la unidad metro (`m`) a la app.** Ferreterías y mercerías venden cable, cuerda o malla por metro. Mientras tanto, en el catálogo esos productos se llaman "(1 metro)" y usan `unit`. Cuando la app tenga `m`, se marca como unidad de venta en `catalog-data` y se actualizan sus tests.
+8. **Pagos, cuando el piloto diga que vale la pena.** La autenticación ya está corregida (P0-1). Faltan el despliegue, el webhook de Wompi, los `entitlements` y un precio en pesos. Para empezar se propone cobrar a mano: pago por Nequi y activación manual.
+9. **Revocar el token de Cloudflare** del 16 de noviembre, si no se ha hecho. Quedó escrito en el historial de la conversación.
+10. Pendientes menores de antes: el umbral del catálogo comunitario (hoy 2 votos), `allowBackup="true"`, `roadmap.md` desactualizado, y en Search Console revisar si Google ya indexó el sitio.
 
 ## Decisiones que siguen vigentes
 
@@ -48,6 +55,20 @@ En Cloudflare está desplegado el Worker de sync que entiende la versión de esq
 - APK publicado de la 1.1.6: `Surtivox.apk`, 67.109.293 bytes, SHA-256 `c19256d647281b8ec4fad6667e752d91f4edd292f205fe56b7128bf2ca256e1c`. Firma de producción con huella `e798f4a4…1cc32d`.
 - Los tags `v1.1.4`, `v1.1.5` y `v1.1.6` no se mueven ni se recrean. El `versionCode` nunca baja.
 - Las credenciales de Open Food Facts están en `~/.config/surtivox/off.env` (permisos 600, fuera del repositorio) y las usa `catalog-data/src/importers/fetch-off.sh`.
+
+## Lo que hicimos el 17 y 18 de noviembre
+
+**Firma (PR #35, `cfe54ee`).** Los builds #66 (`main`) y #67 (tag `v1.1.7`) fallaron en "Configurar firma de release": la plantilla que baja `expo prebuild` pasó de `signingConfig = signingConfigs.debug` a `signingConfig signingConfigs.debug` y la regex de `androidSigning.ts` exigía el `=`. Ahora el parche recorre los bloques de Groovy por llaves, ignorando comentarios y cadenas, y no depende de ese texto. La plantilla real de hoy quedó como fixture (`test-fixtures/build.gradle.call-syntax.template`). Como no se reutilizan tags, la versión pasó a 1.1.8 (`6f37e0a`).
+
+**Huella (PR #36, `b456a79`).** El build #68 falló en mi guarda nueva: la huella calculada antes de compilar (`def3c2…`) no era la que Gradle metió en el APK (`d72058…`). `eas update` calcula sobre un checkout limpio, así que el APK tiene que llevar la limpia: el build la pasa a Gradle con `EXPO_UPDATES_FINGERPRINT_OVERRIDE` y un paso nuevo avisa, sin fallar, qué fuentes cambiaron al compilar. La causa de fondo sigue abierta (pendiente 4).
+
+**Release (PR #44, `324aaa6`).** El tag `v1.1.8` (build #70) compiló bien, pero "Publicar release" falló: el paso leía `release-apk/runtime-android.json` con `require()`, que con una ruta relativa busca un paquete en `node_modules`. Todos los workflows leen ahora los JSON con `fs.readFileSync` y el test ejecuta ese paso con la ruta relativa, como en CI.
+
+**Release a mano.** La v1.1.8 se publicó subiendo los artefactos del build #70. La primera vez se adjuntó por error un APK 1.1.5 viejo (`versionCode` 11) que estaba en la misma carpeta: los teléfonos con 1.1.6 no podían instalarlo (Android no baja de versión) y las instalaciones nuevas recibían la 1.1.5. Se detectó leyendo el APK con `aapt2` y el digest de la API de GitHub, y se reemplazó por el correcto (sha256 `73563764…`, huella `a7a2f59a…`, canal `production`).
+
+**Diagnóstico (`6fa6dd5`).** Más → Diagnóstico muestra el canal de actualizaciones y si el código en uso es el del APK o una OTA. Fue la primera OTA.
+
+**Copia previa a migraciones (PR #45, `927a80e`).** *Verificado en el teléfono:* `db.ts` copiaba la base con `FileSystem.copyAsync({ from: db.databasePath })`, pero `databasePath` es una ruta normal y `expo-file-system/legacy` la toma como nombre de un recurso de Android ("No resource found"). La copia nunca se hizo en Android: el error se guardaba y las migraciones corrían sin red de seguridad (pasó al migrar a la 1.1.6 el 16 de noviembre). Por lo mismo Diagnóstico decía "Base de datos: No disponible". `toFileUri()` convierte la ruta en `file://` y un test impide pasar `databasePath` sin convertir. Salió por OTA: en `preview` y en `production`, Diagnóstico pasó a mostrar "Base de datos: 408.0 KB". El "Último error" del 16 de noviembre se queda guardado hasta que ocurra otro error.
 
 ## Lo que hicimos el 16 de noviembre
 
