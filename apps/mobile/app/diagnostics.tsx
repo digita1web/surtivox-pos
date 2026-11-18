@@ -33,6 +33,8 @@ export default function DiagnosticsScreen() {
           appVersion: String(Constants.expoConfig?.version ?? 'No disponible'),
           runtimeVersion: Updates.isEnabled ? Updates.runtimeVersion : null,
           updateId: Updates.isEnabled ? Updates.updateId : null,
+          updateChannel: Updates.isEnabled ? Updates.channel : null,
+          launchedFromUpdate: Updates.isEnabled ? !Updates.isEmbeddedLaunch : null,
           dbSizeBytes: info.exists ? info.size : null,
           migrations: migrations.length,
           lastMigration: migrations[migrations.length - 1]?.id ?? null,

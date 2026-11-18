@@ -11,6 +11,8 @@ export interface DiagnosticsData {
   appVersion: string;
   runtimeVersion: string | null;
   updateId: string | null;
+  updateChannel: string | null;
+  launchedFromUpdate: boolean | null;
   dbSizeBytes: number | null;
   migrations: number;
   lastMigration: string | null;
@@ -62,6 +64,8 @@ export function buildDiagnosticsText(data: DiagnosticsData): string {
     'Surtivox POS · diagnóstico',
     `Versión de la app: ${data.appVersion}`,
     `Runtime: ${data.runtimeVersion ?? 'No disponible'}`,
+    `Canal de actualizaciones: ${data.updateChannel ?? 'No disponible'}`,
+    `Código en uso: ${data.launchedFromUpdate === null ? 'No disponible' : data.launchedFromUpdate ? 'una actualización OTA' : 'el que trae el APK'}`,
   ];
   if (data.updateId) lines.push(`Actualización: ${data.updateId}`);
   lines.push(
