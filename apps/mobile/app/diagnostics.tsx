@@ -9,6 +9,7 @@ import { getLocalSetting } from '../src/repos';
 import { CATALOG_URL } from '../src/catalog';
 import { isCatalogEnabled } from '../src/catalogCore';
 import { buildDiagnosticsText, type DiagnosticsData } from '../src/diagnostics';
+import { toFileUri } from '../src/fileUri';
 import { useTheme, space, radius } from '../src/theme';
 
 export default function DiagnosticsScreen() {
@@ -22,7 +23,7 @@ export default function DiagnosticsScreen() {
     (async () => {
       try {
         const db = getDb();
-        const info = await FileSystem.getInfoAsync(db.databasePath);
+        const info = await FileSystem.getInfoAsync(toFileUri(db.databasePath));
         const migrations = await db.getAllAsync<{ id: string }>('SELECT id FROM _migrations ORDER BY id');
         const lastBackupRaw = await getLocalSetting('last_backup_at');
         const lastBackupParsed = lastBackupRaw === null ? null : Number(lastBackupRaw);
