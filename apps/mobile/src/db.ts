@@ -3,6 +3,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { MIGRATIONS, runMigrations, type SqlExecutor } from '@surtivox/database';
 import { truncateErrorMessage } from './diagnostics';
 import { pendingMigrationIds } from './migrationPlan';
+import { toFileUri } from './fileUri';
 
 let _db: SQLite.SQLiteDatabase | null = null;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -62,7 +63,7 @@ async function copyBeforeMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
   await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE);');
   const lastApplied = applied[applied.length - 1]?.id ?? 'none';
   const filename = `pre-migracion-${lastApplied}-${new Date().toISOString().replace(/[:.]/g, '-')}.db`;
-  await FileSystem.copyAsync({ from: db.databasePath, to: `${directory}${filename}` });
+  await FileSystem.copyAsync({ from: toFileUri(db.databasePath), to: `${directory}${filename}` });
   const files = (await FileSystem.readDirectoryAsync(directory))
     .filter((name) => name.startsWith('pre-migracion-'))
     .sort()
