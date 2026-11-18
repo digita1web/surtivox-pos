@@ -63,9 +63,9 @@ CI=1 npx expo install --check # alineación con el SDK de Expo
 ## 5. Entorno de este equipo (rarezas que ya costaron tiempo)
 
 - **Red con proxy.** Es la única salida. `wrangler` 3.x falla con `fetch failed`: los Workers se desplegaron por la API REST de Cloudflare. `pnpm install` puede tardar ~4 minutos: lánzalo en segundo plano y no lo cortes por tiempo, porque una instalación interrumpida deja `node_modules` y el lockfile inconsistentes. `sdkmanager` no lee las variables de entorno de proxy (falló sin banderas; con `--proxy_host` y `--proxy_port` explícitos no se llegó a ver el resultado); Gradle sí las lee de `~/.gradle/gradle.properties`.
-- **No se puede compilar la app aquí**: el NDK 27.1 de `~/Android/Sdk/ndk/` es una carpeta vacía (descarga fallida). Los APK salen de **GitHub Actions**. No lo "arregles" borrando carpetas del SDK sin permiso.
+- **No se puede compilar la app aquí**: el NDK 27.1 de `~/Android/Sdk/ndk/` es una carpeta vacía (descarga fallida) y el 27.0 también (el 2026-11-17 Gradle empezó a descargarlo solo y el propietario cortó la prueba). Solo el NDK 28.2 está completo. **No corras Gradle aquí** sin preguntar: intenta descargar un NDK dentro del SDK. Los APK salen de **GitHub Actions**. No lo "arregles" borrando carpetas del SDK sin permiso.
 - **Node 22.x y pnpm 10.17.1.** `hoisted` (`.npmrc`): los paquetes están en el `node_modules` de la raíz, no en el de `apps/mobile`.
-- **Teléfono de pruebas** (Redmi Note 9, Android 12, arm64) por USB. Se instalaron las reglas udev (`android-sdk-platform-tools-common`). Si `adb devices` dice "no devices" o "no permissions", reconecta el servidor con `adb kill-server && adb start-server`. Tiene **bloqueo de pantalla con PIN**: si se bloquea, **no lo saltes**; pide al propietario que lo desbloquee y active "Permanecer activo". No hay herramienta para ver imágenes en esta sesión: la interfaz se lee con `uiautomator`.
+- **Teléfono de pruebas** (Redmi Note 9, Android 12, arm64) por USB. Se instalaron las reglas udev (`android-sdk-platform-tools-common`). Si `adb devices` dice "no devices" o "no permissions", reconecta el servidor con `adb kill-server && adb start-server`. Tiene **bloqueo de pantalla con PIN**: si se bloquea, **no lo saltes**; pide al propietario que lo desbloquee y active "Permanecer activo". Las capturas (`adb exec-out screencap -p`) se pueden ver con la herramienta de lectura de archivos; para tocar cosas, la interfaz se lee con `uiautomator`. El cable se suelta a veces: si `adb` deja de ver el teléfono a mitad de una instalación, comprueba qué quedó instalado (sección 6) antes de repetirla.
 - **Firefox 160 y `geckodriver`** están instalados (usados para medir la landing, sección 8).
 - **`gh` no está instalado.** El estado de CI se consulta con la API pública de GitHub (sin token) y los artefactos los descarga el propietario.
 - El directorio temporal de la sesión (`scratchpad`) **se borra al reiniciar**: no guardes allí nada que deba sobrevivir.
@@ -88,9 +88,19 @@ Trampas conocidas:
 - Captura: `adb exec-out screencap -p`. La barra de estado mide **100 px**.
 - **Datos de prueba siempre ficticios** ("Tienda Don Pepe", teléfono `+57 300 000 0000`). No actives la nube ni contribuyas al catálogo comunitario en pruebas: escriben en servidores reales.
 
+### Probar una OTA en el teléfono
+
+Se hizo así el 17 y 18 de noviembre (procedimiento de publicación y reversión en `RELEASING.md`):
+
+1. **Qué APK tiene y qué canal escucha**, sin abrir la app: `adb shell pm path io.surtivox.pos`, `adb pull` de esa ruta y `unzip -p <apk> assets/fingerprint` (huella) y `unzip -p <apk> assets/app.config` (`updates.requestHeaders`). El APK de la release escucha `production`; los de `main` escuchan `preview`. Una OTA solo llega al canal y la huella exactos.
+2. **Para probar en `preview`**, instala un APK de `preview` **anterior** al cambio (artefacto de un build de `main` previo); si ya trae el cambio, la prueba no demuestra nada. Mismo `versionCode` y misma llave: `adb install -r` lo acepta y conserva los datos. Al terminar, reinstala el APK de la release para que el teléfono vuelva a `production`.
+3. **Red:** `adb shell dumpsys connectivity | grep "Active default network"` y `adb shell ping -c 1 u.expo.dev`. Sin red, `expo-updates` registra "Failed to download remote update" con `lookupHostByName` en la traza y la app sigue con el código que ya tenía.
+4. **Ciclo:** `am force-stop`, `logcat -c`, abrir la app y leer `adb logcat -s dev.expo.updates` unos 30 segundos. Lo bueno: `didLoadAsset … app.bundle` con `failedAssetCount=0`, "Update available" y `NEW_UPDATE_LOADED`. Filtra las líneas `embeddedAssetFileMap` y `didLoadAsset`: son cientos. Luego `am force-stop` y abrir otra vez: debe decir "No update available".
+5. **Comprobar:** `adb shell am start -a android.intent.action.VIEW -d "surtivoxpos://diagnostics" io.surtivox.pos` y captura. Diagnóstico muestra canal, "Código en uso" (APK u OTA), id de la actualización y huella.
+
 ### Instalar un APK en el teléfono
 
-1. Verifica antes de instalar: `apksigner verify --print-certs` (huella de producción esperada: `E798F4A4EA18EF4671068FE8C8C3179E2A4F61F0F15D153EA9B1248A6B1CC32D`) y `aapt2 dump badging` (versión, `versionCode`, `native-code`). Ambos están en `$ANDROID_HOME/build-tools/<versión>/`.
+1. Verifica antes de instalar **y antes de adjuntarlo a una release**: `sha256sum`, `apksigner verify --print-certs` (huella de producción esperada: `E798F4A4EA18EF4671068FE8C8C3179E2A4F61F0F15D153EA9B1248A6B1CC32D`) y `aapt2 dump badging` (versión, `versionCode`, `native-code`). Ambos están en `$ANDROID_HOME/build-tools/<versión>/`.
 2. Descomprime los artefactos descargados en una **carpeta nueva y vacía**, nunca dentro del repo.
 3. `adb install -r app-release.apk` conserva los datos (misma firma). **No desinstales** sin permiso expreso.
 4. Para comprobar que un texto está en el APK: extrae `assets/index.android.bundle` y busca la cadena en **ASCII y en UTF-16LE** (Hermes guarda en UTF-16 las cadenas con tildes).
@@ -106,6 +116,9 @@ curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/runs/<id>
 - **El job `plan` decide si compilar según el diff del último push.** Una fusión que solo toca `scorecard.yml` no compila (0,2 min "en verde"), y fusiones seguidas se cancelan entre sí por la concurrencia. Una "ejecución verde" no significa que el APK se compiló: comprueba los pasos.
 - **Lanzamiento manual** (Actions → Build Android APK → Run workflow): ofrece `all_archs` (arm64 y armeabi-v7a, como un release, sin publicar nada). Sin el parámetro, las ramas compilan solo arm64.
 - Los artefactos duran 14 días. En un push a `main` el build tarda unos 7 a 11 minutos.
+- OTA: `curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/workflows/ota-update.yml/runs?per_page=3"`. Mira que el paso "Comparar con la huella de la última release" sea `success` en `production` (en `preview` sale `skipped`) y "Publicar la actualización" `success`.
+- Release publicada: `curl -sS https://api.github.com/repos/digita1web/surtivox-pos/releases/latest` da cada asset con su `digest` (sha256). Compáralo con el APK que verificaste.
+- Las anotaciones de un job (`/check-runs/<job_id>/annotations`) son públicas: ahí salen los `::error::` y `::warning::` sin necesitar el log completo. Un paso que falla **sin** `::error::` suele ser un comando que reventó (por ejemplo, `node`), no una guarda.
 
 ## 8. Landing (`landing/`)
 
@@ -118,15 +131,13 @@ curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/runs/<id>
 - **Paleta y contraste** fijados por `landingTheme.test.ts` (tokens de color y 4,5:1). `landingVersion.test.ts` obliga a que `softwareVersion` del JSON-LD coincida con `app.json`.
 - **Cómo medir la maqueta sin ver la imagen:** Firefox no baja de ~488 px de ventana, así que se carga la página dentro de un `iframe` del ancho deseado (con la preferencia `privacy.file_unique_origin=false`) y se ejecuta JavaScript por `geckodriver` (API WebDriver) para medir: desbordes horizontales, imágenes rotas, objetivos táctiles menores de 40 px, texto menor de 12 px, **contraste real texto/fondo** y choques entre cajas (el teléfono trasero de la portada pisaba el texto a partir de 1.000 px y el comprobador de desbordes no lo veía). Hay que comprobar también las páginas legales tras cualquier cambio de `styles.css`.
 
-## 9. Estado actual y pendientes (16 de noviembre de 2026)
+## 9. Estado actual y pendientes (18 de noviembre de 2026)
 
-**Publicado:** la versión 1.1.6 (`versionCode` 12) es la última del repositorio y la que baja la gente desde la landing. Trae el conteo de inventario y el informe de diferencias. El APK público se revisó: firma de producción, dos arquitecturas y textos nuevos. Lo que se probó en el teléfono fue el build de `main` con el mismo código, no el APK público.
+**Publicado:** la **1.1.8** (`versionCode` 14) en la release `v1.1.8`, desde el 17 de noviembre. La landing la entrega (sha256 `73563764…`, huella `a7a2f59a…`, canal `production`, comprobado con el digest de la API). Trae el catálogo sin conexión, la paginación de la nube, los términos nuevos (`LEGAL_VERSION` 2026-11-16, se piden otra vez al actualizar), el retiro de `expo-iap` y del paywall, y **actualizaciones OTA**. La 1.1.7 nunca se publicó (falló la firma). Las 1.1.6 y anteriores no reciben OTA: tienen que instalar la 1.1.8 una vez, encima y sin desinstalar.
 
-**La 1.1.7 nunca se publicó.** El tag `v1.1.7` (build #67) falló en "Configurar firma de release": la plantilla de `expo prebuild` cambió `signingConfig = signingConfigs.debug` por `signingConfig signingConfigs.debug` y el parche de firma no la reconocía. Como no se reutilizan tags, sale como **1.1.8** (`versionCode` 14) desde la rama `fix/firma-plantilla-expo`, que también trae el parche de firma reescrito por bloques de Groovy. Mientras tanto la ayuda de Pages ya dice 1.1.7, aunque el APK que se descarga sigue siendo el 1.1.6.
+**OTA probadas de punta a punta.** En `production` salieron dos: el diagnóstico con canal y origen del código (workflow OTA #1) y la corrección de la copia previa a migraciones (workflow #3, antes probada en `preview` con el #2). Las dos llegaron al Redmi de pruebas, que ahora tiene el APK de la release con la OTA `01a1eee5…` ("Base de datos: 408.0 KB" en Diagnóstico). El secreto `EXPO_TOKEN` ya está en GitHub.
 
-**En `main`, sin publicar, para la 1.1.8:** retiro de `expo-iap` y del paywall, canales OTA, huella en la release, workflow "Publicar actualización OTA", el artículo del catálogo en la ayuda, el catálogo sin conexión (Más → Catálogo de productos), la paginación de la nube con el mensaje del tope diario, la autenticación corregida del Worker de pagos y los términos nuevos dentro de la app (`LEGAL_VERSION` 2026-11-16, así que al actualizar se pide aceptarlos otra vez).
-
-**Ya publicado en la landing** porque se fusionó: el catálogo 2026.11.16-2 en `landing/catalogo/` (5.423 productos: 814 propios y 4.609 de Open Food Facts), el centro de ayuda (`landing/ayuda.html`) y la licencia nueva. **La licencia se publicó sin revisión de un abogado.**
+**Ya publicado en la landing:** el catálogo 2026.11.16-2 en `landing/catalogo/` (5.423 productos: 814 propios y 4.609 de Open Food Facts), el centro de ayuda (`landing/ayuda.html`, 53 artículos, versión 1.1.8) y la licencia nueva. **La licencia se publicó sin revisión de un abogado.**
 
 **En Cloudflare:** el Worker de sync con la versión de esquema 2 y la migración `0002_stock_counts.sql` están desplegados. Falta desplegar el tope diario (`apps/sync-worker/migrations/0003_store_usage.sql` y el Worker) y el Worker de pagos.
 
@@ -136,12 +147,13 @@ Cómo se trabaja el catálogo: `node catalog-data/src/cli/validate.ts` valida to
 
 1. Revisión legal de la licencia. Si cambia, cambia en el `LICENSE`, en `landing/terminos.html` y en `apps/mobile/src/legalText.ts` a la vez.
 2. Que el dueño decida el número del tope diario y despliegue la migración 0003 y el Worker, en ese orden y antes de publicar la app.
-3. Publicar la 1.1.8: fusionar `fix/firma-plantilla-expo`, esperar el build de `main` en verde (firma y huella dentro del APK), agregar el secreto `EXPO_TOKEN`, probar en el teléfono el APK de `preview` (escáner con la cámara, guardar un producto desde una sugerencia y una OTA de prueba en `preview`) y crear el tag `v1.1.8`.
-4. Acompañar el piloto con 20 a 50 tiendas siguiendo [piloto.md](piloto.md).
-5. Probar la nube y el kit de recuperación en un teléfono de punta a punta. Nunca se ha hecho.
-6. Agregar la unidad metro a la app y pasar a ella los productos "(1 metro)" del catálogo.
-7. Pagos, después del piloto: despliegue, webhook, `entitlements` y precio en pesos; para empezar, cobro manual.
-8. Menores: umbral del catálogo comunitario, `allowBackup`, `roadmap.md` y revisar el índice de Search Console.
+3. Probar en el teléfono, con la 1.1.8, el escáner con la cámara y guardar un producto desde una sugerencia del catálogo. Si hay que arreglar algo de JavaScript, sale por OTA: `preview` primero, luego `production`.
+4. Averiguar qué archivo cambia la compilación en CI y altera la huella (pendiente 4 de `DEUDA_TECNICA.md`). Pide al propietario el log del paso "Diagnosticar si la compilación cambió las fuentes de la huella" del build #69 o #70.
+5. Acompañar el piloto con 20 a 50 tiendas siguiendo [piloto.md](piloto.md).
+6. Probar la nube y el kit de recuperación en un teléfono de punta a punta. Nunca se ha hecho.
+7. Agregar la unidad metro a la app y pasar a ella los productos "(1 metro)" del catálogo.
+8. Pagos, después del piloto: despliegue, webhook, `entitlements` y precio en pesos; para empezar, cobro manual.
+9. Menores: umbral del catálogo comunitario, `allowBackup`, `roadmap.md` y revisar el índice de Search Console.
 
 ## 10. Decisiones del propietario (no las reabras ni decidas por él)
 
@@ -185,6 +197,10 @@ Cómo se trabaja el catálogo: `node catalog-data/src/cli/validate.ts` valida to
 | Cambié de rama en git mientras una descarga corría en segundo plano y git reemplazó el script que esa descarga volvía a ejecutar en cada reintento. | Antes de lanzar algo largo en segundo plano, copia el script fuera del repositorio o no cambies de rama hasta que termine. |
 | Dos "Atrás" de más sacaron la app y un toque abrió el navegador del teléfono. | Comprueba qué app está al frente (`dumpsys window`) antes de cada toque y usa enlaces directos en vez de "Atrás". |
 | Una prueba "en rojo" fallaba por un dato de prueba mal escrito (un código de barras con el dígito de control errado), no por el error que buscaba. | Mira el mensaje del fallo: tiene que fallar por la razón que quieres demostrar. |
+| Supuse que la huella que calcula la CLI antes de compilar era la misma que Gradle mete en el APK; solo había probado que la carpeta `android/` no la cambia. El build #68 lo desmintió. | Comprueba el resultado final (el APK), no un paso intermedio. La guarda que lee `assets/fingerprint` del APK fue la que lo atrapó. |
+| Un paso del workflow leía JSON con `node -p 'require(process.argv[1])'` y una ruta relativa: `require` la busca en `node_modules`. El test solo revisaba el texto del paso y el job "Publicar release" del tag `v1.1.8` falló. | Lee archivos con `fs.readFileSync`. Los tests de workflows **ejecutan** el paso con `bash` en las condiciones de CI (rutas relativas, cwd), no solo lo buscan con una regex. |
+| En la release hecha a mano se adjuntó un APK 1.1.5 viejo que estaba en la misma carpeta que el artefacto bueno. Los teléfonos con 1.1.6 no podían instalarlo y los nuevos recibían la 1.1.5. | Antes de publicar y después: `aapt2 dump badging` (versión y `versionCode`), `unzip -p … assets/fingerprint` y el `digest` del asset en la API. Descarga artefactos a una carpeta nueva y vacía. |
+| Lancé Gradle en local para validar la firma y empezó a descargar un NDK dentro del SDK del propietario. | No ejecutes herramientas que descargan o instalan cosas fuera del repo sin preguntar (sección 5). |
 | Proyecté cuántos productos de Open Food Facts entrarían con una muestra de las primeras páginas y me equivoqué. | Las muestras de las primeras páginas no representan el resto; da la cifra solo cuando esté el dato completo. |
 
 ## 13. Lista de cierre de cada tarea
