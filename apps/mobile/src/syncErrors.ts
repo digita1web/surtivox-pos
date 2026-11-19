@@ -28,8 +28,10 @@ export function waitMessage(seconds: number): string {
 
 export const QUOTA_MESSAGE = 'Tu tienda llegó al límite diario de sincronización de la versión de pruebas. Tus datos siguen guardados en este teléfono; vuelve a sincronizar mañana.';
 
-export function syncErrorMessage(serverError: unknown, status: number, retryAfterSeconds: number | null = null): string {
-  if (serverError === 'quota_exceeded') return QUOTA_MESSAGE;
+export const CLOUD_QUOTA_MESSAGE = 'La nube de la versión de pruebas llegó a su límite de hoy para todas las tiendas. Tus datos siguen guardados en este teléfono; vuelve a sincronizar mañana.';
+
+export function syncErrorMessage(serverError: unknown, status: number, retryAfterSeconds: number | null = null, scope: unknown = null): string {
+  if (serverError === 'quota_exceeded') return scope === 'cloud' ? CLOUD_QUOTA_MESSAGE : QUOTA_MESSAGE;
   if (status === 429) return waitMessage(retryAfterSeconds ?? 60);
   if (typeof serverError === 'string' && Object.prototype.hasOwnProperty.call(MESSAGES, serverError)) {
     return MESSAGES[serverError]!;
@@ -41,5 +43,6 @@ export function toSyncHttpError(body: unknown, status: number, retryAfterHeader:
   const code = typeof (body as { error?: unknown } | null)?.error === 'string' ? (body as { error: string }).error : null;
   const parsed = retryAfterHeader === null ? NaN : Number(retryAfterHeader);
   const retryAfter = Number.isFinite(parsed) && parsed > 0 ? Math.ceil(parsed) : null;
-  return new SyncHttpError(syncErrorMessage(code, status, retryAfter), status, code, retryAfter);
+  const scope = (body as { scope?: unknown } | null)?.scope ?? null;
+  return new SyncHttpError(syncErrorMessage(code, status, retryAfter, scope), status, code, retryAfter);
 }
