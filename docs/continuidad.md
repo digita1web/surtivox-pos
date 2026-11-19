@@ -146,7 +146,7 @@ Cómo se trabaja el catálogo: `node catalog-data/src/cli/validate.ts` valida to
 **Pendientes, en orden** (el detalle está arriba en `DEUDA_TECNICA.md`):
 
 1. Revisión legal de la licencia. Si cambia, cambia en el `LICENSE`, en `landing/terminos.html` y en `apps/mobile/src/legalText.ts` a la vez.
-2. Que el dueño decida el número del tope diario y despliegue la migración 0003 y el Worker, en ese orden y antes de publicar la app.
+2. Que el dueño despliegue la migración 0003 y el Worker de `feat/worker-tanque`, en ese orden: tope de 10.000 escritas por tienda e interruptor general a 85.000 (decidido el 2026-11-19). Después, la OTA con el mensaje del corte general.
 3. Probar en el teléfono, con la 1.1.8, el escáner con la cámara y guardar un producto desde una sugerencia del catálogo. Si hay que arreglar algo de JavaScript, sale por OTA: `preview` primero, luego `production`.
 4. Averiguar qué archivo cambia la compilación en CI y altera la huella (pendiente 4 de `DEUDA_TECNICA.md`). Pide al propietario el log del paso "Diagnosticar si la compilación cambió las fuentes de la huella" del build #69 o #70.
 5. Acompañar el piloto con 20 a 50 tiendas siguiendo [piloto.md](piloto.md).
@@ -170,7 +170,8 @@ Cómo se trabaja el catálogo: `node catalog-data/src/cli/validate.ts` valida to
 - La app publicada se usa gratis, también en el propio negocio; el código sigue siendo propietario.
 - Para monetizar, primero el piloto. Nada de publicidad ni de vender datos de las tiendas.
 - Se retiraron `expo-iap` y el paywall (decidido el 2026-11-16; sale en la 1.1.8). Las OTA de `production` solo salen de `main` y después de probarlas en `preview`.
-- Pendiente de su decisión: el número del tope diario, el umbral del catálogo comunitario, `allowBackup` y si se reescribe `roadmap.md`.
+- Tope de la nube: 10.000 escrituras reales por tienda al día e interruptor general a 85.000 (2026-11-19).
+- Pendiente de su decisión: el umbral del catálogo comunitario, `allowBackup` y si se reescribe `roadmap.md`.
 - Los Workers los despliega él. Solo una vez, el 16 de noviembre y con su autorización expresa, se desplegó desde aquí con un token temporal. Si vuelve a pasar: el token va en `~/.config/surtivox/cf.env` con `read -rs`, nunca en el chat, y se toma un punto de restauración de D1 antes de cambiar nada.
 
 ## 11. Cómo informar al propietario

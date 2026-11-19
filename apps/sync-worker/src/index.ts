@@ -6,10 +6,14 @@ import { handleMarketPrices } from './marketPrices.ts';
 export interface Env {
   DB: D1Database;
   QUOTA_DAILY_ROWS?: string;
+  QUOTA_GLOBAL_ROWS?: string;
   PULL_MAX_PAGE?: string;
 }
 
-export const DEFAULT_QUOTA_DAILY_ROWS = 20_000;
+export const DEFAULT_QUOTA_DAILY_ROWS = 10_000;
+export const DEFAULT_QUOTA_GLOBAL_ROWS = 85_000;
+export const ESTIMATED_WRITES_PER_ROW = 2;
+export const USAGE_TOTAL_ID = '*';
 export const DEFAULT_PULL_MAX_PAGE = 5_000;
 
 const positiveInt = (raw: string | undefined, fallback: number) => {
@@ -33,15 +37,30 @@ async function usedToday(env: Env, storeId: string, day: string): Promise<number
   }
 }
 
-async function addUsage(env: Env, storeId: string, day: string, rows: number): Promise<void> {
-  if (rows <= 0) return;
+async function addUsage(env: Env, day: string, entries: Array<[string, number]>): Promise<void> {
+  const positive = entries.filter(([, rows]) => rows > 0);
+  if (positive.length === 0) return;
   try {
-    await env.DB.prepare(
+    const stmt = env.DB.prepare(
       'INSERT INTO store_usage (store_id, day, rows) VALUES (?, ?, ?) ON CONFLICT(store_id, day) DO UPDATE SET rows = rows + excluded.rows',
-    ).bind(storeId, day, rows).run();
+    );
+    await env.DB.batch(positive.map(([id, rows]) => stmt.bind(id, day, rows)));
   } catch {
     return;
   }
+}
+
+export function rowsWrittenBy(results: unknown): number {
+  if (!Array.isArray(results)) return 0;
+  let total = 0;
+  for (const result of results) {
+    const meta = (result as { meta?: { rows_written?: unknown; changes?: unknown } } | null)?.meta;
+    const written = Number(meta?.rows_written);
+    if (meta?.rows_written !== undefined && Number.isFinite(written) && written >= 0) { total += written; continue; }
+    const changes = Number(meta?.changes);
+    if (Number.isFinite(changes) && changes > 0) total += changes * ESTIMATED_WRITES_PER_ROW;
+  }
+  return total;
 }
 
 type Row = Record<string, unknown>;
@@ -223,26 +242,32 @@ export default {
       if (total > PUSH_LIMITS.maxRows) return json({ error: 'too_many_rows' }, 413);
       const now = Date.now();
       const day = utcDay(now);
+      const retry = { 'retry-after': String(secondsToNextUtcDay(now)) };
+      const estimate = total * ESTIMATED_WRITES_PER_ROW;
       const quota = positiveInt(env.QUOTA_DAILY_ROWS, DEFAULT_QUOTA_DAILY_ROWS);
+      const globalQuota = positiveInt(env.QUOTA_GLOBAL_ROWS, DEFAULT_QUOTA_GLOBAL_ROWS);
       const used = quota > 0 ? await usedToday(env, storeId, day) : null;
-      if (used !== null && used + total > quota) {
-        return json({ error: 'quota_exceeded', limit: quota, used }, 429, { 'retry-after': String(secondsToNextUtcDay(now)) });
+      if (used !== null && used + estimate > quota) {
+        return json({ error: 'quota_exceeded', scope: 'store', limit: quota, used }, 429, retry);
       }
-      let applied = 0;
+      const usedByAll = globalQuota > 0 ? await usedToday(env, USAGE_TOTAL_ID, day) : null;
+      if (usedByAll !== null && usedByAll + estimate > globalQuota) {
+        return json({ error: 'quota_exceeded', scope: 'cloud' }, 429, retry);
+      }
+      const statements = [] as D1PreparedStatement[];
       for (const t of SYNC_TABLES) {
         const rows = tables[t.name] as Row[] | undefined;
         if (!Array.isArray(rows) || rows.length === 0) continue;
         const stmt = env.DB.prepare(serverUpsertSql(t));
-        const batch = [] as D1PreparedStatement[];
         for (const row of rows) {
           if (typeof row !== 'object' || row === null || Array.isArray(row)) continue;
           if (t.scope.kind !== 'parent' && rowStoreId(t, row) !== storeId) continue;
-          batch.push(stmt.bind(...bind(serverRowValues(t, row, storeId))));
+          statements.push(stmt.bind(...bind(serverRowValues(t, row, storeId))));
         }
-        if (batch.length) { await env.DB.batch(batch); applied += batch.length; }
       }
-      if (quota > 0) await addUsage(env, storeId, day, applied);
-      return json({ ok: true, applied, serverTime: Date.now() });
+      const written = statements.length ? rowsWrittenBy(await env.DB.batch(statements)) : 0;
+      if (quota > 0 || globalQuota > 0) await addUsage(env, day, [[storeId, written], [USAGE_TOTAL_ID, written]]);
+      return json({ ok: true, applied: statements.length, serverTime: Date.now() });
     }
 
     // Return this store's rows changed after `since`. The cursor is the newest

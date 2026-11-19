@@ -48,12 +48,20 @@ La app no envía estadísticas de uso, y así debe seguir. Las fuentes son tres:
    ```sql
    SELECT store_id, COUNT(*) AS dias, SUM(rows) AS filas
    FROM store_usage
-   WHERE day >= date('now', '-7 days')
+   WHERE day >= date('now', '-7 days') AND store_id <> '*'
    GROUP BY store_id
    ORDER BY dias DESC;
    ```
 
-   Un día con filas indica que la tienda sincronizó ese día, no cuánto vendió.
+   Un día con filas indica que la tienda sincronizó ese día, no cuánto vendió. Las cifras son filas escritas reales en D1, con los índices incluidos.
+
+   El total de todas las tiendas por día, para vigilar el cupo del plan gratis (100.000 escritas al día; el Worker corta a las 85.000):
+
+   ```sql
+   SELECT day, rows FROM store_usage WHERE store_id = '*' ORDER BY day DESC LIMIT 14;
+   ```
+
+   Si un día normal pasa de unas 50.000, es momento de pasar al plan pagado de Workers y poner `QUOTA_GLOBAL_ROWS = 0`.
 3. **Tu planilla** (una fila por tienda): nombre, zona, tipo, fecha de instalación, días con ventas por semana, recomendación (0–10), problemas, pedidos de funciones, ¿pagaría? y cuánto.
 
 ## 6. La pregunta de precio (semana 6 a 8)
