@@ -118,6 +118,7 @@ curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/runs/<id>
 - Los artefactos duran 14 días. En un push a `main` el build tarda unos 7 a 11 minutos.
 - OTA: `curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/workflows/ota-update.yml/runs?per_page=3"`. Mira que el paso "Comparar con la huella de la última release" sea `success` en `production` (en `preview` sale `skipped`) y "Publicar la actualización" `success`.
 - Release publicada: `curl -sS https://api.github.com/repos/digita1web/surtivox-pos/releases/latest` da cada asset con su `digest` (sha256). Compáralo con el APK que verificaste.
+- Desde el 2026-11-26 `scripts/verify.sh` publica cada prueba o tipo fallido como anotación `::error::` (nombre y mensaje) cuando corre en GitHub: un `GATE FAIL` ya no se queda en "exit code 1".
 - Las anotaciones de un job (`/check-runs/<job_id>/annotations`) son públicas: ahí salen los `::error::` y `::warning::` sin necesitar el log completo. Un paso que falla **sin** `::error::` suele ser un comando que reventó (por ejemplo, `node`), no una guarda.
 
 ## 8. Landing (`landing/`)
