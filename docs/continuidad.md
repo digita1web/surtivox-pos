@@ -6,7 +6,7 @@ Léela junto con [AGENTS.md](../AGENTS.md) (reglas estrictas), [DEUDA_TECNICA.md
 
 ## 1. Prompt de arranque sugerido
 
-> Lee `docs/continuidad.md`, `AGENTS.md` y la sección de revisión más reciente de `DEUDA_TECNICA.md`. Trabaja como asesor: verdad incómoda primero, marca [Verificado]/[Inferencia]/[Suposición] y di qué ejecutaste y qué no. No hagas push, no instales dependencias ni toques lo prohibido sin aprobación. Antes de afirmar algo en un documento o en la landing, compruébalo en el código. Empieza por el pendiente 1 de la sección 9 (el estado actual está al principio de esa sección).
+> Lee `docs/continuidad.md`, el relevo más reciente de `docs/continuidad/` (ver su [README](continuidad/README.md)), `AGENTS.md` y la sección de revisión más reciente de `DEUDA_TECNICA.md`. Trabaja como asesor: verdad incómoda primero, marca [Verificado]/[Inferencia]/[Suposición] y di qué ejecutaste y qué no. No hagas push, no instales dependencias ni toques lo prohibido sin aprobación. Antes de afirmar algo en un documento o en la landing, compruébalo en el código. Empieza por el pendiente 1 de la sección 9 (el estado actual está al principio de esa sección).
 
 ## 2. Reglas de oro
 
@@ -139,14 +139,14 @@ curl -sS "https://api.github.com/repos/digita1web/surtivox-pos/actions/runs/<id>
 
 **Ya publicado en la landing:** el catálogo 2026.11.16-2 en `landing/catalogo/` (5.423 productos: 814 propios y 4.609 de Open Food Facts), el centro de ayuda (`landing/ayuda.html`, 53 artículos, versión 1.1.8) y la licencia nueva. **La licencia se publicó sin revisión de un abogado.**
 
-**En Cloudflare:** el Worker de sync con la versión de esquema 2 y la migración `0002_stock_counts.sql` están desplegados. Falta desplegar el tope diario (`apps/sync-worker/migrations/0003_store_usage.sql` y el Worker) y el Worker de pagos.
+**En Cloudflare:** el Worker de sync con la versión de esquema 2, la migración `0002_stock_counts.sql`, la migración `0003_store_usage.sql` y el tope de la nube (tope por tienda e interruptor general) están desplegados desde el 19 de noviembre: lo informó el propietario y `store_usage` registró 15 y 15 en la prueba de dos sincronizaciones. Falta desplegar el Worker de pagos.
 
 Cómo se trabaja el catálogo: `node catalog-data/src/cli/validate.ts` valida todo, `node catalog-data/src/cli/build.ts --version=AAAA.MM.DD[-N] --out=landing/catalogo --gzip=false` recompila lo publicado y `catalog-data/test/published.test.ts` falla si alguien cambia los datos sin recompilar. Para Open Food Facts, `catalog-data/src/importers/fetch-off.sh` usa la cuenta del dueño desde `~/.config/surtivox/off.env`; la caché queda en `catalog-data/.cache`, que no se versiona. **No cambies de rama mientras corre una descarga en segundo plano** (ver sección 12).
 
 **Pendientes, en orden** (el detalle está arriba en `DEUDA_TECNICA.md`):
 
 1. Revisión legal de la licencia. Si cambia, cambia en el `LICENSE`, en `landing/terminos.html` y en `apps/mobile/src/legalText.ts` a la vez.
-2. Que el dueño despliegue la migración 0003 y el Worker de `feat/worker-tanque`, en ese orden: tope de 10.000 escritas por tienda e interruptor general a 85.000 (decidido el 2026-11-19). Después, la OTA con el mensaje del corte general.
+2. Cerrar la OTA de producción con el mensaje del corte general de la nube: salió en `preview` pero falló dos veces en `production` en el paso "Verificar tipos y tests" (detalle en el relevo más reciente de `docs/continuidad/`). El tope de 10.000 escrituras por tienda y el interruptor general a 85.000 ya están desplegados.
 3. Probar en el teléfono, con la 1.1.8, el escáner con la cámara y guardar un producto desde una sugerencia del catálogo. Si hay que arreglar algo de JavaScript, sale por OTA: `preview` primero, luego `production`.
 4. Averiguar qué archivo cambia la compilación en CI y altera la huella (pendiente 4 de `DEUDA_TECNICA.md`). Pide al propietario el log del paso "Diagnosticar si la compilación cambió las fuentes de la huella" del build #69 o #70.
 5. Acompañar el piloto con 20 a 50 tiendas siguiendo [piloto.md](piloto.md).
@@ -212,4 +212,5 @@ Cómo se trabaja el catálogo: `node catalog-data/src/cli/validate.ts` valida to
 - [ ] `git status` revisado: solo las rutas que quieres commitear.
 - [ ] `DEUDA_TECNICA.md` actualizado con fecha real y hash, sin PIN, códigos ni datos personales, con enlaces que existen.
 - [ ] Informe al propietario: hecho, verificado, **no verificado**, necesita de él.
+- [ ] Si algo quedó a medias, un relevo nuevo en `docs/continuidad/` (plantilla en `docs/continuidad/plantilla.md`) y su fila en el índice.
 - [ ] Sin push, sin tag.
